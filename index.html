@@ -1,4 +1,3 @@
-<!-- تحديث التطبيق 30-08-2026 -->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" data-theme="day">
 <head>
@@ -701,9 +700,19 @@ html[data-theme="night"] .stage-week-box select{
 .assign-periods-box label{
   font-size:10.5px;font-weight:800;color:var(--ink-soft);line-height:1;
 }
+.pe-courts-box{margin:12px 0 4px;padding:12px;border:1.5px dashed var(--line);border-radius:14px;background:var(--paper)}
+.pe-courts-label{font-size:13.5px;font-weight:900;margin-bottom:8px;color:var(--ink)}
+.pe-courts-box .demo-mode-toggle{max-width:100%}
+.assign-periods-box select,
+select.assign-periods-sel,
+#inpAssignPeriods, #selStageWeekly, #inpPeriods,
+#tmMLesson,#tmMBreak,#tmMCount,#tmMLongMin,#tmMLongMin2,
+#tmELesson,#tmEBreak,#tmECount,#tmELongMin,#tmELongMin2{
+  min-width:76px;
+}
 .assign-periods-box select,
 select.assign-periods-sel{
-  width:70px;height:36px;border-radius:8px;border:1.5px solid var(--line-2);
+  width:76px;height:36px;border-radius:8px;border:1.5px solid var(--line-2);
   background:var(--input-bg);color:var(--ink);font-family:inherit;font-size:14px;font-weight:800;
   text-align:center;padding:4px 6px;cursor:pointer;
 }
@@ -888,7 +897,7 @@ html[data-theme="night"] .open-full-btn{
 }
 table.demo-master{
   border-collapse:collapse;width:100%;min-width:100%;
-  table-layout:fixed;background:#fff;font-size:11px;
+  table-layout:auto;background:#fff;font-size:11px;
 }
 table.demo-master th, table.demo-master td{
   border:1px solid #cfc6ac;text-align:center;vertical-align:middle;
@@ -898,7 +907,7 @@ table.demo-master thead th,
 table.demo-master tr.day-head-row th{
   background:var(--ink);color:#fff;font-weight:900;
   padding:7px 3px;font-size:13px;line-height:1.2;
-  min-width:70px;max-width:84px;white-space:nowrap;
+  min-width:max-content;max-width:none;white-space:nowrap;padding-inline:6px;
 }
 table.demo-master thead th{
   position:sticky;top:0;z-index:5;
@@ -950,7 +959,7 @@ table.demo-master tbody tr.row-a td.m-slot{background:#fff}
 table.demo-master tbody tr.row-b td.m-slot{background:#efe9d8}
 table.demo-master tr.day-band-start td.day-cell{border-top:2px solid var(--ink)}
 table.demo-master tr.day-band-start td{border-top:2px solid #b8b09a}
-table.demo-master td.m-slot{min-width:0;max-width:none;width:auto;height:52px;padding:0;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+table.demo-master td.m-slot{min-width:max-content;max-width:none;width:auto;height:52px;padding:0;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;overflow:visible}
 table.demo-master tr.day-head-row th.sec-head{font-size:14px;padding:8px 2px}
 table.demo-master td.m-slot:hover{outline:2px solid rgba(30,111,255,.45);outline-offset:-2px;z-index:1;position:relative}
 table.demo-master .m-cell{
@@ -958,23 +967,39 @@ table.demo-master .m-cell{
   align-items:center;justify-content:center;padding:3px 4px;line-height:1.25;
   border-radius:0;position:relative;transition:.12s;
   background:transparent;
+  overflow:visible;min-width:max-content;max-width:none;width:100%;
+  box-sizing:border-box;
+}
+table.demo-master .m-cell b.subj-hit,
+table.demo-master .m-cell span.teach-hit{
+  max-width:none;
+  overflow:visible;
+  text-overflow:clip;
+  white-space:nowrap;
+  min-width:max-content;
+  width:max-content;
+  box-sizing:border-box;
 }
 table.demo-master .m-cell b.subj-hit{
+  display:block;width:max-content;max-width:none;text-align:center;
   font-size:var(--master-subj, 13px);font-weight:900;color:#1b2a4a;cursor:pointer;border-radius:3px;padding:0 2px;
   line-height:1.2;letter-spacing:0;text-rendering:auto;
   -webkit-font-smoothing:auto;
 }
 table.demo-master .m-cell span.teach-hit{
+  display:block;width:max-content;max-width:none;text-align:center;
   font-size:max(12px, calc(var(--master-subj, 13px) - 1px));font-weight:800;color:#1a2030;margin-top:2px;cursor:pointer;border-radius:3px;padding:0 2px;
   text-rendering:auto;-webkit-font-smoothing:auto;
 }
 table.demo-master.layout-side .m-cell:not(.empty){
   flex-direction:row;align-items:stretch;justify-content:stretch;padding:0;gap:0;
+  overflow:visible;width:100%;
 }
 table.demo-master.layout-side .m-cell:not(.empty) b.subj-hit,
 table.demo-master.layout-side .m-cell:not(.empty) span.teach-hit{
-  flex:1 1 0;min-width:0;margin:0;height:100%;
-  display:flex;align-items:center;justify-content:center;text-align:center;padding:2px 3px;
+  flex:1 1 auto;min-width:max-content;max-width:none;width:max-content;margin:0;height:100%;
+  display:flex;align-items:center;justify-content:center;text-align:center;padding:2px 4px;
+  overflow:visible;text-overflow:clip;white-space:nowrap;
 }
 table.demo-master.layout-side .m-cell:not(.empty) span.teach-hit{
   border-inline-start:1px dashed #8b93a3;
@@ -1195,7 +1220,7 @@ html.master-hide-teach table.demo-master.layout-side .m-cell:not(.empty){
   flex-direction:column;
 }
 html.master-hide-teach table.demo-master.layout-side .m-cell:not(.empty) b.subj-hit{
-  flex:1 1 auto;width:100%;
+  flex:1 1 auto;width:max-content;max-width:none;
 }
 html.master-hide-teach .print-page table.master-print.layout-side .mp-cell{
   flex-direction:column;
@@ -1370,25 +1395,47 @@ html.mode-full-master #fullConflictBanner{
   0%,100%{ transform:rotate(-18deg); }
   50%{ transform:rotate(72deg); }
 }
-html.mode-full-master.need-landscape .full-rotate-gate{
-  display:flex !important;
-  position:fixed;
-  left:0;right:0;bottom:0;
-  top:var(--full-topbar-h, 88px);
-  z-index:80;
-  flex:1 1 auto;
-  padding:28px 18px;
-  background:var(--paper);
-  align-items:center;
-  justify-content:center;
-}
+html.mode-full-master.need-landscape .full-rotate-gate{display:none !important}
 html.mode-full-master.need-landscape #fullMasterWrap,
-html.mode-full-master.need-landscape #demoAllWrap,
-html.mode-full-master.need-landscape #fullConflictBanner,
-html.mode-full-master.need-landscape #demoConflictBanner{
-  display:none !important;
+html.mode-full-master.need-landscape #demoAllWrap{
+  display:flex !important;
 }
-html.mode-full-master.need-landscape .full-rotate-card b{font-size:18px}
+@media screen{
+  html.need-landscape{
+    overflow:hidden !important;
+    width:100vw !important;
+    height:100vh !important;
+    max-width:none !important;
+  }
+  html.need-landscape body{
+    position:absolute !important;
+    z-index:1;
+    top:0;
+    left:var(--land-h, 100vw) !important;
+    width:var(--land-w, 100vh) !important;
+    height:var(--land-h, 100vw) !important;
+    margin:0 !important;
+    max-width:none !important;
+    overflow:auto !important;
+    transform:rotate(90deg);
+    transform-origin:top left;
+    box-sizing:border-box;
+  }
+  html.need-landscape .topbar{
+    position:relative !important;
+    top:auto !important;
+    width:100% !important;
+    max-width:none !important;
+  }
+  html.need-landscape main{
+    width:100% !important;
+    max-width:none !important;
+    min-height:calc(100% - var(--full-topbar-h, 88px)) !important;
+    height:auto !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+}
 html.mode-full-master.need-landscape .full-rotate-phone{font-size:28px;margin-bottom:4px}
 
 /* ===== Lesson timings ===== */
@@ -2395,6 +2442,107 @@ main{
   .tab-btn,.class-pill,.demo-mode-btn{min-height:40px}
 }
 
+/* ===== منع فيضان المحتوى: هاتف / لوحي / حاسوب — عمودي وأفقي ===== */
+html, body{
+  max-width:100%;
+  overflow-x:hidden;
+}
+html.need-landscape,
+html.need-landscape body{
+  max-width:none;
+}
+img, video, canvas{
+  max-width:100%;
+}
+.brand-mark img{width:100%;height:100%;object-fit:cover}
+.view, .card, .dash-card, main, section, .row, .hint{
+  max-width:100%;
+  min-width:0;
+}
+.item-row, .assign-row, .full-edit-bar, .full-font-bar, .demo-mode-bar, .modal-actions{
+  max-width:100%;
+  flex-wrap:wrap;
+}
+.item-actions{flex-wrap:wrap}
+.demo-mode-toggle{
+  display:flex;
+  flex-wrap:nowrap;
+  max-width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+}
+.modal-card{
+  max-width:min(480px, calc(100vw - 24px));
+  width:100%;
+  box-sizing:border-box;
+}
+.hint, .item-main b, .item-main span, .card h2, .dash-person b, .dash-person span, .field label, .feat-card span, .feat-card b{
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+table.sched .slot-inner b.subj-hit,
+table.sched .slot-inner span.teach-hit{
+  max-width:100%;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  white-space:normal;
+}
+.sched-wrap, .demo-master-wrap, .timing-table-wrap, .dash-today-wrap,
+#schedGridWrap, #fullMasterWrap, #demoAllWrap, .class-picker, .tabs{
+  max-width:100%;
+  -webkit-overflow-scrolling:touch;
+}
+.sched-wrap, .demo-master-wrap, .timing-table-wrap, .dash-today-wrap,
+#schedGridWrap{
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+}
+html.mode-full-master:not(.need-landscape),
+html.mode-full-master:not(.need-landscape) body{
+  overflow-x:hidden;
+}
+.print-pop{
+  max-width:calc(100vw - 16px);
+  box-sizing:border-box;
+}
+.setup-card, .act-card, .welcome-panel, .exit-card{
+  max-width:min(100%, calc(100vw - 20px));
+  box-sizing:border-box;
+}
+
+@media (max-width:599px){
+  table.sched{min-width:100%}
+  table.sched td.slot{min-width:72px;height:60px}
+  .slot-inner{min-height:56px;padding:3px 2px}
+  .demo-mode-btn{padding:8px 10px;font-size:12px}
+  .setup-card, .act-card, .welcome-panel{padding:18px 14px 16px;border-radius:20px}
+  .welcome-panel h1{font-size:20px}
+  table.dash-today{min-width:460px}
+  .topbar-row{max-width:100%}
+}
+@media (max-width:599px) and (orientation:landscape){
+  html:not(.mode-full-master) .topbar{padding-top:max(4px, env(safe-area-inset-top))}
+  html:not(.mode-full-master) main{padding-top:8px;padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+  .card{padding:10px}
+  .dash-clock .d-time{font-size:28px}
+  table.sched td.slot{height:48px;min-width:64px}
+  .slot-inner{min-height:44px}
+}
+@media (min-width:600px) and (max-width:1023px){
+  table.sched{min-width:100%}
+  table.sched td.slot{min-width:84px}
+  .card{padding:14px 16px}
+}
+@media (min-width:1024px){
+  html:not(.mode-full-master) .card{padding:18px 20px}
+}
+@media (orientation:landscape) and (max-height:500px){
+  html:not(.mode-full-master) .tabs{padding-bottom:4px}
+  #splashGate{padding:10px}
+  .splash-inner{transform:scale(.92)}
+}
+
 </style>
 </head>
 <body>
@@ -2589,7 +2737,7 @@ main{
       <h2>عدد الحصص اليومية</h2>
       <div class="field">
         <label>عدد الحصص في اليوم الواحد</label>
-        <input type="number" id="inpPeriods" min="1" max="12" value="6">
+        <select id="inpPeriods" aria-label="عدد الحصص في اليوم"></select>
       </div>
     </div>
     </div>
@@ -2675,19 +2823,19 @@ main{
       <h2>☀️ الدوام الصباحي</h2>
       <div class="row">
         <div class="field"><label>بدء أول حصة</label><input type="time" id="tmMStart"></div>
-        <div class="field"><label>زمن الحصة (دقيقة)</label><input type="number" id="tmMLesson" min="1" max="120"></div>
-        <div class="field"><label>زمن الاستراحة (دقيقة)</label><input type="number" id="tmMBreak" min="0" max="60"></div>
-        <div class="field"><label>عدد الدروس</label><input type="number" id="tmMCount" min="1" max="12"></div>
+        <div class="field"><label>زمن الحصة (دقيقة)</label><select id="tmMLesson" aria-label="زمن الحصة صباحاً"></select></div>
+        <div class="field"><label>زمن الاستراحة (دقيقة)</label><select id="tmMBreak" aria-label="زمن الاستراحة صباحاً"></select></div>
+        <div class="field"><label>عدد الدروس</label><select id="tmMCount" aria-label="عدد دروس الصباح"></select></div>
       </div>
       <label class="check-item"><input type="checkbox" id="tmMLongOn"> تفعيل الاستراحة الطويلة الأولى</label>
       <div class="row" id="tmMLongFields">
         <div class="field"><label>الأولى بعد الحصة</label><select id="tmMLongAfter"></select></div>
-        <div class="field"><label>زمن الأولى (دقيقة)</label><input type="number" id="tmMLongMin" min="0" max="120"></div>
+        <div class="field"><label>زمن الأولى (دقيقة)</label><select id="tmMLongMin" aria-label="زمن الاستراحة الطويلة الأولى صباحاً"></select></div>
       </div>
       <label class="check-item"><input type="checkbox" id="tmMLongOn2"> تفعيل الاستراحة الطويلة الثانية</label>
       <div class="row" id="tmMLongFields2">
         <div class="field"><label>الثانية بعد الحصة</label><select id="tmMLongAfter2"></select></div>
-        <div class="field"><label>زمن الثانية (دقيقة)</label><input type="number" id="tmMLongMin2" min="0" max="120"></div>
+        <div class="field"><label>زمن الثانية (دقيقة)</label><select id="tmMLongMin2" aria-label="زمن الاستراحة الطويلة الثانية صباحاً"></select></div>
       </div>
     </div>
     <div class="card" id="timingEveningCard">
@@ -2695,19 +2843,19 @@ main{
       <label class="check-item" style="margin-bottom:10px"><input type="checkbox" id="tmEReverse"> عكس موضع الاستراحة الطويلة عن الصباحي</label>
       <div class="row">
         <div class="field"><label>بدء أول حصة</label><input type="time" id="tmEStart"></div>
-        <div class="field"><label>زمن الحصة (دقيقة)</label><input type="number" id="tmELesson" min="1" max="120"></div>
-        <div class="field"><label>زمن الاستراحة (دقيقة)</label><input type="number" id="tmEBreak" min="0" max="60"></div>
-        <div class="field"><label>عدد الدروس</label><input type="number" id="tmECount" min="1" max="12"></div>
+        <div class="field"><label>زمن الحصة (دقيقة)</label><select id="tmELesson" aria-label="زمن الحصة مساءً"></select></div>
+        <div class="field"><label>زمن الاستراحة (دقيقة)</label><select id="tmEBreak" aria-label="زمن الاستراحة مساءً"></select></div>
+        <div class="field"><label>عدد الدروس</label><select id="tmECount" aria-label="عدد دروس المساء"></select></div>
       </div>
       <label class="check-item"><input type="checkbox" id="tmELongOn"> تفعيل الاستراحة الطويلة الأولى</label>
       <div class="row" id="tmELongFields">
         <div class="field"><label>الأولى بعد الحصة</label><select id="tmELongAfter"></select></div>
-        <div class="field"><label>زمن الأولى (دقيقة)</label><input type="number" id="tmELongMin" min="0" max="120"></div>
+        <div class="field"><label>زمن الأولى (دقيقة)</label><select id="tmELongMin" aria-label="زمن الاستراحة الطويلة الأولى مساءً"></select></div>
       </div>
       <label class="check-item"><input type="checkbox" id="tmELongOn2"> تفعيل الاستراحة الطويلة الثانية</label>
       <div class="row" id="tmELongFields2">
         <div class="field"><label>الثانية بعد الحصة</label><select id="tmELongAfter2"></select></div>
-        <div class="field"><label>زمن الثانية (دقيقة)</label><input type="number" id="tmELongMin2" min="0" max="120"></div>
+        <div class="field"><label>زمن الثانية (دقيقة)</label><select id="tmELongMin2" aria-label="زمن الاستراحة الطويلة الثانية مساءً"></select></div>
       </div>
       <button type="button" class="btn btn-outline btn-sm" id="btnCopyMorningEve">📋 نسخ إعدادات الصباحي إلى المسائي</button>
     </div>
@@ -2770,7 +2918,7 @@ main{
   <!-- TEACHERS -->
   <section class="view" id="view-teachers">
     <div class="demo-mode-bar" style="margin-bottom:12px">
-      <div class="demo-mode-toggle" id="teacherSubTabs" role="tablist" aria-label="قسم الكادر" id="ttTeachAria">
+      <div class="demo-mode-toggle" id="ttTeachAria" role="tablist" aria-label="قسم الكادر">
         <button type="button" class="demo-mode-btn active" id="btnTeachTabList">👤 <span id="ttTeachListBtn">قائمة المعلمين</span></button>
         <button type="button" class="demo-mode-btn" id="btnTeachTabMon">🛡️ جدول المراقبين</button>
       </div>
@@ -2865,6 +3013,14 @@ main{
     <div class="card">
       <h2>توزيع النصاب (المواد والحصص لكل شعبة)</h2>
       <p class="hint">اختر الشعبة، ثم أضف لها المواد مع تحديد المعلم وعدد الحصص الأسبوعية لكل مادة.</p>
+      <div class="pe-courts-box" id="peCourtsBox">
+        <div class="pe-courts-label">ساحات الرياضة</div>
+        <div class="demo-mode-toggle" id="peCourtsToggle" role="radiogroup" aria-label="ساحات الرياضة">
+          <button type="button" class="demo-mode-btn active" data-pe-courts="1" id="btnPeCourt1">ساحة واحدة</button>
+          <button type="button" class="demo-mode-btn" data-pe-courts="2" id="btnPeCourt2">ساحتان</button>
+        </div>
+        <p class="hint" id="peCourtsHint" style="margin:8px 0 0">ساحة واحدة: لا تُوزَّع حصتا رياضة في الوقت نفسه. ساحتان: يمكن توزيع حصتين لمعلمين مختلفين في نفس الوقت.</p>
+      </div>
       <div class="class-picker" id="assignClassPicker"></div>
       <div id="assignCapacity"></div>
     </div>
@@ -3188,7 +3344,8 @@ function defaultDB(){
       schoolLevel:'',
       schoolGender:'',
       schoolSetupDone:false,
-      welcomeSeen:false
+      welcomeSeen:false,
+      peCourts:1
     },
     teachers:[],
     subjects: cloneDefaultSubjects(),
@@ -3886,7 +4043,7 @@ function classAssignments(stageId, sectionId){
   return DB.assignments.filter(a=>a.stageId===stageId && a.sectionId===sectionId);
 }
 function weeklyCapacity(){ return DB.settings.days.length * DB.settings.periodsPerDay; }
-const MAX_WEEKLY_PERIODS = 60;
+const MAX_WEEKLY_PERIODS = 100;
 function defaultWeeklyPeriods(){
   const n = weeklyCapacity();
   return Math.max(1, Math.min(MAX_WEEKLY_PERIODS, n || 30));
@@ -3915,13 +4072,49 @@ function listClassLoadGaps(store){
   });
   return gaps;
 }
-function weeklyOptionsHtml(selected){
-  const sel = Math.max(1, Math.min(MAX_WEEKLY_PERIODS, parseInt(selected, 10) || defaultWeeklyPeriods()));
+function numberOptionsHtml(selected, minN, maxN){
+  minN = (minN==null) ? 1 : (+minN);
+  maxN = (maxN==null) ? 100 : (+maxN);
+  if(!isFinite(minN)) minN = 1;
+  if(!isFinite(maxN)) maxN = 100;
+  const sel = parseInt(selected, 10);
   let html = '';
-  for(let n=1; n<=MAX_WEEKLY_PERIODS; n++){
-    html += `<option value="${n}"${n===sel?' selected':''}>${n}</option>`;
+  for(let n=minN; n<=maxN; n++){
+    html += '<option value="'+n+'"'+(sel===n?' selected':'')+'>'+n+'</option>';
   }
   return html;
+}
+function fillNumberSelect(el, selected, minN, maxN){
+  if(!el) return;
+  const keep = selected != null ? selected : el.value;
+  el.innerHTML = numberOptionsHtml(keep, minN, maxN);
+}
+function weeklyOptionsHtml(selected){
+  const sel = Math.max(1, Math.min(MAX_WEEKLY_PERIODS, parseInt(selected, 10) || defaultWeeklyPeriods()));
+  return numberOptionsHtml(sel, 1, MAX_WEEKLY_PERIODS);
+}
+function getPeCourts(store){
+  store = store || (typeof DB!=='undefined' ? DB : null);
+  return (store && store.settings && parseInt(store.settings.peCourts,10)===2) ? 2 : 1;
+}
+function setPeCourts(n){
+  if(typeof DB==='undefined' || !DB) return;
+  if(!DB.settings) DB.settings = {};
+  DB.settings.peCourts = (parseInt(n,10)===2) ? 2 : 1;
+  try{ saveDB(); }catch(e){}
+  syncPeCourtsUI();
+  try{ toast(DB.settings.peCourts===2 ? 'ساحتان: يمكن حصتين رياضة في نفس الوقت لمعلمين مختلفين' : 'ساحة واحدة: لا تتزامن حصص الرياضة'); }catch(e){}
+}
+function syncPeCourtsUI(){
+  const n = String(getPeCourts());
+  document.querySelectorAll('[data-pe-courts]').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-pe-courts')===n);
+  });
+}
+function ensurePeCourts(db){
+  const store = db || DB;
+  if(!store || !store.settings) return;
+  store.settings.peCourts = (parseInt(store.settings.peCourts,10)===2) ? 2 : 1;
 }
 function usedPeriodsForClass(stageId, sectionId){
   return classAssignments(stageId, sectionId).reduce((s,a)=>s+(+a.periodsPerWeek||0),0);
@@ -4126,11 +4319,33 @@ function updateFullMasterOrientation(){
   const h = window.innerHeight || 1;
   const portrait = w < h;
   const need = master && portrait && w < 1100;
+  const was = document.documentElement.classList.contains('need-landscape');
   document.documentElement.classList.toggle('need-landscape', !!need);
+  if(need){
+    document.documentElement.style.setProperty('--land-w', h+'px');
+    document.documentElement.style.setProperty('--land-h', w+'px');
+  } else {
+    document.documentElement.style.removeProperty('--land-w');
+    document.documentElement.style.removeProperty('--land-h');
+  }
   if(master) measureFullTopbar();
+  if(master && !!need !== was){
+    requestAnimationFrame(function(){
+      measureFullTopbar();
+      try{
+        if(currentViewName==='full' && typeof renderFullMasterTab==='function') renderFullMasterTab();
+        if(currentViewName==='demo' && typeof renderDemoTab==='function') renderDemoTab();
+        syncMasterStickyCols(document.getElementById(currentViewName==='full'?'fullMasterWrap':'demoAllWrap'));
+      }catch(e){}
+    });
+  }
 }
 function lockFullMasterLandscape(on){
-  // لا نغلق الجدول ولا نمنع الرسم إن فشل قفل الاتجاه
+  try{
+    if(window.NibrasAndroid && typeof NibrasAndroid.lockLandscape==='function'){
+      NibrasAndroid.lockLandscape(!!on);
+    }
+  }catch(e){}
   try{
     if(on && screen.orientation && screen.orientation.lock){
       const p = screen.orientation.lock('landscape');
@@ -4689,7 +4904,7 @@ function renderSettingsTab(){
   const prepEl = document.getElementById('inpPreparer');
   if(prepEl) prepEl.value = DB.settings.preparer || '';
   document.getElementById('inpDocTitle').value = DB.settings.docTitle || 'الجدول الأسبوعي للدروس';
-  document.getElementById('inpPeriods').value = DB.settings.periodsPerDay;
+  fillNumberSelect(document.getElementById('inpPeriods'), DB.settings.periodsPerDay, 1, 100);
   document.getElementById('schoolNameDisplay').textContent = DB.settings.schoolName || 'الجدول المدرسي';
   const mark = document.getElementById('brandMark');
   mark.innerHTML = DB.settings.logo ? `<img src="${DB.settings.logo}" alt="">` : '🏫';
@@ -4784,7 +4999,7 @@ document.getElementById('inpDocTitle').addEventListener('input', e=>{
   if(sShow) sShow.addEventListener('click', function(e){ e.preventDefault(); setHideTeacherName(false); });
 })();
 document.getElementById('inpPeriods').addEventListener('change', e=>{
-  let v = parseInt(e.target.value)||1; v = Math.max(1,Math.min(12,v));
+  let v = parseInt(e.target.value)||1; v = Math.max(1,Math.min(100,v));
   DB.settings.periodsPerDay = v; e.target.value=v;
   saveDB(); ensureScheduleShape(); saveDB();
   toast('تم تحديث عدد الحصص اليومية');
@@ -5161,6 +5376,7 @@ function renderStagesList(){
 /* ============================= ASSIGN TAB ============================= */
 let currentAssignClass = null;
 function renderAssignTab(){
+  try{ syncPeCourtsUI(); }catch(e){}
   const cls = allClasses();
   const picker = document.getElementById('assignClassPicker');
   if(cls.length===0){
@@ -5206,33 +5422,18 @@ function renderAssignTab(){
   const addSel = document.getElementById('inpAssignPeriods');
   const addBtn = document.getElementById('btnAddAssign');
   if(addSel){
-    if(remaining === 0){
-      addSel.innerHTML = '<option value="">لا متبقي</option>';
-      addSel.disabled = true;
-      if(addBtn) addBtn.disabled = true;
-    } else {
-      addSel.disabled = false;
-      if(addBtn) addBtn.disabled = false;
-      const prefer = Math.min(4, remaining);
-      let opts = '';
-      for(let n=1; n<=remaining; n++){
-        opts += `<option value="${n}"${n===prefer?' selected':''}>${n}</option>`;
-      }
-      addSel.innerHTML = opts;
-    }
+    addSel.disabled = false;
+    if(addBtn) addBtn.disabled = false;
+    const prefer = remaining>0 ? Math.min(4, remaining) : 1;
+    fillNumberSelect(addSel, prefer, 1, MAX_WEEKLY_PERIODS);
   }
 
   const listWrap = document.getElementById('assignList');
   if(list.length===0){ listWrap.innerHTML = '<div class="empty-hint">لا توجد مواد مضافة لهذه الشعبة بعد.</div>'; return; }
 
-  const periodOptions = (selected, maxAllowed)=>{
-    const sel = Math.max(1, parseInt(selected,10) || 1);
-    const max = Math.max(sel, Math.max(1, parseInt(maxAllowed,10) || 1));
-    let opts = '';
-    for(let n=1; n<=max; n++){
-      opts += `<option value="${n}" ${sel===n?'selected':''}>${n}</option>`;
-    }
-    return opts;
+  const periodOptions = (selected)=>{
+    const sel = Math.max(1, Math.min(MAX_WEEKLY_PERIODS, parseInt(selected,10) || 1));
+    return numberOptionsHtml(sel, 1, MAX_WEEKLY_PERIODS);
   };
   const teacherOptions = (selectedId)=>{
     if(!DB.teachers.length) return '<option value="">لا يوجد معلمون</option>';
@@ -5242,17 +5443,16 @@ function renderAssignTab(){
   listWrap.innerHTML = list.map(a=>{
     const subj = getSubject(a.subjectId), teach = getTeacher(a.teacherId);
     const others = used - (+a.periodsPerWeek||0);
-    const maxForThis = Math.max(+a.periodsPerWeek||1, cap - others);
     return `<div class="assign-row" data-assign-id="${a.id}">
       <div class="assign-badge" style="background:${subj?subj.color:'#ccc'}"></div>
       <div class="item-main">
         <b>${esc(subj?subj.name:'—')}</b>
         <span>${esc(teach?teach.name:'—')}</span>
       </div>
-      <div class="assign-periods-box" title="نصاب المادة — لا يتجاوز المتبقي من نصاب المرحلة (${cap})">
+      <div class="assign-periods-box" title="عدد حصص المادة أسبوعياً (1–100). نصاب المرحلة ${cap} حصة">
         <label>الحصص</label>
         <select class="assign-periods-sel" data-periods-for="${a.id}" aria-label="عدد حصص ${esc(subj?subj.name:'المادة')}">
-          ${periodOptions(a.periodsPerWeek||1, maxForThis)}
+          ${periodOptions(a.periodsPerWeek||1)}
         </select>
       </div>
       <div class="assign-teacher-box" title="تعديل معلم المادة">
@@ -5275,7 +5475,7 @@ function renderAssignTab(){
       if(!a) return;
       let n = parseInt(sel.value, 10);
       if(!isFinite(n) || n < 1) n = 1;
-      if(n > 20) n = 20;
+      if(n > MAX_WEEKLY_PERIODS) n = MAX_WEEKLY_PERIODS;
       const oldN = a.periodsPerWeek || 0;
       a.periodsPerWeek = n;
       // إذا قلّ النصاب: احذف الزائد من الجدول بدءًا من الآخر
@@ -5346,7 +5546,7 @@ document.getElementById('btnAddAssign').addEventListener('click', ()=>{
   if(!currentAssignClass) return;
   const subjectId = document.getElementById('selAssignSubject').value;
   const teacherId = document.getElementById('selAssignTeacher').value;
-  const periods = Math.max(1, parseInt(document.getElementById('inpAssignPeriods').value)||1);
+  const periods = Math.max(1, Math.min(MAX_WEEKLY_PERIODS, parseInt(document.getElementById('inpAssignPeriods').value)||1));
   if(!subjectId || !teacherId){ toast('أضف مواد ومعلمين أولًا','err'); return; }
   const [stageId, sectionId] = currentAssignClass.split('__');
   const cap = stageWeeklyCap(stageId);
@@ -5543,8 +5743,9 @@ function isOncePerDayKind(kind){
     || kind==='islamic' || kind==='ethics' || kind==='social' || kind==='computer' || kind==='kurdish';
 }
 
-function packEmptiesToEndOfDay(classGrids, teacherOcc, peOcc, kindOf, cls, days, periods){
+function packEmptiesToEndOfDay(classGrids, teacherOcc, peOcc, kindOf, cls, days, periods, maxPE){
   if(!classGrids || !cls) return;
+  const peCap = (maxPE==null || !isFinite(+maxPE) || +maxPE<1) ? 1 : (+maxPE);
   cls.forEach(c=>{
     const grid = classGrids[c.key];
     if(!grid) return;
@@ -5564,7 +5765,7 @@ function packEmptiesToEndOfDay(classGrids, teacherOcc, peOcc, kindOf, cls, days,
           const tid = cell.teacherId;
           if(tid && teacherOcc && teacherOcc[tid] && teacherOcc[tid][d][dest]) continue;
           const isPE = !!(kindOf && kindOf[cell.subjectId]==='pe');
-          if(isPE && peOcc && peOcc[d][dest]) continue;
+          if(isPE && peOcc && (peOcc[d][dest]||0) >= peCap) continue;
           grid[d][dest] = cell;
           grid[d][p] = null;
           if(tid && teacherOcc && teacherOcc[tid]){
@@ -5572,8 +5773,8 @@ function packEmptiesToEndOfDay(classGrids, teacherOcc, peOcc, kindOf, cls, days,
             teacherOcc[tid][d][dest] = true;
           }
           if(isPE && peOcc){
-            peOcc[d][p] = false;
-            peOcc[d][dest] = true;
+            peOcc[d][p] = Math.max(0, (peOcc[d][p]||0) - 1);
+            peOcc[d][dest] = (peOcc[d][dest]||0) + 1;
           }
           moved = true;
         }
@@ -5593,6 +5794,7 @@ function generateScheduleFor(store, attempts){
   // خريطة نوع المادة
   const kindOf = {};
   store.subjects.forEach(s=>{ kindOf[s.id] = subjectKindByName(s.name); });
+  const maxPE = (store.settings && parseInt(store.settings.peCourts,10)===2) ? 2 : 1;
 
   let bestUnplaced = null, bestGrids = null, bestScore = -Infinity;
   const MAX_ATTEMPTS = attempts || 80;
@@ -5603,8 +5805,8 @@ function generateScheduleFor(store, attempts){
     cls.forEach(c=> classGrids[c.key] = makeGrid(days,periods,null));
     const teacherOcc = {};
     store.teachers.forEach(t=> teacherOcc[t.id] = makeGrid(days,periods,false));
-    // رياضة: لا تتزامن شعبتان في نفس الوقت
-    const peOcc = makeGrid(days, periods, false);
+    // رياضة: لا تتجاوز عدد معلمي الرياضة في نفس الحصّة
+    const peOcc = makeGrid(days, periods, 0);
 
     let units = [];
     store.assignments.forEach(a=>{
@@ -5642,10 +5844,10 @@ function generateScheduleFor(store, attempts){
       // مواد مرة/يوم أصعب
       if(a.oncePerDay) sa += 25; if(b.oncePerDay) sb += 25;
       // مواد كثيرة الحصص لنفس الشعبة
-      sa += (classSubjCount[a.classKey+'|'+a.subjectId]||0);
-      sb += (classSubjCount[b.classKey+'|'+b.subjectId]||0);
-      // عربي/رياضيات بعد ذلك
-      if(a.preferSpread) sa += 8; if(b.preferSpread) sb += 8;
+      sa += (classSubjCount[a.classKey+'|'+a.subjectId]||0) * 5;
+      sb += (classSubjCount[b.classKey+'|'+b.subjectId]||0) * 5;
+      // عربي/رياضيات ذات الحصص الكثيرة أولاً مع الانتشار
+      if(a.preferSpread) sa += 30; if(b.preferSpread) sb += 30;
       return sb - sa;
     });
 
@@ -5729,13 +5931,13 @@ function generateScheduleFor(store, attempts){
           for(const p of periodOrder){
             if(grid[d][p]!==null) continue;
             if(occ[d][p]) continue;
-            // رياضة: لا تتزامن مع أي شعبة أخرى
-            if(u.isPE && peOcc[d][p]) continue;
+            // رياضة: بحد أقصى عدد معلمي الرياضة في نفس الوقت
+            if(u.isPE && (peOcc[d][p]||0) >= maxPE) continue;
 
             // نجاح الوضع
             grid[d][p] = {subjectId:u.subjectId, teacherId:u.teacherId, assignmentId:u.assignmentId};
             occ[d][p] = true;
-            if(u.isPE) peOcc[d][p] = true;
+            if(u.isPE) peOcc[d][p] = (peOcc[d][p]||0) + 1;
             placed = true;
             break;
           }
@@ -5745,7 +5947,214 @@ function generateScheduleFor(store, attempts){
       if(!placed) unplaced.push(u);
     }
 
-    packEmptiesToEndOfDay(classGrids, teacherOcc, peOcc, kindOf, cls, days, periods);
+    function findClassWithTeacherAt(tid, d, p, exceptKey){
+      for(let i=0;i<cls.length;i++){
+        const k = cls[i].key;
+        if(k===exceptKey) continue;
+        const cell = classGrids[k][d][p];
+        if(cell && cell.teacherId===tid) return k;
+      }
+      return null;
+    }
+    function moveCell(classKey, d, p, d2, p2){
+      const grid = classGrids[classKey];
+      const cell = grid[d][p];
+      if(!cell || grid[d2][p2]!==null) return false;
+      const tid = cell.teacherId;
+      const isPE = (kindOf[cell.subjectId]==='pe');
+      grid[d2][p2] = cell;
+      grid[d][p] = null;
+      if(tid && teacherOcc[tid]){
+        teacherOcc[tid][d][p] = false;
+        teacherOcc[tid][d2][p2] = true;
+      }
+      if(isPE){
+        peOcc[d][p] = Math.max(0, (peOcc[d][p]||0) - 1);
+        peOcc[d2][p2] = (peOcc[d2][p2]||0) + 1;
+      }
+      return true;
+    }
+    function canMoveCellTo(classKey, cell, fromD, d2, p2){
+      if(!cell) return false;
+      const grid = classGrids[classKey];
+      if(grid[d2][p2]!==null) return false;
+      const teacher = teacherById[cell.teacherId];
+      if(!teacher) return false;
+      if((teacher.excludedDays||[]).includes(d2)) return false;
+      if(teacherOcc[cell.teacherId] && teacherOcc[cell.teacherId][d2][p2]) return false;
+      const kind = kindOf[cell.subjectId]||'other';
+      if(kind==='pe' && (peOcc[d2][p2]||0) >= maxPE) return false;
+      if(isOncePerDayKind(kind) && d2!==fromD && countKindOnDay(grid, d2, kind)>0) return false;
+      return true;
+    }
+    function tryRelocateCell(classKey, d, p){
+      const grid = classGrids[classKey];
+      const cell = grid[d][p];
+      if(!cell) return false;
+      for(let d2=0; d2<days; d2++){
+        for(let p2=0; p2<periods; p2++){
+          if(d2===d && p2===p) continue;
+          if(!canMoveCellTo(classKey, cell, d, d2, p2)) continue;
+          return moveCell(classKey, d, p, d2, p2);
+        }
+      }
+      return false;
+    }
+    function trySwapCells(classKey, d, p, d2, p2){
+      if(d===d2 && p===p2) return false;
+      const grid = classGrids[classKey];
+      const a = grid[d][p], b = grid[d2][p2];
+      if(!a || !b) return false;
+      const ta = a.teacherId, tb = b.teacherId;
+      if(!teacherById[ta] || !teacherById[tb]) return false;
+      if((teacherById[ta].excludedDays||[]).includes(d2)) return false;
+      if((teacherById[tb].excludedDays||[]).includes(d)) return false;
+      const ka = kindOf[a.subjectId]||'other';
+      const kb = kindOf[b.subjectId]||'other';
+      if(isOncePerDayKind(ka) && d2!==d && countKindOnDay(grid,d2,ka)>0) return false;
+      if(isOncePerDayKind(kb) && d!==d2 && countKindOnDay(grid,d,kb)>0) return false;
+      if(ta!==tb){
+        if(teacherOcc[ta][d2][p2]) return false;
+        if(teacherOcc[tb][d][p]) return false;
+      }
+      const aPE = ka==='pe', bPE = kb==='pe';
+      if(aPE && !bPE && (peOcc[d2][p2]||0) >= maxPE) return false;
+      if(bPE && !aPE && (peOcc[d][p]||0) >= maxPE) return false;
+      grid[d][p]=b; grid[d2][p2]=a;
+      if(ta!==tb){
+        teacherOcc[ta][d][p]=false; teacherOcc[ta][d2][p2]=true;
+        teacherOcc[tb][d2][p2]=false; teacherOcc[tb][d][p]=true;
+      }
+      if(aPE && !bPE){
+        peOcc[d][p]=Math.max(0,(peOcc[d][p]||0)-1);
+        peOcc[d2][p2]=(peOcc[d2][p2]||0)+1;
+      } else if(bPE && !aPE){
+        peOcc[d2][p2]=Math.max(0,(peOcc[d2][p2]||0)-1);
+        peOcc[d][p]=(peOcc[d][p]||0)+1;
+      }
+      return true;
+    }
+    function tryPlaceUnit(u){
+      const teacher = teacherById[u.teacherId];
+      if(!teacher) return false;
+      const grid = classGrids[u.classKey];
+      const occ = teacherOcc[u.teacherId];
+      if(!grid || !occ) return false;
+      function okSlot(d,p){
+        if((teacher.excludedDays||[]).includes(d)) return false;
+        if(grid[d][p]!==null) return false;
+        if(occ[d][p]) return false;
+        if(u.isPE && (peOcc[d][p]||0) >= maxPE) return false;
+        if(u.oncePerDay && countKindOnDay(grid,d,u.kind)>0) return false;
+        return true;
+      }
+      function put(d,p){
+        grid[d][p] = {subjectId:u.subjectId, teacherId:u.teacherId, assignmentId:u.assignmentId};
+        occ[d][p] = true;
+        if(u.isPE) peOcc[d][p] = (peOcc[d][p]||0) + 1;
+        return true;
+      }
+      for(let d=0; d<days; d++){
+        if((teacher.excludedDays||[]).includes(d)) continue;
+        if(u.oncePerDay && countKindOnDay(grid,d,u.kind)>0) continue;
+        for(let p=0; p<periods; p++){
+          if(okSlot(d,p)) return put(d,p);
+        }
+      }
+      for(let d=0; d<days; d++){
+        if((teacher.excludedDays||[]).includes(d)) continue;
+        if(u.oncePerDay && countKindOnDay(grid,d,u.kind)>0) continue;
+        for(let p=0; p<periods; p++){
+          if(grid[d][p]!==null) continue;
+          if(!occ[d][p]) continue;
+          const other = findClassWithTeacherAt(u.teacherId, d, p, u.classKey);
+          if(!other) continue;
+          if(tryRelocateCell(other, d, p) && okSlot(d,p)) return put(d,p);
+        }
+      }
+      for(let d=0; d<days; d++){
+        if((teacher.excludedDays||[]).includes(d)) continue;
+        if(u.oncePerDay && countKindOnDay(grid,d,u.kind)>0) continue;
+        for(let p=0; p<periods; p++){
+          if(occ[d][p]) continue;
+          if(grid[d][p]===null) continue;
+          if(tryRelocateCell(u.classKey, d, p) && okSlot(d,p)) return put(d,p);
+        }
+      }
+      for(let d=0; d<days; d++){
+        if((teacher.excludedDays||[]).includes(d)) continue;
+        if(u.oncePerDay && countKindOnDay(grid,d,u.kind)>0) continue;
+        for(let p=0; p<periods; p++){
+          if(grid[d][p]!==null) continue;
+          if(!occ[d][p]) continue;
+          const other = findClassWithTeacherAt(u.teacherId, d, p, u.classKey);
+          if(!other) continue;
+          const og = classGrids[other];
+          if(!og) continue;
+          for(let d2=0; d2<days; d2++){
+            for(let p2=0; p2<periods; p2++){
+              if(d2===d && p2===p) continue;
+              if(!og[d2][p2]) continue;
+              if(!trySwapCells(other, d, p, d2, p2)) continue;
+              if(okSlot(d,p)) return put(d,p);
+              trySwapCells(other, d, p, d2, p2);
+            }
+          }
+        }
+      }
+      if(!u._noKick){
+        function removeAt(classKey, d, p){
+          const g = classGrids[classKey];
+          const cell = g[d][p];
+          if(!cell) return null;
+          g[d][p] = null;
+          if(cell.teacherId && teacherOcc[cell.teacherId]) teacherOcc[cell.teacherId][d][p] = false;
+          if((kindOf[cell.subjectId]||'other')==='pe') peOcc[d][p] = Math.max(0, (peOcc[d][p]||0) - 1);
+          return cell;
+        }
+        function restoreAt(classKey, d, p, cell){
+          if(!cell) return;
+          classGrids[classKey][d][p] = cell;
+          if(cell.teacherId && teacherOcc[cell.teacherId]) teacherOcc[cell.teacherId][d][p] = true;
+          if((kindOf[cell.subjectId]||'other')==='pe') peOcc[d][p] = (peOcc[d][p]||0) + 1;
+        }
+        for(let d=0; d<days; d++){
+          if((teacher.excludedDays||[]).includes(d)) continue;
+          if(u.oncePerDay && countKindOnDay(grid,d,u.kind)>0) continue;
+          for(let p=0; p<periods; p++){
+            if(occ[d][p]) continue;
+            const victim = grid[d][p];
+            if(!victim) continue;
+            const vk = kindOf[victim.subjectId]||'other';
+            const vu = {
+              assignmentId:victim.assignmentId, classKey:u.classKey,
+              subjectId:victim.subjectId, teacherId:victim.teacherId,
+              kind:vk, oncePerDay:isOncePerDayKind(vk),
+              preferSpread:(vk==='arabic'||vk==='math'), isPE:vk==='pe', _noKick:true
+            };
+            removeAt(u.classKey, d, p);
+            put(d,p);
+            if(tryPlaceUnit(vu)) return true;
+            removeAt(u.classKey, d, p);
+            restoreAt(u.classKey, d, p, victim);
+          }
+        }
+      }
+      return false;
+    }
+    let repairGuard=0;
+    while(unplaced.length && repairGuard++ < 28){
+      let progressed=false;
+      for(let i=unplaced.length-1;i>=0;i--){
+        if(tryPlaceUnit(unplaced[i])){
+          unplaced.splice(i,1);
+          progressed=true;
+        }
+      }
+      if(!progressed) break;
+    }
+
+    packEmptiesToEndOfDay(classGrids, teacherOcc, peOcc, kindOf, cls, days, periods, maxPE);
 
     // تقييم جودة الجدول (أقل غير موزّع + انتشار عربي/رياضيات + فراغات في الآخر)
     let score = 0;
@@ -5789,7 +6198,7 @@ function generateScheduleFor(store, attempts){
           const cell=classGrids[c.key][d][p];
           if(cell && (kindOf[cell.subjectId]==='pe')) peCount++;
         });
-        if(peCount>1) score -= 80*(peCount-1);
+        if(peCount>maxPE) score -= 80*(peCount-maxPE);
       }
     }
 
@@ -6754,6 +7163,7 @@ function buildDemoDatabase(){
   const stages = stageNames.map((name,i)=>({
     id: demoUid('dg', i+1),
     name,
+    weeklyPeriods: days.length * periodsPerDay,
     sections: [
       {id: demoUid('sec', i*2+1), name:'أ'},
       {id: demoUid('sec', i*2+2), name:'ب'}
@@ -6822,7 +7232,8 @@ function buildDemoDatabase(){
       periodsPerDay,
       academicYear: defaultAcademicYear(),
       principal:'المدير',
-      docTitle:'الجدول الأسبوعي للدروس'
+      docTitle:'الجدول الأسبوعي للدروس',
+      peCourts:1
     },
     teachers,
     subjects: cleanSubjects,
@@ -8499,14 +8910,14 @@ function fillLongAfterSelect(sel, count, selected){
 }
 function buildShiftSlots(cfg){
   cfg = cfg || {};
-  const n = Math.max(1, Math.min(12, parseInt(cfg.lessonsCount,10)||6));
-  const lesson = Math.max(1, Math.min(120, parseInt(cfg.lessonMinutes,10)||40));
-  const brk = Math.max(0, Math.min(60, parseInt(cfg.breakMinutes,10)||0));
+  const n = Math.max(1, Math.min(100, parseInt(cfg.lessonsCount,10)||6));
+  const lesson = Math.max(1, Math.min(100, parseInt(cfg.lessonMinutes,10)||40));
+  const brk = Math.max(0, Math.min(100, parseInt(cfg.breakMinutes,10)||0));
   function longSpec(on, afterRaw, minRaw){
     if(on===false) return {after:0, mins:0};
     let after = Math.max(0, Math.min(n-1, parseInt(afterRaw,10)||0));
     if(cfg.reverseBreaks && after>0) after = n - after;
-    const mins = Math.max(0, Math.min(120, parseInt(minRaw,10)||0));
+    const mins = Math.max(0, Math.min(100, parseInt(minRaw,10)||0));
     return {after:after, mins:mins};
   }
   const L1 = longSpec(cfg.longBreakOn, cfg.longBreakAfter, cfg.longBreakMinutes);
@@ -8552,25 +8963,25 @@ function bindTimingInputs(){
     return Math.max(min, Math.min(max, v));
   }
   T.morning.firstStart = document.getElementById('tmMStart').value || '08:00';
-  T.morning.lessonMinutes = num('tmMLesson',1,120,40);
-  T.morning.breakMinutes = num('tmMBreak',0,60,5);
-  T.morning.lessonsCount = num('tmMCount',1,12,6);
+  T.morning.lessonMinutes = num('tmMLesson',1,100,40);
+  T.morning.breakMinutes = num('tmMBreak',0,100,5);
+  T.morning.lessonsCount = num('tmMCount',1,100,6);
   T.morning.longBreakOn = !!(document.getElementById('tmMLongOn') && document.getElementById('tmMLongOn').checked);
   T.morning.longBreakAfter = parseInt((document.getElementById('tmMLongAfter')||{}).value,10)||0;
-  T.morning.longBreakMinutes = num('tmMLongMin',0,120,20);
+  T.morning.longBreakMinutes = num('tmMLongMin',0,100,20);
   T.morning.longBreakOn2 = !!(document.getElementById('tmMLongOn2') && document.getElementById('tmMLongOn2').checked);
   T.morning.longBreakAfter2 = parseInt((document.getElementById('tmMLongAfter2')||{}).value,10)||0;
-  T.morning.longBreakMinutes2 = num('tmMLongMin2',0,120,20);
+  T.morning.longBreakMinutes2 = num('tmMLongMin2',0,100,20);
   T.evening.firstStart = document.getElementById('tmEStart').value || '13:00';
-  T.evening.lessonMinutes = num('tmELesson',1,120,40);
-  T.evening.breakMinutes = num('tmEBreak',0,60,5);
-  T.evening.lessonsCount = num('tmECount',1,12,6);
+  T.evening.lessonMinutes = num('tmELesson',1,100,40);
+  T.evening.breakMinutes = num('tmEBreak',0,100,5);
+  T.evening.lessonsCount = num('tmECount',1,100,6);
   T.evening.longBreakOn = !!(document.getElementById('tmELongOn') && document.getElementById('tmELongOn').checked);
   T.evening.longBreakAfter = parseInt((document.getElementById('tmELongAfter')||{}).value,10)||0;
-  T.evening.longBreakMinutes = num('tmELongMin',0,120,20);
+  T.evening.longBreakMinutes = num('tmELongMin',0,100,20);
   T.evening.longBreakOn2 = !!(document.getElementById('tmELongOn2') && document.getElementById('tmELongOn2').checked);
   T.evening.longBreakAfter2 = parseInt((document.getElementById('tmELongAfter2')||{}).value,10)||0;
-  T.evening.longBreakMinutes2 = num('tmELongMin2',0,120,20);
+  T.evening.longBreakMinutes2 = num('tmELongMin2',0,100,20);
   T.evening.reverseBreaks = !!(document.getElementById('tmEReverse') && document.getElementById('tmEReverse').checked);
   T.alerts.enabled = !!(document.getElementById('tmAlertOn') && document.getElementById('tmAlertOn').checked);
   T.alerts.onStart = !!(document.getElementById('tmAlertStart') && document.getElementById('tmAlertStart').checked);
@@ -8608,6 +9019,11 @@ function renderTimingsTab(){
 
   const m = T.morning, e = T.evening, a = T.alerts;
   const set = (id,v)=>{ const el=document.getElementById(id); if(el && el.value!==String(v)) el.value=v; };
+  fillNumberSelect(document.getElementById('tmMLesson'), m.lessonMinutes, 1, 100);
+  fillNumberSelect(document.getElementById('tmMBreak'), m.breakMinutes, 0, 100);
+  fillNumberSelect(document.getElementById('tmMCount'), m.lessonsCount, 1, 100);
+  fillNumberSelect(document.getElementById('tmMLongMin'), m.longBreakMinutes, 0, 100);
+  fillNumberSelect(document.getElementById('tmMLongMin2'), m.longBreakMinutes2||20, 0, 100);
   set('tmMStart', m.firstStart||'08:00');
   set('tmMLesson', m.lessonMinutes);
   set('tmMBreak', m.breakMinutes);
@@ -8620,6 +9036,11 @@ function renderTimingsTab(){
   const mOn2 = document.getElementById('tmMLongOn2'); if(mOn2) mOn2.checked = !!m.longBreakOn2;
   const mFields2 = document.getElementById('tmMLongFields2'); if(mFields2) mFields2.style.display = m.longBreakOn2?'flex':'none';
   fillLongAfterSelect(document.getElementById('tmMLongAfter2'), m.lessonsCount, m.longBreakAfter2);
+  fillNumberSelect(document.getElementById('tmELesson'), e.lessonMinutes, 1, 100);
+  fillNumberSelect(document.getElementById('tmEBreak'), e.breakMinutes, 0, 100);
+  fillNumberSelect(document.getElementById('tmECount'), e.lessonsCount, 1, 100);
+  fillNumberSelect(document.getElementById('tmELongMin'), e.longBreakMinutes, 0, 100);
+  fillNumberSelect(document.getElementById('tmELongMin2'), e.longBreakMinutes2||20, 0, 100);
   set('tmEStart', e.firstStart||'13:00');
   set('tmELesson', e.lessonMinutes);
   set('tmEBreak', e.breakMinutes);
@@ -9486,6 +9907,13 @@ function init(){
   try{ applyTheme(getPreferredTheme(), false); }catch(e){}
   try{ ensureDefaultSubjects(DB); }catch(e){}
   try{ ensureStageWeeklyPeriods(DB); }catch(e){}
+  try{ ensurePeCourts(DB); }catch(e){}
+  try{
+    document.querySelectorAll('[data-pe-courts]').forEach(function(b){
+      b.addEventListener('click', function(){ setPeCourts(b.getAttribute('data-pe-courts')); });
+    });
+    syncPeCourtsUI();
+  }catch(e){}
   try{ ensureTimings(DB); }catch(e){}
   try{ ensureSupervisors(DB); }catch(e){}
   try{ ensureScheduleShape(); saveDB(); }catch(e){}
@@ -9520,5 +9948,5 @@ init();
 
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a330828d8976dea0',t:'MTc4ODA1ODQ1Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a331a5d2ca5a197e',t:'MTc4ODA3MDM4Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
