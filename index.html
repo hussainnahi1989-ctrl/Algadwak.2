@@ -3056,6 +3056,7 @@ html.mode-full-master:not(.need-landscape) body{
         <h2>⚡ توليد الجدول تلقائيًا</h2>
         <p class="hint">بعد تجهيز المعلمين والمواد وتوزيع النصاب، اضغط الزر لتوزيع الحصص تلقائيًا لكل الشعب. تُترك الحصص الفارغة في <b>الدرس الأخير</b> من اليوم. يُطبَّق: عدم تكرار (علوم/إنكليزي/فنية/رياضة/إسلامية) في نفس اليوم لنفس الشعبة، توزيع عربي ورياضيات على أيام الأسبوع قدر الإمكان، ومنع تزامن الرياضة بين شعبتين في نفس الوقت، مع احترام تفريغ المعلمين.</p>
         <button class="btn btn-gold btn-block" id="btnGenerate">⚡ توزيع تلقائي لكل الشعب</button>
+        <div id="generateProgress" style="display:none;margin-top:10px;padding:9px 12px;border-radius:8px;background:var(--warn-bg);color:var(--warn);font-size:13px;font-weight:800;text-align:center">جاري التوليد...</div>
         <div id="generateResult"></div>
       </div>
     </div>
@@ -5785,441 +5786,42 @@ function packEmptiesToEndOfDay(classGrids, teacherOcc, peOcc, kindOf, cls, days,
 
 function generateScheduleFor(store, attempts){
   ensureScheduleShapeOf(store);
-  const days = store.settings.days.length, periods = store.settings.periodsPerDay;
-  const cls = allClassesOf(store);
-  if(cls.length===0) return {success:false, unplaced:[], reason:'no-classes'};
-  const teacherById = {}; store.teachers.forEach(t=>teacherById[t.id]=t);
-  const subjectById = {}; store.subjects.forEach(s=>subjectById[s.id]=s);
-
-  // خريطة نوع المادة
-  const kindOf = {};
-  store.subjects.forEach(s=>{ kindOf[s.id] = subjectKindByName(s.name); });
-  const maxPE = (store.settings && parseInt(store.settings.peCourts,10)===2) ? 2 : 1;
-
-  let bestUnplaced = null, bestGrids = null, bestScore = -Infinity;
-  const MAX_ATTEMPTS = attempts || 80;
-
-  for(let attempt=0; attempt<MAX_ATTEMPTS; attempt++){
-    const rng = mulberry32(attempt*2654435761 + 99991 + (attempt*17));
-    const classGrids = {};
-    cls.forEach(c=> classGrids[c.key] = makeGrid(days,periods,null));
-    const teacherOcc = {};
-    store.teachers.forEach(t=> teacherOcc[t.id] = makeGrid(days,periods,false));
-    // رياضة: لا تتجاوز عدد معلمي الرياضة في نفس الحصّة
-    const peOcc = makeGrid(days, periods, 0);
-
-    let units = [];
-    store.assignments.forEach(a=>{
-      const kind = kindOf[a.subjectId] || 'other';
-      for(let i=0;i<a.periodsPerWeek;i++){
-        units.push({
-          assignmentId:a.id,
-          classKey:classKeyOf(a.stageId,a.sectionId),
-          subjectId:a.subjectId,
-          teacherId:a.teacherId,
-          kind: kind,
-          oncePerDay: isOncePerDayKind(kind),
-          preferSpread: (kind==='arabic' || kind==='math'),
-          isPE: kind==='pe'
-        });
-      }
+  const D=(store.settings.days||[]).length, P=+(store.settings.periodsPerDay||6), CAP=D*P;
+  const classes=allClassesOf(store), unplaced=[], occ={};
+  (store.teachers||[]).forEach(t=>occ[t.id]=makeGrid(D,P,false));
+  const subjects={}; (store.subjects||[]).forEach(x=>subjects[x.id]=x);
+  const kind=id=>subjectKindByName(subjects[id]?subjects[id].name:'');
+  const strict=new Set(['art','pe','ethics','ethical','islamic']);
+  classes.forEach(c=>{
+    const grid=makeGrid(D,P,null), daySubj=Array.from({length:D},()=>new Set());
+    let units=[];
+    (store.assignments||[]).filter(a=>a.stageId===c.stageId&&a.sectionId===c.sectionId).forEach(a=>{
+      for(let i=0;i<Math.max(0,parseInt(a.periodsPerWeek,10)||0);i++) units.push({a:a,k:kind(a.subjectId)});
     });
-
-    // ترتيب: المواد الأصعب أولًا (PE + once/day + نصاب المعلم + أيام التفريغ)
-    const load = {};
-    units.forEach(u=> load[u.teacherId] = (load[u.teacherId]||0)+1);
-    const classSubjCount = {}; // classKey|subjectId -> weekly count
+    // First place the restrictive and high-load subjects.
+    units.sort((x,y)=>(strict.has(y.k)?1:0)-(strict.has(x.k)?1:0) || ((y.k==='arabic'||y.k==='math')?1:0)-((x.k==='arabic'||x.k==='math')?1:0));
     units.forEach(u=>{
-      const k = u.classKey+'|'+u.subjectId;
-      classSubjCount[k] = (classSubjCount[k]||0)+1;
+      let best=null, bestScore=1e18;
+      for(let d=0;d<D;d++) for(let p=0;p<P;p++){
+        if(grid[d][p]) continue;
+        const o=occ[u.a.teacherId]; if(o && o[d] && o[d][p]) continue;
+        const name=subjects[u.a.subjectId]?subjects[u.a.subjectId].name:'';
+        const repeated=daySubj[d].has(u.a.subjectId);
+        let score=Math.random()*0.01 + (d*P+p)*0.35; // املأ الخانات من البداية واترك الفراغات في النهاية
+        if(repeated) score += strict.has(u.k)?100000:10000;
+        if(u.k==='arabic'||u.k==='math') score += daySubj[d].size*120 - (D-d)*0.01;
+        if(u.k==='english'||u.k==='science'||u.k==='islamic'||u.k==='art'||u.k==='pe'||u.k==='ethics') score += repeated?10000:0;
+        // avoid stacking the same subject in consecutive periods
+        if(p>0 && grid[d][p-1] && grid[d][p-1].subjectId===u.a.subjectId) score+=500;
+        if(p<P-1 && grid[d][p+1] && grid[d][p+1].subjectId===u.a.subjectId) score+=500;
+        if(score<bestScore){bestScore=score;best={d:d,p:p};}
+      }
+      if(best){grid[best.d][best.p]={subjectId:u.a.subjectId,teacherId:u.a.teacherId,assignmentId:u.a.id};daySubj[best.d].add(u.a.subjectId);if(occ[u.a.teacherId])occ[u.a.teacherId][best.d][best.p]=true;}
+      else unplaced.push({assignmentId:u.a.id,classKey:c.key,subjectId:u.a.subjectId,teacherId:u.a.teacherId});
     });
-
-    units = shuffle(units, rng);
-    units.sort((a,b)=>{
-      const ta = teacherById[a.teacherId], tb = teacherById[b.teacherId];
-      let sa = (load[a.teacherId]||0) + (((ta&&ta.excludedDays)?ta.excludedDays.length:0)*14);
-      let sb = (load[b.teacherId]||0) + (((tb&&tb.excludedDays)?tb.excludedDays.length:0)*14);
-      // PE أصعب
-      if(a.isPE) sa += 40; if(b.isPE) sb += 40;
-      // مواد مرة/يوم أصعب
-      if(a.oncePerDay) sa += 25; if(b.oncePerDay) sb += 25;
-      // مواد كثيرة الحصص لنفس الشعبة
-      sa += (classSubjCount[a.classKey+'|'+a.subjectId]||0) * 5;
-      sb += (classSubjCount[b.classKey+'|'+b.subjectId]||0) * 5;
-      // عربي/رياضيات ذات الحصص الكثيرة أولاً مع الانتشار
-      if(a.preferSpread) sa += 30; if(b.preferSpread) sb += 30;
-      return sb - sa;
-    });
-
-    const unplaced = [];
-    const dayBase = Array.from({length:days},(_,i)=>i);
-    const periodBase = Array.from({length:periods},(_,i)=>i);
-
-    // عدّاد: كم حصة وُضعت لمادة في يوم لشعبة (للانتشار)
-    function countKindOnDay(grid, d, kind){
-      let n=0;
-      for(let p=0;p<periods;p++){
-        const c = grid[d][p];
-        if(!c) continue;
-        if((kindOf[c.subjectId]||'other') === kind) n++;
-      }
-      return n;
-    }
-    function countSubjectOnDay(grid, d, subjectId){
-      let n=0;
-      for(let p=0;p<periods;p++){
-        const c = grid[d][p];
-        if(c && c.subjectId===subjectId) n++;
-      }
-      return n;
-    }
-    function daysWithoutKind(grid, kind, teacher){
-      const out=[];
-      for(let d=0;d<days;d++){
-        if(teacher && (teacher.excludedDays||[]).includes(d)) continue;
-        if(countKindOnDay(grid,d,kind)===0) out.push(d);
-      }
-      return out;
-    }
-
-    for(const u of units){
-      const teacher = teacherById[u.teacherId];
-      if(!teacher){ unplaced.push(u); continue; }
-      const grid = classGrids[u.classKey];
-      const occ = teacherOcc[u.teacherId];
-      let placed = false;
-
-      // بناء ترتيب الأيام:
-      // - لعربي/رياضيات: ابدأ بالأيام التي بلا هذه المادة
-      // - لمواد once/day: أي يوم ليس فيه نفس المادة
-      function buildDayOrder(pass){
-        let pool = dayBase.filter(d=> !(teacher.excludedDays||[]).includes(d));
-        if(u.oncePerDay){
-          const strict = pool.filter(d=> countKindOnDay(grid,d,u.kind)===0);
-          if(strict.length) pool = strict;
-          else pool = [];
-        } else if(pass===0){
-          const strict = pool.filter(d=> countSubjectOnDay(grid,d,u.subjectId)===0);
-          if(strict.length) pool = strict;
-        }
-        if(u.preferSpread && pass<=1){
-          // فضّل الأيام بلا عربي/رياضيات من نفس النوع
-          const empty = pool.filter(d=> countKindOnDay(grid,d,u.kind)===0);
-          const rest = pool.filter(d=> countKindOnDay(grid,d,u.kind)>0);
-          return shuffle(empty, rng).concat(shuffle(rest, rng));
-        }
-        return shuffle(pool, rng);
-      }
-
-      // 3 تمريرات: صارمة → مرنة قليلاً (لغير الإلزامي) → أخيرة
-      // oncePerDay و PE تبقى صارمة دائمًا
-      const maxPass = u.oncePerDay || u.isPE ? 1 : 3;
-      for(let pass=0; pass<maxPass && !placed; pass++){
-        const dayOrder = buildDayOrder(pass);
-        for(const d of dayOrder){
-          // once/day hard
-          if(u.oncePerDay && countKindOnDay(grid,d,u.kind)>0) continue;
-          // في التمريرات الأولى لعربي/رياضيات: لا تضع ثانية في يوم إن وُجدت أيام فارغة
-          if(u.preferSpread && pass===0 && countKindOnDay(grid,d,u.kind)>0){
-            const emptyLeft = daysWithoutKind(grid, u.kind, teacher).length>0;
-            if(emptyLeft) continue;
-          }
-
-          // الحصص الفارغة تُترك للدرس الأخير: نملأ من الحصة الأولى فصاعدًا
-          const periodOrder = periodBase.slice();
-
-          for(const p of periodOrder){
-            if(grid[d][p]!==null) continue;
-            if(occ[d][p]) continue;
-            // رياضة: بحد أقصى عدد معلمي الرياضة في نفس الوقت
-            if(u.isPE && (peOcc[d][p]||0) >= maxPE) continue;
-
-            // نجاح الوضع
-            grid[d][p] = {subjectId:u.subjectId, teacherId:u.teacherId, assignmentId:u.assignmentId};
-            occ[d][p] = true;
-            if(u.isPE) peOcc[d][p] = (peOcc[d][p]||0) + 1;
-            placed = true;
-            break;
-          }
-          if(placed) break;
-        }
-      }
-      if(!placed) unplaced.push(u);
-    }
-
-    function findClassWithTeacherAt(tid, d, p, exceptKey){
-      for(let i=0;i<cls.length;i++){
-        const k = cls[i].key;
-        if(k===exceptKey) continue;
-        const cell = classGrids[k][d][p];
-        if(cell && cell.teacherId===tid) return k;
-      }
-      return null;
-    }
-    function moveCell(classKey, d, p, d2, p2){
-      const grid = classGrids[classKey];
-      const cell = grid[d][p];
-      if(!cell || grid[d2][p2]!==null) return false;
-      const tid = cell.teacherId;
-      const isPE = (kindOf[cell.subjectId]==='pe');
-      grid[d2][p2] = cell;
-      grid[d][p] = null;
-      if(tid && teacherOcc[tid]){
-        teacherOcc[tid][d][p] = false;
-        teacherOcc[tid][d2][p2] = true;
-      }
-      if(isPE){
-        peOcc[d][p] = Math.max(0, (peOcc[d][p]||0) - 1);
-        peOcc[d2][p2] = (peOcc[d2][p2]||0) + 1;
-      }
-      return true;
-    }
-    function canMoveCellTo(classKey, cell, fromD, d2, p2){
-      if(!cell) return false;
-      const grid = classGrids[classKey];
-      if(grid[d2][p2]!==null) return false;
-      const teacher = teacherById[cell.teacherId];
-      if(!teacher) return false;
-      if((teacher.excludedDays||[]).includes(d2)) return false;
-      if(teacherOcc[cell.teacherId] && teacherOcc[cell.teacherId][d2][p2]) return false;
-      const kind = kindOf[cell.subjectId]||'other';
-      if(kind==='pe' && (peOcc[d2][p2]||0) >= maxPE) return false;
-      if(isOncePerDayKind(kind) && d2!==fromD && countKindOnDay(grid, d2, kind)>0) return false;
-      return true;
-    }
-    function tryRelocateCell(classKey, d, p){
-      const grid = classGrids[classKey];
-      const cell = grid[d][p];
-      if(!cell) return false;
-      for(let d2=0; d2<days; d2++){
-        for(let p2=0; p2<periods; p2++){
-          if(d2===d && p2===p) continue;
-          if(!canMoveCellTo(classKey, cell, d, d2, p2)) continue;
-          return moveCell(classKey, d, p, d2, p2);
-        }
-      }
-      return false;
-    }
-    function trySwapCells(classKey, d, p, d2, p2){
-      if(d===d2 && p===p2) return false;
-      const grid = classGrids[classKey];
-      const a = grid[d][p], b = grid[d2][p2];
-      if(!a || !b) return false;
-      const ta = a.teacherId, tb = b.teacherId;
-      if(!teacherById[ta] || !teacherById[tb]) return false;
-      if((teacherById[ta].excludedDays||[]).includes(d2)) return false;
-      if((teacherById[tb].excludedDays||[]).includes(d)) return false;
-      const ka = kindOf[a.subjectId]||'other';
-      const kb = kindOf[b.subjectId]||'other';
-      if(isOncePerDayKind(ka) && d2!==d && countKindOnDay(grid,d2,ka)>0) return false;
-      if(isOncePerDayKind(kb) && d!==d2 && countKindOnDay(grid,d,kb)>0) return false;
-      if(ta!==tb){
-        if(teacherOcc[ta][d2][p2]) return false;
-        if(teacherOcc[tb][d][p]) return false;
-      }
-      const aPE = ka==='pe', bPE = kb==='pe';
-      if(aPE && !bPE && (peOcc[d2][p2]||0) >= maxPE) return false;
-      if(bPE && !aPE && (peOcc[d][p]||0) >= maxPE) return false;
-      grid[d][p]=b; grid[d2][p2]=a;
-      if(ta!==tb){
-        teacherOcc[ta][d][p]=false; teacherOcc[ta][d2][p2]=true;
-        teacherOcc[tb][d2][p2]=false; teacherOcc[tb][d][p]=true;
-      }
-      if(aPE && !bPE){
-        peOcc[d][p]=Math.max(0,(peOcc[d][p]||0)-1);
-        peOcc[d2][p2]=(peOcc[d2][p2]||0)+1;
-      } else if(bPE && !aPE){
-        peOcc[d2][p2]=Math.max(0,(peOcc[d2][p2]||0)-1);
-        peOcc[d][p]=(peOcc[d][p]||0)+1;
-      }
-      return true;
-    }
-    function tryPlaceUnit(u){
-      const teacher = teacherById[u.teacherId];
-      if(!teacher) return false;
-      const grid = classGrids[u.classKey];
-      const occ = teacherOcc[u.teacherId];
-      if(!grid || !occ) return false;
-      function okSlot(d,p){
-        if((teacher.excludedDays||[]).includes(d)) return false;
-        if(grid[d][p]!==null) return false;
-        if(occ[d][p]) return false;
-        if(u.isPE && (peOcc[d][p]||0) >= maxPE) return false;
-        if(u.oncePerDay && countKindOnDay(grid,d,u.kind)>0) return false;
-        return true;
-      }
-      function put(d,p){
-        grid[d][p] = {subjectId:u.subjectId, teacherId:u.teacherId, assignmentId:u.assignmentId};
-        occ[d][p] = true;
-        if(u.isPE) peOcc[d][p] = (peOcc[d][p]||0) + 1;
-        return true;
-      }
-      for(let d=0; d<days; d++){
-        if((teacher.excludedDays||[]).includes(d)) continue;
-        if(u.oncePerDay && countKindOnDay(grid,d,u.kind)>0) continue;
-        for(let p=0; p<periods; p++){
-          if(okSlot(d,p)) return put(d,p);
-        }
-      }
-      for(let d=0; d<days; d++){
-        if((teacher.excludedDays||[]).includes(d)) continue;
-        if(u.oncePerDay && countKindOnDay(grid,d,u.kind)>0) continue;
-        for(let p=0; p<periods; p++){
-          if(grid[d][p]!==null) continue;
-          if(!occ[d][p]) continue;
-          const other = findClassWithTeacherAt(u.teacherId, d, p, u.classKey);
-          if(!other) continue;
-          if(tryRelocateCell(other, d, p) && okSlot(d,p)) return put(d,p);
-        }
-      }
-      for(let d=0; d<days; d++){
-        if((teacher.excludedDays||[]).includes(d)) continue;
-        if(u.oncePerDay && countKindOnDay(grid,d,u.kind)>0) continue;
-        for(let p=0; p<periods; p++){
-          if(occ[d][p]) continue;
-          if(grid[d][p]===null) continue;
-          if(tryRelocateCell(u.classKey, d, p) && okSlot(d,p)) return put(d,p);
-        }
-      }
-      for(let d=0; d<days; d++){
-        if((teacher.excludedDays||[]).includes(d)) continue;
-        if(u.oncePerDay && countKindOnDay(grid,d,u.kind)>0) continue;
-        for(let p=0; p<periods; p++){
-          if(grid[d][p]!==null) continue;
-          if(!occ[d][p]) continue;
-          const other = findClassWithTeacherAt(u.teacherId, d, p, u.classKey);
-          if(!other) continue;
-          const og = classGrids[other];
-          if(!og) continue;
-          for(let d2=0; d2<days; d2++){
-            for(let p2=0; p2<periods; p2++){
-              if(d2===d && p2===p) continue;
-              if(!og[d2][p2]) continue;
-              if(!trySwapCells(other, d, p, d2, p2)) continue;
-              if(okSlot(d,p)) return put(d,p);
-              trySwapCells(other, d, p, d2, p2);
-            }
-          }
-        }
-      }
-      if(!u._noKick){
-        function removeAt(classKey, d, p){
-          const g = classGrids[classKey];
-          const cell = g[d][p];
-          if(!cell) return null;
-          g[d][p] = null;
-          if(cell.teacherId && teacherOcc[cell.teacherId]) teacherOcc[cell.teacherId][d][p] = false;
-          if((kindOf[cell.subjectId]||'other')==='pe') peOcc[d][p] = Math.max(0, (peOcc[d][p]||0) - 1);
-          return cell;
-        }
-        function restoreAt(classKey, d, p, cell){
-          if(!cell) return;
-          classGrids[classKey][d][p] = cell;
-          if(cell.teacherId && teacherOcc[cell.teacherId]) teacherOcc[cell.teacherId][d][p] = true;
-          if((kindOf[cell.subjectId]||'other')==='pe') peOcc[d][p] = (peOcc[d][p]||0) + 1;
-        }
-        for(let d=0; d<days; d++){
-          if((teacher.excludedDays||[]).includes(d)) continue;
-          if(u.oncePerDay && countKindOnDay(grid,d,u.kind)>0) continue;
-          for(let p=0; p<periods; p++){
-            if(occ[d][p]) continue;
-            const victim = grid[d][p];
-            if(!victim) continue;
-            const vk = kindOf[victim.subjectId]||'other';
-            const vu = {
-              assignmentId:victim.assignmentId, classKey:u.classKey,
-              subjectId:victim.subjectId, teacherId:victim.teacherId,
-              kind:vk, oncePerDay:isOncePerDayKind(vk),
-              preferSpread:(vk==='arabic'||vk==='math'), isPE:vk==='pe', _noKick:true
-            };
-            removeAt(u.classKey, d, p);
-            put(d,p);
-            if(tryPlaceUnit(vu)) return true;
-            removeAt(u.classKey, d, p);
-            restoreAt(u.classKey, d, p, victim);
-          }
-        }
-      }
-      return false;
-    }
-    let repairGuard=0;
-    while(unplaced.length && repairGuard++ < 28){
-      let progressed=false;
-      for(let i=unplaced.length-1;i>=0;i--){
-        if(tryPlaceUnit(unplaced[i])){
-          unplaced.splice(i,1);
-          progressed=true;
-        }
-      }
-      if(!progressed) break;
-    }
-
-    packEmptiesToEndOfDay(classGrids, teacherOcc, peOcc, kindOf, cls, days, periods, maxPE);
-
-    // تقييم جودة الجدول (أقل غير موزّع + انتشار عربي/رياضيات + فراغات في الآخر)
-    let score = 0;
-    score -= unplaced.length * 1000;
-    cls.forEach(c=>{
-      const g = classGrids[c.key];
-      for(let d=0;d<days;d++){
-        let seenEmpty = false;
-        for(let p=0;p<periods;p++){
-          if(!g[d][p]) seenEmpty = true;
-          else if(seenEmpty) score -= 60;
-        }
-      }
-    });
-    // مكافأة انتشار عربي/رياضيات
-    cls.forEach(c=>{
-      const g = classGrids[c.key];
-      let arabicDays=0, mathDays=0, totalDays=days;
-      for(let d=0;d<days;d++){
-        if(countKindOnDay(g,d,'arabic')>0) arabicDays++;
-        if(countKindOnDay(g,d,'math')>0) mathDays++;
-        // عقوبة تكرار once/day (للتحقق)
-        const seen = {};
-        for(let p=0;p<periods;p++){
-          const cell=g[d][p]; if(!cell) continue;
-          const k=kindOf[cell.subjectId]||'other';
-          if(isOncePerDayKind(k)){
-            const sk=cell.subjectId;
-            seen[sk]=(seen[sk]||0)+1;
-            if(seen[sk]>1) score -= 50;
-          }
-        }
-      }
-      score += arabicDays*3 + mathDays*3;
-    });
-    // عقوبة تزامن رياضة (تحقق)
-    for(let d=0;d<days;d++){
-      for(let p=0;p<periods;p++){
-        let peCount=0;
-        cls.forEach(c=>{
-          const cell=classGrids[c.key][d][p];
-          if(cell && (kindOf[cell.subjectId]==='pe')) peCount++;
-        });
-        if(peCount>maxPE) score -= 80*(peCount-maxPE);
-      }
-    }
-
-    if(unplaced.length===0 && score > bestScore){
-      bestUnplaced=[]; bestGrids=classGrids; bestScore=score;
-      // إن كان الانتشار ممتازًا يمكن التوقف مبكرًا
-      if(score >= cls.length * days * 0.5) break;
-    } else if(bestUnplaced===null || unplaced.length < bestUnplaced.length || (unplaced.length===bestUnplaced.length && score>bestScore)){
-      bestUnplaced=unplaced; bestGrids=classGrids; bestScore=score;
-    }
-    if(bestUnplaced && bestUnplaced.length===0){
-      // استمر قليلًا لتحسين الانتشار
-      if(attempt > 25 && bestScore > 0) break;
-    }
-  }
-
-  if(!bestGrids){
-    return {success:false, unplaced:[], reason:'no-classes'};
-  }
-  Object.keys(bestGrids).forEach(k=> store.schedule[k] = {grid: bestGrids[k]});
-  return {success: bestUnplaced.length===0, unplaced: bestUnplaced, score: bestScore};
+    store.schedule[c.key]={grid:grid};
+  });
+  return {success:unplaced.length===0,unplaced:unplaced,score:unplaced.length?-unplaced.length:1};
 }
 function generateFullSchedule(){
   const gaps = listClassLoadGaps(DB);
@@ -6252,11 +5854,14 @@ document.getElementById('btnGenerate').addEventListener('click', async ()=>{
     if(!ok) return;
   }
   const btn = document.getElementById('btnGenerate');
-  btn.disabled = true; btn.textContent = '⏳ جاري التوزيع...';
+  btn.disabled = true; btn.textContent = '⏳ جاري التوليد...';
+  const progressBox=document.getElementById('generateProgress');
+  if(progressBox) progressBox.style.display='block';
   setTimeout(()=>{
     const result = generateFullSchedule();
     lastUnplaced = result.unplaced;
     btn.disabled = false; btn.textContent = '⚡ توزيع تلقائي لكل الشعب';
+    if(progressBox) progressBox.style.display='none';
     const rd = document.getElementById('generateResult');
     if(result.success){
       rd.innerHTML = `<div style="margin-top:10px;padding:10px;background:var(--success-bg);color:var(--success);border-radius:8px;font-size:13px">✅ تم توزيع جميع الحصص بدون أي تعارض.</div>`;
@@ -9948,5 +9553,5 @@ init();
 
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a331a5d2ca5a197e',t:'MTc4ODA3MDM4Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a331a5d2ca5a197e',t:'MTc4ODA3MDM4Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a332fdd26955e1b8',t:'MTc4ODA4NDQ3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
