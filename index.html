@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl" data-theme="day">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>الجدول المدرسي — مدرسة النبراس</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Reem+Kufi:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@700;800;900&display=swap" rel="stylesheet">
@@ -231,8 +231,14 @@ input,select,textarea{font-family:inherit}
 .brand-text{flex:1;min-width:0;overflow:hidden}
 .brand-text b{display:block;font-size:16px;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .brand-text span{display:block;font-size:11.5px;color:var(--topbar-muted);margin-top:1px}
-.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.tabs::-webkit-scrollbar{display:none}
+.tabs{
+  display:flex;flex-wrap:nowrap;gap:6px;
+  overflow-x:auto;overflow-y:hidden;padding-bottom:8px;
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.45) transparent;
+  -webkit-overflow-scrolling:touch;
+}
+.tabs::-webkit-scrollbar{height:7px;display:block}
+.tabs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.4);border-radius:99px}
 .tab-btn{
   flex:none;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);
   color:#e7ebf5;border-radius:999px;padding:9px 16px;font-size:13.5px;font-weight:700;
@@ -1175,6 +1181,8 @@ html[data-theme="night"] .full-font-ctrl .btn-master-layout.active{background:va
 html[data-theme="night"] .full-font-ctrl .btn-hide-teach.active{background:var(--gold);color:#1a1404;border-color:var(--gold)}
 html.master-hide-teach table.demo-master .m-cell span.teach-hit,
 html.master-hide-teach table.demo-master.layout-side .m-cell span.teach-hit,
+html.master-hide-teach table.sched .slot-inner span.teach-hit,
+html.master-hide-teach table.sched .teach-hit,
 html.master-hide-teach .print-page .mp-cell span,
 html.master-hide-teach .print-page.master-one table.master-print.layout-side .mp-cell span,
 html.master-hide-teach .print-page.master-fit table.master-print.layout-side .mp-cell span,
@@ -1362,11 +1370,24 @@ html.mode-full-master #fullConflictBanner{
   50%{ transform:rotate(72deg); }
 }
 html.mode-full-master.need-landscape .full-rotate-gate{
-  display:flex;
-  flex:none;
-  padding:10px 12px;
+  display:flex !important;
+  position:fixed;
+  left:0;right:0;bottom:0;
+  top:var(--full-topbar-h, 88px);
+  z-index:80;
+  flex:1 1 auto;
+  padding:28px 18px;
+  background:var(--paper);
+  align-items:center;
+  justify-content:center;
 }
-html.mode-full-master.need-landscape .full-rotate-card b{font-size:15px}
+html.mode-full-master.need-landscape #fullMasterWrap,
+html.mode-full-master.need-landscape #demoAllWrap,
+html.mode-full-master.need-landscape #fullConflictBanner,
+html.mode-full-master.need-landscape #demoConflictBanner{
+  display:none !important;
+}
+html.mode-full-master.need-landscape .full-rotate-card b{font-size:18px}
 html.mode-full-master.need-landscape .full-rotate-phone{font-size:28px;margin-bottom:4px}
 
 /* ===== Lesson timings ===== */
@@ -2071,8 +2092,6 @@ html.welcome-open .topbar, html.welcome-open main{visibility:hidden}
   backdrop-filter:blur(8px);
 }
 html.activate-open #activateGate{display:flex}
-html.trial-mode .tab-btn[data-view="schedule"]{opacity:.72}
-html.trial-mode .tab-btn[data-view="schedule"]::after{content:' 🔒';font-size:11px}
 .act-card{
   width:min(520px,100%);
   background:linear-gradient(180deg,#fffdf6,#f7f1e3);
@@ -2246,87 +2265,135 @@ html[data-theme="night"] #btnExitGo{
   background:#1c151a;color:#f0b4c4;border-color:rgba(240,180,196,.22);
 }
 
-/* ===== Responsive screens ===== */
-html,body{max-width:100%; overflow-x:hidden}
-img{max-width:100%; height:auto}
+/* ===== Responsive screens: phone / tablet / desktop ===== */
+html{
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+}
+html,body{
+  width:100%;
+  max-width:100%;
+  min-height:100dvh;
+  overflow-x:hidden;
+}
+html.mode-full-master, html.mode-full-master body{
+  overflow-x:auto;
+}
+main{
+  width:100%;
+  box-sizing:border-box;
+}
+.topbar{
+  padding-left:max(12px, env(safe-area-inset-left));
+  padding-right:max(12px, env(safe-area-inset-right));
+}
+.topbar-row{flex-wrap:wrap}
+.sched-wrap,
+.demo-master-wrap,
+.timing-table-wrap,
+#schedGridWrap,
+#fullMasterWrap,
+#demoAllWrap{
+  max-width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
 .demo-mode-toggle{flex-wrap:wrap; max-width:100%}
 .class-picker,.tabs{-webkit-overflow-scrolling:touch}
 .set-nav,.feat-grid,.dash-hero,.dash-cols{width:100%}
+.setup-card,.act-card,.welcome-panel{
+  width:min(520px, calc(100vw - 24px));
+  max-width:100%;
+  box-sizing:border-box;
+}
 
-@media (max-width:399px){
-  html{font-size:13.5px}
-  .topbar{padding:8px 10px 0}
+/* هاتف */
+@media (max-width:599px){
+  html{font-size:14px}
+  .topbar{padding-top:max(8px, env(safe-area-inset-top))}
   .topbar-row{gap:7px; margin-bottom:8px}
   .brand-mark{width:34px;height:34px;font-size:16px}
   .brand-text b{font-size:13px}
   .brand-text span{display:none}
   .design-pill{display:none}
   .apps-mini{font-size:9px;padding:4px 8px}
-  .theme-toggle{width:38px;height:38px;font-size:17px}
-  .tab-btn{padding:7px 11px;font-size:12px}
+  .theme-toggle{width:40px;height:40px;font-size:17px}
+  .tab-btn{padding:8px 12px;font-size:12.5px;min-height:40px}
   .tabs{gap:5px;padding-bottom:8px}
-  html:not(.mode-full-master) main{padding:10px 8px 72px}
+  html:not(.mode-full-master) main{padding:10px 8px calc(72px + env(safe-area-inset-bottom))}
   .card{padding:12px;border-radius:14px;margin-bottom:10px}
   .set-nav{grid-template-columns:1fr 1fr;gap:8px}
-  .set-nav-btn{padding:10px 9px}
+  .set-nav-btn{padding:10px 9px;min-height:64px}
   .set-nav-btn b{font-size:12.5px}
   .set-nav-btn small{font-size:10px}
   .dash-clock .d-time{font-size:32px}
   .print-pop{left:auto;right:0;min-width:min(228px,88vw)}
   .row > .field{min-width:100%}
-  .btn{padding:10px 14px;font-size:13px}
+  .btn{padding:11px 14px;font-size:14px;min-height:42px}
   .exit-card{padding:18px 14px 14px}
+  .setup-picks{grid-template-columns:1fr 1fr}
+  .setup-picks.three{grid-template-columns:1fr}
+  .field input[type=text],.field input[type=number],.field select,.field textarea{font-size:16px}
+  table.sched td.slot{min-width:86px;height:64px}
 }
-@media (min-width:400px) and (max-width:719px){
-  html{font-size:14.5px}
-  .topbar{padding:10px 12px 0}
-  .topbar-row{gap:8px}
-  .brand-mark{width:38px;height:38px}
-  .brand-text b{font-size:14.5px}
-  html:not(.mode-full-master) main{padding:12px 10px 80px}
-  .tab-btn{padding:8px 13px;font-size:12.5px}
-  .set-nav{grid-template-columns:repeat(2,1fr)}
+
+/* جهاز لوحي */
+@media (min-width:600px) and (max-width:1023px){
+  html{font-size:15px}
+  .topbar{padding-top:max(10px, env(safe-area-inset-top))}
+  html:not(.mode-full-master) main{max-width:960px;padding:16px 14px 72px}
+  .tab-btn{padding:9px 14px;font-size:13px}
+  .set-nav{grid-template-columns:repeat(3,1fr)}
+  .dash-hero{grid-template-columns:1fr 1.15fr}
+  .dash-cols{grid-template-columns:1fr 1fr}
+  .class-picker{flex-wrap:wrap; overflow:visible}
   .print-pop{left:auto;right:0}
 }
-@media (min-width:720px) and (max-width:979px){
-  html{font-size:15px}
-  html:not(.mode-full-master) main{max-width:920px;padding:18px 16px 72px}
-  .set-nav{grid-template-columns:repeat(3,1fr)}
-  .tabs{gap:7px}
-}
-@media (min-width:980px){
-  html{font-size:15.5px}
+
+/* حاسوب مكتبي */
+@media (min-width:1024px){
+  html{font-size:16px}
   html:not(.mode-full-master) .tabs{
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(118px, 1fr));
-    overflow:visible;
+    display:flex;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    overflow-y:hidden;
     gap:7px;
-    padding-bottom:12px;
+    padding-bottom:8px;
   }
   html:not(.mode-full-master) .tab-btn{
-    flex:unset; width:100%; text-align:center;
-    white-space:normal; line-height:1.3;
-    padding:9px 8px; font-size:13px;
+    flex:none; width:auto; text-align:center;
+    white-space:nowrap; line-height:1.3;
+    padding:10px 14px; font-size:13.5px;
   }
-  html:not(.mode-full-master) main{max-width:1240px; padding:20px 22px 56px}
+  html:not(.mode-full-master) main{max-width:1280px; padding:22px 24px 56px}
   .set-nav{grid-template-columns:repeat(3,1fr)}
   .class-picker{flex-wrap:wrap; overflow:visible}
-}
-@media (min-width:1280px){
-  html:not(.mode-full-master) main{max-width:1400px; padding:24px 28px 56px}
-  .set-nav{grid-template-columns:repeat(6,1fr)}
-  .dash-clock .d-time{font-size:48px}
-}
-@media (min-width:720px){
   .dash-hero{grid-template-columns:1fr 1.2fr}
   .dash-cols{grid-template-columns:1fr 1fr}
 }
+@media (min-width:1440px){
+  html:not(.mode-full-master) main{max-width:1520px; padding:28px 32px 64px}
+  .set-nav{grid-template-columns:repeat(6,1fr)}
+  .dash-clock .d-time{font-size:48px}
+}
+
 @media (max-height:520px) and (orientation:landscape){
   html:not(.mode-full-master) .topbar{padding:6px 10px 0}
   html:not(.mode-full-master) .brand-text span{display:none}
   html:not(.mode-full-master) .tab-btn{padding:6px 10px;font-size:12px}
   #splashGate .splash-icon-wrap{width:min(140px,36vw)}
 }
+
+@media (hover:hover) and (pointer:fine){
+  .tab-btn:hover,.set-nav-btn:hover,.class-pill:hover,.btn:hover{
+    filter:brightness(1.06);
+  }
+}
+@media (pointer:coarse){
+  .tab-btn,.class-pill,.demo-mode-btn{min-height:40px}
+}
+
 </style>
 </head>
 <body>
@@ -2387,6 +2454,13 @@ img{max-width:100%; height:auto}
 
   <!-- DEMO -->
   <section class="view" id="view-demo">
+    <div class="full-rotate-gate" id="demoRotateGate">
+      <div class="full-rotate-card">
+        <div class="full-rotate-phone" aria-hidden="true">📱</div>
+        <b>اقلب الهاتف إلى الوضع الأفقي</b>
+        <span>الجدول التجريبي يُعرض أفقياً حتى لا تتراكب الأعمدة. أدر الجهاز ثم تابع.</span>
+      </div>
+    </div>
     <div id="demoConflictBanner" class="conflict-banner"></div>
     <div id="demoAllWrap"></div>
   </section>
@@ -2550,7 +2624,7 @@ img{max-width:100%; height:auto}
         <p class="hint" style="margin:6px 0 0">في الوضع المقابل يظهر الاسم بجانب المادة ويفصل بينهما عمود متقطع.</p>
       </div>
       <div class="field" style="margin-top:14px">
-        <label id="ttHideTeacherLbl">اسم المعلم في الجدول الكامل</label>
+        <label id="ttHideTeacherLbl">اسم المعلم في الجدول الكامل وجداول الشعب</label>
         <div class="orient-row" style="gap:8px">
           <button type="button" class="orient-opt btn-hide-teach" id="btnShowTeacherName" data-hide="0">إظهار الاسم</button>
           <button type="button" class="orient-opt btn-hide-teach" id="btnHideTeacherName" data-hide="1">إخفاء الاسم</button>
@@ -2586,11 +2660,12 @@ img{max-width:100%; height:auto}
     <div class="build-pane" id="set-timings">
     <div class="card">
       <h2>نوع الدوام</h2>
-      <p class="hint">حدد زمن بدء أول حصة ومدة الحصة والاستراحة. يمكنك تشغيل الاستراحة الطويلة أو إيقافها، واختيار دوام صباحي أو صباحي ومسائي.</p>
+      <p class="hint">حدد زمن بدء أول حصة ومدة الحصة والاستراحة. يمكنك تشغيل استراحتين طويلتين، واختيار دوام صباحي أو مسائي أو الاثنين معاً.</p>
       <div class="field">
         <label>نوع الدوام</label>
         <div class="orient-row" id="timingShiftMode">
           <button type="button" class="orient-opt" data-shift="morning">صباحي فقط</button>
+          <button type="button" class="orient-opt" data-shift="evening">مسائي فقط</button>
           <button type="button" class="orient-opt" data-shift="both">صباحي ومسائي</button>
         </div>
       </div>
@@ -2603,10 +2678,15 @@ img{max-width:100%; height:auto}
         <div class="field"><label>زمن الاستراحة (دقيقة)</label><input type="number" id="tmMBreak" min="0" max="60"></div>
         <div class="field"><label>عدد الدروس</label><input type="number" id="tmMCount" min="1" max="12"></div>
       </div>
-      <label class="check-item"><input type="checkbox" id="tmMLongOn"> تفعيل الاستراحة الطويلة</label>
+      <label class="check-item"><input type="checkbox" id="tmMLongOn"> تفعيل الاستراحة الطويلة الأولى</label>
       <div class="row" id="tmMLongFields">
-        <div class="field"><label>الاستراحة الطويلة بعد الحصة</label><select id="tmMLongAfter"></select></div>
-        <div class="field"><label>زمن الاستراحة الطويلة (دقيقة)</label><input type="number" id="tmMLongMin" min="0" max="120"></div>
+        <div class="field"><label>الأولى بعد الحصة</label><select id="tmMLongAfter"></select></div>
+        <div class="field"><label>زمن الأولى (دقيقة)</label><input type="number" id="tmMLongMin" min="0" max="120"></div>
+      </div>
+      <label class="check-item"><input type="checkbox" id="tmMLongOn2"> تفعيل الاستراحة الطويلة الثانية</label>
+      <div class="row" id="tmMLongFields2">
+        <div class="field"><label>الثانية بعد الحصة</label><select id="tmMLongAfter2"></select></div>
+        <div class="field"><label>زمن الثانية (دقيقة)</label><input type="number" id="tmMLongMin2" min="0" max="120"></div>
       </div>
     </div>
     <div class="card" id="timingEveningCard">
@@ -2618,10 +2698,15 @@ img{max-width:100%; height:auto}
         <div class="field"><label>زمن الاستراحة (دقيقة)</label><input type="number" id="tmEBreak" min="0" max="60"></div>
         <div class="field"><label>عدد الدروس</label><input type="number" id="tmECount" min="1" max="12"></div>
       </div>
-      <label class="check-item"><input type="checkbox" id="tmELongOn"> تفعيل الاستراحة الطويلة</label>
+      <label class="check-item"><input type="checkbox" id="tmELongOn"> تفعيل الاستراحة الطويلة الأولى</label>
       <div class="row" id="tmELongFields">
-        <div class="field"><label>الاستراحة الطويلة بعد الحصة</label><select id="tmELongAfter"></select></div>
-        <div class="field"><label>زمن الاستراحة الطويلة (دقيقة)</label><input type="number" id="tmELongMin" min="0" max="120"></div>
+        <div class="field"><label>الأولى بعد الحصة</label><select id="tmELongAfter"></select></div>
+        <div class="field"><label>زمن الأولى (دقيقة)</label><input type="number" id="tmELongMin" min="0" max="120"></div>
+      </div>
+      <label class="check-item"><input type="checkbox" id="tmELongOn2"> تفعيل الاستراحة الطويلة الثانية</label>
+      <div class="row" id="tmELongFields2">
+        <div class="field"><label>الثانية بعد الحصة</label><select id="tmELongAfter2"></select></div>
+        <div class="field"><label>زمن الثانية (دقيقة)</label><input type="number" id="tmELongMin2" min="0" max="120"></div>
       </div>
       <button type="button" class="btn btn-outline btn-sm" id="btnCopyMorningEve">📋 نسخ إعدادات الصباحي إلى المسائي</button>
     </div>
@@ -2831,6 +2916,10 @@ img{max-width:100%; height:auto}
       <div class="card">
         <h2>جداول الشعب</h2>
         <p class="hint">المس حصة فتُؤشَّر بالأزرق، ثم المس مكانًا داخل نفس الشعبة للنقل/التبديل. المس اسم المادة لتمييزها بالأخضر داخل الشعبة، واسم المعلم لتمييزه بأزرق غامق في كل الجدول. التعارض يلوّن الحصتين بالأحمر.</p>
+        <div class="orient-row" style="gap:8px;margin:0 0 12px;flex-wrap:wrap">
+          <button type="button" class="orient-opt btn-hide-teach" id="btnSchedShowTeacher" data-hide="0">إظهار اسم المعلم</button>
+          <button type="button" class="orient-opt btn-hide-teach" id="btnSchedHideTeacher" data-hide="1">إخفاء اسم المعلم</button>
+        </div>
         <div class="class-picker" id="schedClassPicker"></div>
         <div id="conflictBanner" class="conflict-banner"></div>
         <div id="schedGridWrap"></div>
@@ -2855,7 +2944,7 @@ img{max-width:100%; height:auto}
       <div class="full-rotate-card">
         <div class="full-rotate-phone" aria-hidden="true">📱</div>
         <b>اقلب الهاتف إلى الوضع الأفقي</b>
-        <span>الجدول الكامل يملأ الشاشة في الوضع الأفقي فقط، مع بقاء الشريط العلوي.</span>
+        <span>الجدول الكامل يُعرض أفقياً حتى تظهر كل الشعب بوضوح. أدر الجهاز ثم تابع.</span>
       </div>
     </div>
     <div id="fullConflictBanner" class="conflict-banner"></div>
@@ -3060,6 +3149,10 @@ function defaultShiftCfg(start, lessons){
     lessonsCount: lessons || 6,
     longBreakAfter: 3,
     longBreakMinutes: 20,
+    longBreakOn: true,
+    longBreakAfter2: 0,
+    longBreakMinutes2: 20,
+    longBreakOn2: false,
     reverseBreaks: false
   };
 }
@@ -3622,6 +3715,7 @@ function setHideTeacherName(v){
   DB.settings.hideTeacherName = !!v;
   try{ saveDB(); }catch(e){}
   applyHideTeacherName();
+  try{ if(typeof currentViewName!=='undefined' && currentViewName==='schedule' && typeof renderScheduleTab==='function') renderScheduleTab(); }catch(e){}
 }
 function getMasterTableThemes(){
   return [
@@ -3852,12 +3946,14 @@ function ensureTimings(db){
   const d = defaultTimings();
   if(!store.timings || typeof store.timings!=='object') store.timings = d;
   else {
-    store.timings.shiftMode = (store.timings.shiftMode==='both') ? 'both' : 'morning';
+    store.timings.shiftMode = (store.timings.shiftMode==='both' || store.timings.shiftMode==='evening') ? store.timings.shiftMode : 'morning';
     store.timings.morning = Object.assign({}, d.morning, store.timings.morning||{});
     store.timings.evening = Object.assign({}, d.evening, store.timings.evening||{});
     store.timings.alerts = Object.assign({}, d.alerts, store.timings.alerts||{});
     if(store.timings.morning.longBreakOn == null) store.timings.morning.longBreakOn = (parseInt(store.timings.morning.longBreakAfter,10)||0) > 0;
     if(store.timings.evening.longBreakOn == null) store.timings.evening.longBreakOn = (parseInt(store.timings.evening.longBreakAfter,10)||0) > 0;
+    if(store.timings.morning.longBreakOn2 == null) store.timings.morning.longBreakOn2 = (parseInt(store.timings.morning.longBreakAfter2,10)||0) > 0;
+    if(store.timings.evening.longBreakOn2 == null) store.timings.evening.longBreakOn2 = (parseInt(store.timings.evening.longBreakAfter2,10)||0) > 0;
     if(!Array.isArray(store.timings.dayShifts)) store.timings.dayShifts = [];
   }
 }
@@ -4024,9 +4120,13 @@ function measureFullTopbar(){
   document.documentElement.style.setProperty('--full-topbar-h', h+'px');
 }
 function updateFullMasterOrientation(){
-  const need = (currentViewName==='full') && isMobilePortrait();
-  document.documentElement.classList.toggle('need-landscape', need);
-  if(currentViewName==='full') measureFullTopbar();
+  const master = (currentViewName==='full' || currentViewName==='demo');
+  const w = window.innerWidth || 0;
+  const h = window.innerHeight || 1;
+  const portrait = w < h;
+  const need = master && portrait && w < 1100;
+  document.documentElement.classList.toggle('need-landscape', !!need);
+  if(master) measureFullTopbar();
 }
 function lockFullMasterLandscape(on){
   // لا نغلق الجدول ولا نمنع الرسم إن فشل قفل الاتجاه
@@ -4041,10 +4141,6 @@ function lockFullMasterLandscape(on){
   updateFullMasterOrientation();
 }
 function showView(name, fromBack){
-  if(name==='schedule' && typeof nibrasIsActivated==='function' && !nibrasIsActivated()){
-    showActivateGate();
-    return;
-  }
   const prev = currentViewName;
   if(!fromBack && prev && prev !== name){
     if(!viewStack.length || viewStack[viewStack.length-1] !== prev) viewStack.push(prev);
@@ -4059,22 +4155,20 @@ function showView(name, fromBack){
   document.documentElement.classList.toggle('mode-full-master', name==='full' || name==='demo');
   document.body.classList.toggle('mode-full-master', name==='full' || name==='demo');
   window.scrollTo({top:0, behavior:'instant'});
-  if(name==='full'){
+  if(name==='full' || name==='demo'){
     measureFullTopbar();
     lockFullMasterLandscape(true);
-    renderFullMasterTab();
+    if(name==='full') renderFullMasterTab();
+    else renderDemoTab();
     requestAnimationFrame(function(){ measureFullTopbar(); updateFullMasterOrientation(); });
-  } else if(prev==='full'){
-    lockFullMasterLandscape(false);
-    document.documentElement.classList.remove('need-landscape');
+  } else if(prev==='full' || prev==='demo'){
+    if(name!=='full' && name!=='demo'){
+      lockFullMasterLandscape(false);
+      document.documentElement.classList.remove('need-landscape');
+    }
   }
   if(name==='dash') startDashClock();
   else stopDashClock();
-  if(name==='demo'){
-    measureFullTopbar();
-    renderDemoTab();
-    requestAnimationFrame(function(){ measureFullTopbar(); });
-  }
   if(name==='build') setBuildSubTab(buildSubTab);
   if(name==='schedule') setSchedSubTab(schedSubTab);
   if(name==='timings') renderTimingsTab();
@@ -4091,12 +4185,10 @@ window.addEventListener('orientationchange', function(){
   setTimeout(updateFullMasterOrientation, 320);
 });
 window.addEventListener('resize', function(){
-  if(currentViewName==='full'){
+  if(currentViewName==='full' || currentViewName==='demo'){
     updateFullMasterOrientation();
     measureFullTopbar();
-    syncMasterStickyCols(document.getElementById('fullMasterWrap'));
-  } else if(currentViewName==='demo'){
-    syncMasterStickyCols(document.getElementById('demoAllWrap'));
+    syncMasterStickyCols(document.getElementById(currentViewName==='full'?'fullMasterWrap':'demoAllWrap'));
   }
 });
 
@@ -4685,6 +4777,10 @@ document.getElementById('inpDocTitle').addEventListener('input', e=>{
   const hideOff = document.getElementById('btnShowTeacherName');
   if(hideOn) hideOn.addEventListener('click', function(e){ e.preventDefault(); setHideTeacherName(true); });
   if(hideOff) hideOff.addEventListener('click', function(e){ e.preventDefault(); setHideTeacherName(false); });
+  const sHide = document.getElementById('btnSchedHideTeacher');
+  const sShow = document.getElementById('btnSchedShowTeacher');
+  if(sHide) sHide.addEventListener('click', function(e){ e.preventDefault(); setHideTeacherName(true); });
+  if(sShow) sShow.addEventListener('click', function(e){ e.preventDefault(); setHideTeacherName(false); });
 })();
 document.getElementById('inpPeriods').addEventListener('change', e=>{
   let v = parseInt(e.target.value)||1; v = Math.max(1,Math.min(12,v));
@@ -8177,7 +8273,7 @@ function saveTimings(){
 }
 function setTimingShiftMode(mode){
   const T = getTimings();
-  T.shiftMode = (mode==='both') ? 'both' : 'morning';
+  T.shiftMode = (mode==='both' || mode==='evening') ? mode : 'morning';
   if(T.shiftMode==='both') try{ ensureDayShifts(T); }catch(e){}
   renderTimingsTab();
   saveTimings();
@@ -8209,6 +8305,7 @@ function daysForShift(key){
 }
 function todayShiftKey(){
   const T = getTimings();
+  if(T.shiftMode==='evening') return 'evening';
   if(T.shiftMode!=='both') return 'morning';
   ensureDayShifts(T);
   const names = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
@@ -8404,19 +8501,27 @@ function buildShiftSlots(cfg){
   const n = Math.max(1, Math.min(12, parseInt(cfg.lessonsCount,10)||6));
   const lesson = Math.max(1, Math.min(120, parseInt(cfg.lessonMinutes,10)||40));
   const brk = Math.max(0, Math.min(60, parseInt(cfg.breakMinutes,10)||0));
-  const longM = Math.max(0, Math.min(120, parseInt(cfg.longBreakMinutes,10)||0));
-  const longOn = cfg.longBreakOn !== false;
-  let after = longOn ? Math.max(0, Math.min(n-1, parseInt(cfg.longBreakAfter,10)||0)) : 0;
-  if(cfg.reverseBreaks && after>0) after = n - after;
+  function longSpec(on, afterRaw, minRaw){
+    if(on===false) return {after:0, mins:0};
+    let after = Math.max(0, Math.min(n-1, parseInt(afterRaw,10)||0));
+    if(cfg.reverseBreaks && after>0) after = n - after;
+    const mins = Math.max(0, Math.min(120, parseInt(minRaw,10)||0));
+    return {after:after, mins:mins};
+  }
+  const L1 = longSpec(cfg.longBreakOn, cfg.longBreakAfter, cfg.longBreakMinutes);
+  const L2 = longSpec(cfg.longBreakOn2, cfg.longBreakAfter2, cfg.longBreakMinutes2);
   let t = parseHM(cfg.firstStart);
   const slots = [];
   for(let i=1;i<=n;i++){
     slots.push({kind:'lesson', n:i, start:t, end:t+lesson, label:'الحصة '+i});
     t += lesson;
     if(i<n){
-      if(after && i===after && longM>0){
-        slots.push({kind:'long', start:t, end:t+longM, label:'الاستراحة الطويلة'});
-        t += longM;
+      if(L1.after && i===L1.after && L1.mins>0){
+        slots.push({kind:'long', start:t, end:t+L1.mins, label:'الاستراحة الطويلة الأولى'});
+        t += L1.mins;
+      } else if(L2.after && i===L2.after && L2.mins>0){
+        slots.push({kind:'long', start:t, end:t+L2.mins, label:'الاستراحة الطويلة الثانية'});
+        t += L2.mins;
       } else if(brk>0){
         slots.push({kind:'break', start:t, end:t+brk, label:'استراحة'});
         t += brk;
@@ -8450,15 +8555,21 @@ function bindTimingInputs(){
   T.morning.breakMinutes = num('tmMBreak',0,60,5);
   T.morning.lessonsCount = num('tmMCount',1,12,6);
   T.morning.longBreakOn = !!(document.getElementById('tmMLongOn') && document.getElementById('tmMLongOn').checked);
-  T.morning.longBreakAfter = parseInt(document.getElementById('tmMLongAfter').value,10)||0;
+  T.morning.longBreakAfter = parseInt((document.getElementById('tmMLongAfter')||{}).value,10)||0;
   T.morning.longBreakMinutes = num('tmMLongMin',0,120,20);
+  T.morning.longBreakOn2 = !!(document.getElementById('tmMLongOn2') && document.getElementById('tmMLongOn2').checked);
+  T.morning.longBreakAfter2 = parseInt((document.getElementById('tmMLongAfter2')||{}).value,10)||0;
+  T.morning.longBreakMinutes2 = num('tmMLongMin2',0,120,20);
   T.evening.firstStart = document.getElementById('tmEStart').value || '13:00';
   T.evening.lessonMinutes = num('tmELesson',1,120,40);
   T.evening.breakMinutes = num('tmEBreak',0,60,5);
   T.evening.lessonsCount = num('tmECount',1,12,6);
   T.evening.longBreakOn = !!(document.getElementById('tmELongOn') && document.getElementById('tmELongOn').checked);
-  T.evening.longBreakAfter = parseInt(document.getElementById('tmELongAfter').value,10)||0;
+  T.evening.longBreakAfter = parseInt((document.getElementById('tmELongAfter')||{}).value,10)||0;
   T.evening.longBreakMinutes = num('tmELongMin',0,120,20);
+  T.evening.longBreakOn2 = !!(document.getElementById('tmELongOn2') && document.getElementById('tmELongOn2').checked);
+  T.evening.longBreakAfter2 = parseInt((document.getElementById('tmELongAfter2')||{}).value,10)||0;
+  T.evening.longBreakMinutes2 = num('tmELongMin2',0,120,20);
   T.evening.reverseBreaks = !!(document.getElementById('tmEReverse') && document.getElementById('tmEReverse').checked);
   T.alerts.enabled = !!(document.getElementById('tmAlertOn') && document.getElementById('tmAlertOn').checked);
   T.alerts.onStart = !!(document.getElementById('tmAlertStart') && document.getElementById('tmAlertStart').checked);
@@ -8481,8 +8592,13 @@ function renderTimingsTab(){
   if(!T.alerts) T.alerts = {enabled:false, onStart:true, onEnd:true, tone:'bell', customSound:null};
   document.querySelectorAll('#timingShiftMode .orient-opt').forEach(b=> b.classList.toggle('active', b.dataset.shift===T.shiftMode));
   const both = T.shiftMode==='both';
+  const eveOnly = T.shiftMode==='evening';
+  const showM = !eveOnly;
+  const showE = both || eveOnly;
+  const mornCard = document.getElementById('timingMorningCard');
+  if(mornCard) mornCard.style.display = showM ? 'block' : 'none';
   const eveCard = document.getElementById('timingEveningCard');
-  if(eveCard) eveCard.style.display = both ? 'block' : 'none';
+  if(eveCard) eveCard.style.display = showE ? 'block' : 'none';
   const daysCard = document.getElementById('timingDaysCard');
   if(daysCard) daysCard.style.display = both ? 'block' : 'none';
   document.querySelectorAll('#timingShiftMode [data-shift]').forEach(function(b){
@@ -8499,6 +8615,10 @@ function renderTimingsTab(){
   const mOn = document.getElementById('tmMLongOn'); if(mOn) mOn.checked = m.longBreakOn!==false;
   const mFields = document.getElementById('tmMLongFields'); if(mFields) mFields.style.display = (m.longBreakOn!==false)?'flex':'none';
   fillLongAfterSelect(document.getElementById('tmMLongAfter'), m.lessonsCount, m.longBreakAfter);
+  set('tmMLongMin2', m.longBreakMinutes2||20);
+  const mOn2 = document.getElementById('tmMLongOn2'); if(mOn2) mOn2.checked = !!m.longBreakOn2;
+  const mFields2 = document.getElementById('tmMLongFields2'); if(mFields2) mFields2.style.display = m.longBreakOn2?'flex':'none';
+  fillLongAfterSelect(document.getElementById('tmMLongAfter2'), m.lessonsCount, m.longBreakAfter2);
   set('tmEStart', e.firstStart||'13:00');
   set('tmELesson', e.lessonMinutes);
   set('tmEBreak', e.breakMinutes);
@@ -8507,6 +8627,10 @@ function renderTimingsTab(){
   const eOn = document.getElementById('tmELongOn'); if(eOn) eOn.checked = e.longBreakOn!==false;
   const eFields = document.getElementById('tmELongFields'); if(eFields) eFields.style.display = (e.longBreakOn!==false)?'flex':'none';
   fillLongAfterSelect(document.getElementById('tmELongAfter'), e.lessonsCount, e.longBreakAfter);
+  set('tmELongMin2', e.longBreakMinutes2||20);
+  const eOn2 = document.getElementById('tmELongOn2'); if(eOn2) eOn2.checked = !!e.longBreakOn2;
+  const eFields2 = document.getElementById('tmELongFields2'); if(eFields2) eFields2.style.display = e.longBreakOn2?'flex':'none';
+  fillLongAfterSelect(document.getElementById('tmELongAfter2'), e.lessonsCount, e.longBreakAfter2);
   const rev = document.getElementById('tmEReverse'); if(rev) rev.checked = !!e.reverseBreaks;
   const on = document.getElementById('tmAlertOn'); if(on) on.checked = !!a.enabled;
   const st = document.getElementById('tmAlertStart'); if(st) st.checked = a.onStart!==false;
@@ -8534,11 +8658,11 @@ function renderTimingsTab(){
   const eCfg = e || defaultShiftCfg('13:00', 6);
   const mSlots = buildShiftSlots(mCfg);
   const eSlots = buildShiftSlots(eCfg);
-  const mDays = (T.shiftMode==='both') ? daysForShift('morning') : (DB.settings.days||[]);
-  const eDays = (T.shiftMode==='both') ? daysForShift('evening') : [];
+  const mDays = (T.shiftMode==='both') ? daysForShift('morning') : (showM ? (DB.settings.days||[]) : []);
+  const eDays = (T.shiftMode==='both') ? daysForShift('evening') : (showE ? (DB.settings.days||[]) : []);
   let html = '<div class="timing-grid">';
-  html += renderTimingTableHtml('تواقيت الدوام الصباحي'+(mDays.length?' — '+mDays.join('، '):''), mSlots, nowM);
-  if(both) html += renderTimingTableHtml('تواقيت الدوام المسائي'+(eDays.length?' — '+eDays.join('، '):' — عيّن الأيام من «دوام كل يوم»'), eSlots, nowM);
+  if(showM) html += renderTimingTableHtml('تواقيت الدوام الصباحي'+(mDays.length?' — '+mDays.join('، '):''), mSlots, nowM);
+  if(showE) html += renderTimingTableHtml('تواقيت الدوام المسائي'+(eDays.length?' — '+eDays.join('، '): (T.shiftMode==='both'?' — عيّن الأيام من «دوام كل يوم»':'')), eSlots, nowM);
   html += '</div>';
   const box = document.getElementById('timingTables');
   if(box) box.innerHTML = html;
@@ -8580,9 +8704,11 @@ function printTimings(){
   setTimeout(function(){ _printTimingsBusy = false; }, 2000);
   try{
     const T = getTimings();
-    const mDays = (T.shiftMode==='both') ? daysForShift('morning') : (DB.settings.days||[]);
-    const eDays = (T.shiftMode==='both') ? daysForShift('evening') : [];
-    const two = T.shiftMode==='both';
+    const showM = T.shiftMode!=='evening';
+    const showE = T.shiftMode==='evening' || T.shiftMode==='both';
+    const mDays = (T.shiftMode==='both') ? daysForShift('morning') : (showM ? (DB.settings.days||[]) : []);
+    const eDays = (T.shiftMode==='both') ? daysForShift('evening') : (showE ? (DB.settings.days||[]) : []);
+    const two = showE && showM;
     const school = esc((DB.settings&&DB.settings.schoolName)||'المدرسة');
     const year = esc((DB.settings&&DB.settings.academicYear)||'');
     const title = esc((DB.settings&&DB.settings.docTitle)||'تواقيت الدروس');
@@ -8668,7 +8794,7 @@ function printTimings(){
       '</style></head><body><div class="page">'+
       '<div class="head"><b>'+school+'</b><span>'+title+(year?' — '+year:'')+'</span></div>'+
       '<div class="body">'+
-        '<div class="grid">'+tbl(mCap, T.morning||defaultShiftCfg('08:00',6))+(two?tbl(eCap, T.evening||defaultShiftCfg('13:00',6)):'')+'</div>'+
+        '<div class="grid">'+(showM?tbl(mCap, T.morning||defaultShiftCfg('08:00',6)):'')+(showE?tbl(eCap, T.evening||defaultShiftCfg('13:00',6)):'')+'</div>'+
         supervisorsPrintBlock()+
         offTeachersPrintBlock()+
       '</div>'+
@@ -8810,6 +8936,7 @@ function todaysAlertShift(){
     if(!k) return null;
     return [k, k==='evening'?'المسائي':'الصباحي'];
   }
+  if(T.shiftMode==='evening') return ['evening','المسائي'];
   return ['morning','الصباحي'];
 }
 function updateAlertStatus(){
@@ -8887,9 +9014,9 @@ function armTimingAlerts(){
     if(!b) return;
     setTimingShiftMode(b.getAttribute('data-shift'));
   });
-  ['tmMStart','tmMLesson','tmMBreak','tmMCount','tmMLongAfter','tmMLongMin',
-   'tmEStart','tmELesson','tmEBreak','tmECount','tmELongAfter','tmELongMin',
-   'tmEReverse','tmMLongOn','tmELongOn','tmAlertOn','tmAlertStart','tmAlertEnd','tmAlertBreak','tmAlertSound','tmAlertNotify','tmAlertVol','tmAlertRings','tmTone'].forEach(function(id){
+  ['tmMStart','tmMLesson','tmMBreak','tmMCount','tmMLongAfter','tmMLongMin','tmMLongAfter2','tmMLongMin2',
+   'tmEStart','tmELesson','tmEBreak','tmECount','tmELongAfter','tmELongMin','tmELongAfter2','tmELongMin2',
+   'tmEReverse','tmMLongOn','tmELongOn','tmMLongOn2','tmELongOn2','tmAlertOn','tmAlertStart','tmAlertEnd','tmAlertBreak','tmAlertSound','tmAlertNotify','tmAlertVol','tmAlertRings','tmTone'].forEach(function(id){
     const el = document.getElementById(id);
     if(!el) return;
     el.addEventListener('change', async function(){
@@ -8916,6 +9043,9 @@ function armTimingAlerts(){
     T.evening.longBreakMinutes = m.longBreakMinutes;
     T.evening.longBreakAfter = m.longBreakAfter;
     T.evening.longBreakOn = m.longBreakOn!==false;
+    T.evening.longBreakMinutes2 = m.longBreakMinutes2;
+    T.evening.longBreakAfter2 = m.longBreakAfter2;
+    T.evening.longBreakOn2 = !!m.longBreakOn2;
     T.evening.reverseBreaks = true;
     saveTimings(); renderTimingsTab();
     toast('تم نسخ إعدادات الصباحي وعكس الاستراحة الطويلة للمسائي','ok');
@@ -9186,10 +9316,10 @@ function exportAllSchedulesExcel(){
       return out;
     }
     let rows = bannerRows(4);
-    const mDays = two ? daysForShift('morning') : days;
-    const eDays = two ? daysForShift('evening') : [];
-    rows += trows('تواقيت الصباح'+(mDays.length?' — '+mDays.join('، '):''), T.morning||defaultShiftCfg('08:00',6));
-    if(two) rows += trows('تواقيت المساء'+(eDays.length?' — '+eDays.join('، '):''), T.evening||defaultShiftCfg('13:00',6));
+    const mDays = two ? daysForShift('morning') : (T.shiftMode==='evening' ? [] : days);
+    const eDays = two ? daysForShift('evening') : (T.shiftMode==='evening' ? days : []);
+    if(T.shiftMode!=='evening') rows += trows('تواقيت الصباح'+(mDays.length?' — '+mDays.join('، '):''), T.morning||defaultShiftCfg('08:00',6));
+    if(T.shiftMode==='evening' || T.shiftMode==='both') rows += trows('تواقيت المساء'+(eDays.length?' — '+eDays.join('، '):''), T.evening||defaultShiftCfg('13:00',6));
     rows += footRows(4);
     sheets += sheetWrap(name, rows, 4);
   }
@@ -9364,6 +9494,7 @@ function init(){
   try{ renderStagesList(); }catch(e){}
   try{ renderSettingsTab(); }catch(e){}
   try{ applyMasterFontSize(); }catch(e){}
+  try{ applyHideTeacherName(); }catch(e){}
   try{ ensureDemoReady(); }catch(e){}
   try{ bindSchoolWizard(); }catch(e){}
   try{ bindActivation(); }catch(e){}
@@ -9388,5 +9519,5 @@ init();
 
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a320de1bd873cd3b',t:'MTc4Nzg5NDQzNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a32d1db04be8d0d3',t:'MTc4ODAyMjg2OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a330828d8976dea0',t:'MTc4ODA1ODQ1Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
