@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>الجدول المدرسي — مدرسة النبراس</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Reem+Kufi:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Almarai:wght@400;700;800&family=Tajawal:wght@400;500;700;800;900&family=Reem+Kufi:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@700;800;900&display=swap" rel="stylesheet">
 <script id="nibras-theme-boot">
 (function(){
   try{
@@ -19,6 +19,7 @@
 </script>
 <style>
 :root{
+  --master-font:'Tajawal',sans-serif;
   --ink:#3a102c;
   --ink-2:#5c1848;
   --ink-soft:#8a5474;
@@ -424,7 +425,7 @@ html[data-theme="night"] .section-tag{background:var(--input-bg);border-color:va
 html[data-theme="night"] .empty-hint{border-color:rgba(255,255,255,.12);color:var(--ink-soft);background:rgba(255,255,255,.02)}
 html[data-theme="night"] .leftover-chip{background:var(--paper-2);color:var(--ink)}
 html[data-theme="night"] .load-bar-wrap{background:rgba(255,255,255,.06)}
-html[data-theme="night"] table.demo-master{background:var(--paper-2)}
+html[data-theme="night"] table.demo-master{font-family:var(--master-font);background:var(--paper-2)}
 html[data-theme="night"] table.demo-master thead th,
 html[data-theme="night"] table.demo-master tr.day-head-row th{
   background:linear-gradient(180deg,#1a1e27,#10131a);
@@ -443,7 +444,7 @@ html[data-theme="night"] table.demo-master th,
 html[data-theme="night"] table.demo-master td{border-color:rgba(255,255,255,.08)}
 html[data-theme="night"] .demo-master-wrap{border-color:var(--line);background:var(--paper-2)}
 html[data-theme="night"] .sched-wrap{border-color:var(--line)}
-html[data-theme="night"] table.sched{background:var(--paper-2)}
+html[data-theme="night"] table.sched{font-family:var(--master-font);background:var(--paper-2)}
 html[data-theme="night"] table.sched th,html[data-theme="night"] table.sched td{border-color:rgba(255,255,255,.08)}
 html[data-theme="night"] .slot-inner span.teach-hit{color:var(--ink-soft)!important}
 html[data-theme="night"] #toast{
@@ -2571,6 +2572,7 @@ html.mode-full-master:not(.need-landscape) body{
           <button type="button" class="orient-opt" data-pp-orient="portrait">عمودي</button>
         </div>
         <button type="button" class="btn btn-gold btn-block" id="btnTopPrintGo" style="margin-top:12px">🖨️ طباعة</button>
+        <button type="button" class="btn btn-outline btn-block" id="btnTopPdf" style="margin-top:8px">📄 تصدير PDF</button>
         <button type="button" class="btn btn-outline btn-block" id="btnTopPrintCut2" style="margin-top:8px">✂️ قص عمودي — ورقتان A4</button>
         <button type="button" class="btn btn-outline btn-block" id="btnTopPrintCut2L" style="margin-top:8px">✂️ قص أفقي — ورقتان A4</button>
         <p class="print-pop-label" style="margin:6px 0 0;font-weight:700;line-height:1.6">يقسم الرأس والجدول والتذييل نصفين كقصّ الورقة. هامش 0.5سم من كل جهة.</p>
@@ -2763,6 +2765,7 @@ html.mode-full-master:not(.need-landscape) body{
           <b id="masterFontLabel" style="min-width:72px">13 بكسل</b>
         </div>
         <p class="hint" style="margin:6px 0 0">يُطبَّق على الجدول الكامل والتجريبي والطباعة.</p>
+        <div class="field" style="margin-top:12px"><label>خط الجدول الكامل والتجريبي</label><select id="selMasterFont"><option value="Tajawal">تجوال — واضح ومتوازن</option><option value="Cairo">القاهرة — عصري وواضح</option><option value="Almarai">المراعي — هندسي أنيق</option><option value="Noto Kufi Arabic">نوتو كوفي — رسمي وفخم</option><option value="Reem Kufi">ريم كوفي — مميز للعناوين</option></select></div>
       </div>
       <div class="field" style="margin-top:14px">
         <label id="ttPosTeacher">موضع اسم المعلم</label>
@@ -3815,6 +3818,14 @@ function bindSchoolWizard(){
   });
 }
 
+function getMasterFontFamily(){ return (DB && DB.settings && DB.settings.masterFontFamily) || 'Tajawal'; }
+function applyMasterFontFamily(){
+  const f=getMasterFontFamily();
+  try{ document.documentElement.style.setProperty('--master-font', '\''+f+'\',sans-serif'); }catch(e){}
+  const el=document.getElementById('selMasterFont'); if(el && el.value!==f) el.value=f;
+}
+function setMasterFontFamily(f){ DB.settings.masterFontFamily=f; saveDB(); applyMasterFontFamily(); }
+
 function getMasterFontSize(){
   let n = parseInt(DB && DB.settings && DB.settings.masterFontSize, 10);
   if(!isFinite(n)) n = 13;
@@ -3826,9 +3837,12 @@ function applyMasterFontSize(){
   document.querySelectorAll('.master-font-val').forEach(function(el){ el.textContent = n; });
   const lab = document.getElementById('masterFontLabel');
   if(lab) lab.textContent = n + ' بكسل';
+  const fontSel=document.getElementById('selMasterFont');
+  if(fontSel) fontSel.addEventListener('change',()=>setMasterFontFamily(fontSel.value));
   const range = document.getElementById('inpMasterFont');
   if(range && +range.value !== n) range.value = String(n);
   applyMasterCellLayout();
+  applyMasterFontFamily();
   applyMasterTableTheme();
   applyHideTeacherName();
 }
@@ -3966,6 +3980,10 @@ function bindMasterFontBtns(root){
       setMasterFontSize(getMasterFontSize() + (parseInt(btn.getAttribute('data-dir'),10)||0));
     });
   });
+  root.querySelectorAll('.master-font-select').forEach(function(sel){
+    sel.value=getMasterFontFamily();
+    sel.addEventListener('change',function(e){ e.stopPropagation(); setMasterFontFamily(sel.value); });
+  });
   root.querySelectorAll('.btn-master-layout').forEach(function(btn){
     btn.addEventListener('click', function(e){
       e.preventDefault(); e.stopPropagation();
@@ -3996,6 +4014,7 @@ function masterFontBarHtml(){
     + '<button type="button" class="btn-master-font" data-dir="-1" aria-label="تصغير">−</button>'
     + '<b class="master-font-val">'+n+'</b>'
     + '<button type="button" class="btn-master-font" data-dir="1" aria-label="تكبير">+</button>'
+    + '<select class="master-font-select" aria-label="اختيار خط الجدول"><option value="Tajawal">تجوال</option><option value="Cairo">القاهرة</option><option value="Almarai">المراعي</option><option value="Noto Kufi Arabic">نوتو كوفي</option><option value="Reem Kufi">ريم كوفي</option></select>'
     + '</div><span class="full-font-sep"></span><span>اسم '+tt.theOne+'</span><div class="full-font-ctrl">'
     + '<button type="button" class="btn-master-layout'+(lay==='stack'?' active':'')+'" data-layout="stack">تحت</button>'
     + '<button type="button" class="btn-master-layout'+(lay==='side'?' active':'')+'" data-layout="side">مقابل</button>'
@@ -4601,6 +4620,11 @@ function renderFullMasterTab(){
     if(pb){ paper = pb.dataset.ppPaper==='A3' ? 'A3' : 'A4'; syncPop(); return; }
     const ob = e.target.closest('[data-pp-orient]');
     if(ob){ orient = ob.dataset.ppOrient==='portrait' ? 'portrait' : 'landscape'; syncPop(); }
+  });
+  const pdfBtn=document.getElementById('btnTopPdf');
+  if(pdfBtn) pdfBtn.addEventListener('click',function(e){
+    e.preventDefault(); e.stopPropagation(); closePop();
+    if(go) go.click();
   });
   if(go) go.addEventListener('click', function(e){
     e.preventDefault();
@@ -9508,9 +9532,23 @@ function bindNibrasBack(){
   }catch(e){}
 }
 
+function seedDefaultSchoolData(){
+  if(!DB || (DB.stages||[]).length) return;
+  const names=['محمد','علي','حسن','حسين','عباس'];
+  DB.teachers=names.map((name,i)=>({id:'def-teacher-'+(i+1),name,excludedDays:[]}));
+  const stageNames=['الأول','الثاني','الثالث','الرابع','الخامس','السادس'];
+  DB.stages=stageNames.map((name,i)=>({id:'def-stage-'+(i+1),name:'الصف '+name+' الابتدائي',weeklyPeriods:30,sections:[{id:'def-stage-'+(i+1)+'-a',name:'أ'},{id:'def-stage-'+(i+1)+'-b',name:'ب'}]}));
+  DB.assignments=[]; let ix=1;
+  DB.stages.forEach((st,si)=>st.sections.forEach((sec,ci)=>{
+    [['subj-ar',10],['subj-math',10],['subj-isl',10]].forEach((x,k)=>DB.assignments.push({id:'def-assignment-'+(ix++),stageId:st.id,sectionId:sec.id,subjectId:x[0],teacherId:'def-teacher-'+((si+ci+k)%5+1),periodsPerWeek:x[1]}));
+  }));
+  DB.schedule={}; saveDB();
+}
+
 function init(){
   try{ applyTheme(getPreferredTheme(), false); }catch(e){}
   try{ ensureDefaultSubjects(DB); }catch(e){}
+  try{ seedDefaultSchoolData(); }catch(e){}
   try{ ensureStageWeeklyPeriods(DB); }catch(e){}
   try{ ensurePeCourts(DB); }catch(e){}
   try{
@@ -9553,5 +9591,5 @@ init();
 
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a331a5d2ca5a197e',t:'MTc4ODA3MDM4Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a332fdd26955e1b8',t:'MTc4ODA4NDQ3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a331a5d2ca5a197e',t:'MTc4ODA3MDM4Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a33dbc94cb735275',t:'MTc4ODE5NzE0OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
