@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>الجدول الأسبوعي الذكي</title>
+<link rel="icon" type="image/png" href="app-icon-192.png">
+<link rel="apple-touch-icon" href="app-icon-180.png">
+<link rel="apple-touch-icon-precomposed" href="app-icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="جدول الحصص">
+<meta name="application-name" content="جدول الحصص">
+<meta name="theme-color" content="#5c1848">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Reem+Kufi:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@700;800;900&display=swap" rel="stylesheet">
 <script id="nibras-theme-boot">
@@ -15,6 +24,15 @@
     }
     document.documentElement.setAttribute('data-theme', t);
   }catch(e){ document.documentElement.setAttribute('data-theme','day'); }
+  try{
+    var af=parseInt(localStorage.getItem('nibras-appfont-v1'),10);
+    if(af>=10 && af<=30 && af!==15){
+      var de=document.documentElement;
+      de.setAttribute('data-afk','1');
+      de.style.setProperty('--afk', (af/15));
+      de.style.setProperty('--afk-inv', (15/af));
+    }
+  }catch(e){}
 })();
 </script>
 <style>
@@ -107,6 +125,20 @@ body, .card, .topbar, .btn, .tab-btn, input, select, textarea, .class-pill, .chi
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
+/* ===== حجم خط واجهات التطبيق (يُفعَّل فقط عند اختيار قيمة غير الافتراضي 15) =====
+   يُكبَّر الجسم كواجهة، بينما تُعكس المقياس على مناطق الجداول والطباعة
+   فتبقى الجداول الكاملة وجداول المعلمين وجداول الشعب — شاشةً وطباعةً — كما هي تمامًا. */
+html[data-afk] body{ zoom: var(--afk); }
+html[data-afk] #schedGridWrap,
+html[data-afk] #leftoverWrap,
+html[data-afk] #conflictBanner,
+html[data-afk] #fullConflictBanner,
+html[data-afk] #fullMasterWrap,
+html[data-afk] #demoAllWrap,
+html[data-afk] #teacherSchedGrid,
+html[data-afk] #teacherSchedMeta,
+html[data-afk] #print-output,
+html[data-afk] #print-measure-host{ zoom: var(--afk-inv); }
 body{
   background:var(--paper);
   color:var(--ink);
@@ -1757,35 +1789,36 @@ html[data-theme="night"] .theme-preview-day{border-color:rgba(126,196,255,.08)}
 .print-body.rows{grid-auto-flow:row;grid-auto-rows:1fr}
 .print-table-wrap{
   display:flex;flex-direction:column;min-height:0;min-width:0;
+  height:100%;
   border:1px solid #cfc6ac;border-radius:4px;overflow:hidden;
   background:#fff;
 }
 .pt-title{
-  font-size:11px;font-weight:900;color:#1b2a4a;text-align:center;
+  font-size:var(--pt-title,16px);font-weight:900;color:#0e1f3d;text-align:center;
   background:linear-gradient(180deg,#f6f4ee,#efe9d8);
-  padding:3px 4px;border-bottom:1px solid #cfc6ac;flex:none;
+  padding:5px 6px;border-bottom:1.5px solid #cfc6ac;flex:none;
   letter-spacing:.2px;
 }
 table.pt{
   border-collapse:collapse;width:100%;height:100%;
   table-layout:fixed;flex:1;
-  font-size:9px;
+  font-size:var(--pt-base,12px);
 }
 table.pt th,table.pt td{
-  border:1px solid #8a8a8a;text-align:center;vertical-align:middle;
-  padding:1px 1px;overflow:hidden;
+  border:1.2px solid #5f5f5f;text-align:center;vertical-align:middle;
+  padding:2px 2px;overflow:hidden;
 }
 table.pt th{
-  background:#1b2a4a;color:#fff;font-weight:700;
-  font-size:9px;padding:2px 1px;
+  background:#1b2a4a;color:#fff;font-weight:900;
+  font-size:var(--pt-th,13px);padding:4px 2px;
 }
 table.pt td.daycell, table.pt th.dayh{
-  background:#f0ebe0;font-weight:900;font-size:11px;
-  color:#1b2a4a;padding:2px 0;overflow:hidden;
-  box-sizing:border-box;width:22px;min-width:22px;max-width:22px;
+  background:#f0ebe0;font-weight:900;font-size:var(--pt-day,14px);
+  color:#0e1f3d;padding:2px 0;overflow:hidden;
+  box-sizing:border-box;width:26px;min-width:26px;max-width:26px;
 }
-table.pt td.slot b{display:block;font-size:8.5px;font-weight:800;line-height:1.25;color:#1b2a4a}
-table.pt td.slot span{display:block;font-size:7.5px;color:#444;line-height:1.2;margin-top:.5px}
+table.pt td.slot b{display:block;font-size:var(--pt-subj,15px);font-weight:900;line-height:1.3;color:#0e1f3d;letter-spacing:.2px}
+table.pt td.slot span{display:block;font-size:var(--pt-sec,11.5px);font-weight:800;color:#101010;line-height:1.3;margin-top:2px}
 .print-foot{
   flex:none;margin-top:3px;padding:4px 8px 4px;
   display:flex;align-items:stretch;justify-content:space-between;gap:6px;
@@ -2552,6 +2585,9 @@ html.mode-full-master:not(.need-landscape) body{
 .saved-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:12px;margin-top:12px}
 .saved-card{background:var(--demo-card-bg,var(--paper-2));border:1px solid var(--line);border-radius:var(--radius);padding:12px 13px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--card-glow)}
 .saved-card.is-current{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-light) inset, var(--gold-glow)}
+.adopt-chip{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin:0 0 12px;padding:8px 13px;border-radius:12px;border:1px solid var(--gold);background:var(--chip-bg);color:var(--ink);font-size:12.5px;font-weight:800;line-height:1.8}
+.adopt-chip b{color:var(--gold);font-weight:900}
+.adopt-chip .adopt-chip-sub{font-weight:700;color:var(--ink-soft)}
 .saved-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .saved-name{font-weight:900;font-size:15px;color:var(--ink);line-height:1.5;word-break:break-word}
 .saved-badge{flex:none;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;background:var(--success-bg);color:var(--success);white-space:nowrap}
@@ -2571,8 +2607,6 @@ html.mode-full-master:not(.need-landscape) body{
 html[data-theme="night"] .saved-card{background:linear-gradient(180deg, rgba(19,38,75,.55), rgba(11,24,48,.75));border-color:rgba(126,196,255,.14)}
 html[data-theme="night"] .saved-stat{background:rgba(126,196,255,.10);color:#bad0ea}
 html[data-theme="night"] .saved-label-ico{filter:none}
-html[data-theme="night"] .tab-btn[data-view="saved"]::before{content:"";width:17px;height:17px;flex:none;display:inline-block;background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2ZkOWYyIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMy4yIDcuNGEyIDIgMCAwIDEgMi0yaDMuM2wxLjggMmg4LjVhMiAyIDAgMCAxIDIgMnY4LjJhMiAyIDAgMCAxLTIgMkg1LjJhMiAyIDAgMCAxLTItMnoiLz48cGF0aCBkPSJNNy42IDEyLjZoOC44TTcuNiAxNS44aDUuNCIvPjwvc3ZnPg==");background-size:contain;background-repeat:no-repeat;background-position:center;filter:drop-shadow(0 0 6px rgba(34,211,238,.35));opacity:.9}
-html[data-theme="night"] .tab-btn[data-view="saved"]:hover::before,html[data-theme="night"] .tab-btn[data-view="saved"].active::before{opacity:1}
 
 </style>
 <style id="nibras-night-pro">/* ===== الوضع الليلي الاحترافي — ألوان مستخرجة من صورة المستخدم ===== */
@@ -2812,6 +2846,7 @@ html[data-theme="night"] #generateProgress{
         <button type="button" class="btn btn-gold btn-block" id="btnTopPrintGo" style="margin-top:12px">🖨️ طباعة</button>
         <button type="button" class="btn btn-outline btn-block" id="btnTopPrintCut2" style="margin-top:8px">✂️ قص عمودي — ورقتان A4</button>
         <button type="button" class="btn btn-outline btn-block" id="btnTopPrintCut2L" style="margin-top:8px">✂️ قص أفقي — ورقتان A4</button>
+        <button type="button" class="btn btn-outline btn-block" id="btnTopPrintEachClass" style="margin-top:8px">🏫 كل شعبة في صفحة مستقلة</button>
         <p class="print-pop-label" style="margin:6px 0 0;font-weight:700;line-height:1.6">يقسم الرأس والجدول والتذييل نصفين كقصّ الورقة. هامش 0.5سم من كل جهة.</p>
         <button type="button" class="btn btn-outline btn-block" id="btnTopExcel" style="margin-top:8px">📊 تصدير Excel</button>
       </div>
@@ -2830,7 +2865,6 @@ html[data-theme="night"] #generateProgress{
     <button class="tab-btn" data-view="build">🛠️ إنشاء الجدول</button>
     <button class="tab-btn" data-view="full">📋 الجدول الكامل</button>
     <button class="tab-btn" data-view="schedule">📅 الجداول</button>
-    <button class="tab-btn" data-view="saved">🗂️ الجداول المحفوظة</button>
     <button class="tab-btn" data-view="timings">⏰ تواقيت الدروس</button>
   </div>
 </div>
@@ -2886,6 +2920,11 @@ html[data-theme="night"] #generateProgress{
         <span class="ico">💾</span>
         <b>النسخ الاحتياطي</b>
         <small>تصدير واستيراد</small>
+      </button>
+      <button type="button" class="set-nav-btn" data-set="install">
+        <span class="ico">📲</span>
+        <b>تثبيت التطبيق</b>
+        <small>على الشاشة الرئيسية</small>
       </button>
     </div>
 
@@ -2995,6 +3034,15 @@ html[data-theme="night"] #generateProgress{
           <span class="theme-preview theme-preview-night" aria-hidden="true"></span>
           🌙 ليلي حديث
         </button>
+      </div>
+      <div class="field" style="margin-top:18px">
+        <label>حجم خط واجهات التطبيق (القوائم والأزرار والنصوص)</label>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input type="range" id="inpAppFont" min="10" max="30" step="1" style="flex:1;max-width:280px">
+          <b id="appFontLabel" style="min-width:72px">15 بكسل</b>
+          <button type="button" class="orient-opt" id="appFontReset">↺ الافتراضي 15</button>
+        </div>
+        <p class="hint" style="margin:6px 0 0">من 10 إلى 30. يكبّر خط قوائم التطبيق وأزراره ونصوصه فقط، <b>ولا علاقة له بالجدول الكامل ولا جداول المعلمين ولا جداول الشعب</b> — شاشةً وطباعةً — وتبقى تلك الجداول كما هي بالضبط. يُحفظ اختيارك في الجهاز.</p>
       </div>
       <div class="field" style="margin-top:18px">
         <label>حجم خط المادة في الجدول الكامل</label>
@@ -3153,7 +3201,23 @@ html[data-theme="night"] #generateProgress{
       <div id="tmNowBox" class="hint" style="margin:0"></div>
     </div>
     </div>
-  </section>
+  <div class="build-pane" id="set-install">
+    <div class="card">
+      <h2>📲 تثبيت التطبيق على الشاشة الرئيسية</h2>
+      <p class="hint">ثبّت «الجدول الأسبوعي الذكي» كتطبيق مستقل: أيقونة خاصة على سطح المكتب أو الشاشة الرئيسية تفتح التطبيق بنافذته الخاصة بلا شريط متصفح — على الحاسوب والأندرويد والآيفون. وعند الفتح عبر الرابط: <b>بعد أول زيارة يعمل التطبيق حتى بدون إنترنت</b>.</p>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:14px 0">
+        <img id="installIconPreview" alt="أيقونة التطبيق" style="width:96px;height:96px;border-radius:22px;box-shadow:var(--card-glow);border:1px solid var(--line)">
+        <div style="flex:1;min-width:220px">
+          <b style="font-size:15.5px">الجدول الأسبوعي الذكي</b>
+          <div class="hint" style="margin:4px 0 0">جدول الحصص الأسبوعي — مدرسة النبراس الابتدائية<br>تصميم الأستاذ حسين ناهي المسعودي</div>
+          <div id="installStatus" style="margin-top:8px;font-size:12.5px;font-weight:800;color:var(--ink-soft)"></div>
+        </div>
+      </div>
+      <button type="button" class="btn btn-gold btn-block" id="btnInstallApp" style="font-size:15.5px;padding:13px">📲 تثبيت التطبيق الآن</button>
+      <p class="hint" style="margin:10px 0 0" id="installHelp"></p>
+    </div>
+  </div>
+</section>
 
   <!-- TEACHERS -->
   <section class="view" id="view-teachers">
@@ -3309,10 +3373,12 @@ html[data-theme="night"] #generateProgress{
 
   <!-- SCHEDULE -->
   <section class="view" id="view-schedule">
+    <div class="adopt-chip" id="adoptChipSched" style="display:none"></div>
     <div class="demo-mode-bar" style="margin-bottom:12px">
       <div class="demo-mode-toggle" id="schedSubTabs" role="tablist" aria-label="الجداول">
         <button type="button" class="demo-mode-btn active" data-sched="classes">🏫 جداول الشعب</button>
         <button type="button" class="demo-mode-btn" data-sched="teachers">👤 <span id="ttSchedTeachers">جداول المعلمين</span></button>
+        <button type="button" class="demo-mode-btn" data-sched="saved">🗂️ <span id="ttSchedSaved">الجداول المحفوظة</span></button>
       </div>
     </div>
     <div class="build-pane active" id="sched-classes">
@@ -3323,6 +3389,13 @@ html[data-theme="night"] #generateProgress{
           <button type="button" class="orient-opt btn-hide-teach" id="btnSchedShowTeacher" data-hide="0">إظهار اسم المعلم</button>
           <button type="button" class="orient-opt btn-hide-teach" id="btnSchedHideTeacher" data-hide="1">إخفاء اسم المعلم</button>
           <button type="button" class="orient-opt" id="btnSaveFromSched">💾 حفظ الجدول باسم</button>
+          <button type="button" class="orient-opt" id="btnPrintThisClass">🖨️ طباعة هذه الشعبة</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin:0 0 12px;flex-wrap:wrap;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper-2)">
+          <b style="font-size:12.5px;color:var(--ink)">🔠 حجم خط الطباعة:</b>
+          <input type="range" min="10" max="50" step="1" id="ptFontSched" aria-label="حجم خط الطباعة" style="flex:1;min-width:130px;max-width:240px;accent-color:var(--gold)">
+          <span id="ptFontSchedVal" style="font-weight:900;color:var(--gold);min-width:34px;text-align:center;font-size:14px">15</span>
+          <span style="font-size:11.5px;color:var(--ink-soft)">(من 10 إلى 50 — تأثيره يظهر في الورقة عند الطباعة)</span>
         </div>
         <div class="class-picker" id="schedClassPicker"></div>
         <div id="conflictBanner" class="conflict-banner"></div>
@@ -3340,11 +3413,8 @@ html[data-theme="night"] #generateProgress{
         <div id="teacherSchedActions"></div>
       </div>
     </div>
-  </section>
-
-  <!-- SAVED SCHEDULES -->
-  <section class="view" id="view-saved">
-    <div class="card">
+    <div class="build-pane" id="sched-saved">
+      <div class="card">
       <h2>🗂️ الجداول المحفوظة</h2>
       <p class="hint">احفظ الجدول الكامل — بكل شعبه وحصصه — باسم تختاره، واحفظ أي عدد من الجداول: النسخة المعتمدة، جدول بديل، نسخة قبل التعديل… ويمكنك العودة لأي جدول محفوظ بضغطة واحدة، أو إعادة تسميته، أو إضافة ملاحظة، أو تنزيله كملف لتحتفظ به خارج البرنامج.</p>
       <div class="saved-toolbar">
@@ -3361,6 +3431,7 @@ html[data-theme="night"] #generateProgress{
       <div class="saved-lib-info" id="savedLibInfo"></div>
       <div id="savedList"></div>
     </div>
+    </div>
   </section>
 
   <!-- FULL MASTER -->
@@ -3373,7 +3444,9 @@ html[data-theme="night"] #generateProgress{
       </div>
     </div>
     <div id="fullConflictBanner" class="conflict-banner"></div>
+    <div class="adopt-chip" id="adoptChipFull" style="display:none"></div>
     <div id="fullMasterWrap"></div>
+  
   </section>
 
   <!-- TIMINGS -->
@@ -4667,7 +4740,6 @@ function showView(name, fromBack){
   if(name==='settings'){ setSettingsSubTab(settingsSubTab); }
   if(name==='teachers'){ renderDayExcludeChecks(); renderTeachersList(); setTeacherSubTab(teacherSubTab); }
   if(name==='subjects') renderSubjectsList();
-  if(name==='saved') renderSavedTab();
 }
 document.getElementById('tabs').addEventListener('click', e=>{
   const btn = e.target.closest('.tab-btn');
@@ -4919,6 +4991,19 @@ function renderFullMasterTab(){
   if(cut2L) cut2L.addEventListener('click', function(e){
     e.preventDefault(); e.stopPropagation(); closePop(); runCutTwo('landscape');
   });
+  const eachCls = document.getElementById('btnTopPrintEachClass');
+  if(eachCls) eachCls.addEventListener('click', function(e){
+    e.preventDefault(); e.stopPropagation(); closePop();
+    if(currentViewName==='demo'){ toast('هذه الطباعة للجدول الرسمي — افتحها من الجدول الرسمي','err'); return; }
+    ensureScheduleShape();
+    const withSched = allClasses().filter(function(c){
+      const g = DB.schedule[c.key] && DB.schedule[c.key].grid;
+      return g && g.some(function(r){ return r.some(Boolean); });
+    });
+    if(!withSched.length){ toast('لا يوجد جدول للطباعة — وزّع الحصص أولًا','err'); return; }
+    /* كل شعبة بمفردها في صفحة كاملة: رأس + جدول الشعبة + تذييل، وبضمان الاكتمال */
+    paginateAndPrintFit(withSched.map(c=>buildClassTableHtml(c.key)), 1, 'row', orient, paper);
+  });
   document.addEventListener('click', function(e){
     if(!pop.hidden && wrap && !wrap.contains(e.target)) closePop();
   });
@@ -4988,22 +5073,25 @@ function setBuildSubTab(tab){
 let schedSubTab = 'classes';
 let currentTeacherSchedId = null;
 function setSchedSubTab(tab){
-  schedSubTab = (tab==='teachers') ? 'teachers' : 'classes';
+  schedSubTab = (tab==='teachers' || tab==='saved') ? tab : 'classes';
   const c = document.getElementById('sched-classes');
   const t = document.getElementById('sched-teachers');
+  const s = document.getElementById('sched-saved');
   if(c) c.classList.toggle('active', schedSubTab==='classes');
   if(t) t.classList.toggle('active', schedSubTab==='teachers');
+  if(s) s.classList.toggle('active', schedSubTab==='saved');
   document.querySelectorAll('#schedSubTabs .demo-mode-btn').forEach(function(b){
     b.classList.toggle('active', b.getAttribute('data-sched')===schedSubTab);
   });
   if(schedSubTab==='teachers') renderTeacherSchedTab();
+  else if(schedSubTab==='saved'){ try{ renderSavedTab(); }catch(e){} }
   else renderScheduleTab();
 }
 let settingsSubTab = 'school';
 function setSettingsSubTab(tab){
-  const ok = {school:1,days:1,theme:1,backup:1,timings:1,alerts:1};
+  const ok = {school:1,days:1,theme:1,backup:1,timings:1,alerts:1,install:1};
   settingsSubTab = ok[tab] ? tab : 'school';
-  ['school','days','theme','backup','timings','alerts'].forEach(function(k){
+  ['school','days','theme','backup','timings','alerts','install'].forEach(function(k){
     const pane = document.getElementById('set-'+k);
     if(pane) pane.classList.toggle('active', k===settingsSubTab);
   });
@@ -5017,6 +5105,197 @@ function setSettingsSubTab(tab){
     try{ renderTimingsTab(); }catch(e){}
   }
 }
+/* ===== حجم خط واجهات التطبيق: 10..30 (الافتراضي 15 = بلا أي تغيير) ===== */
+function appFontGet(){
+  try{ const v = parseInt(localStorage.getItem('nibras-appfont-v1'),10); if(v>=10 && v<=30) return v; }catch(e){}
+  return 15;
+}
+function appFontApply(v){
+  v = Math.min(30, Math.max(10, parseInt(v,10)||15));
+  try{ localStorage.setItem('nibras-appfont-v1', String(v)); }catch(e){}
+  const de = document.documentElement;
+  if(v===15){
+    de.removeAttribute('data-afk');
+    de.style.removeProperty('--afk');
+    de.style.removeProperty('--afk-inv');
+  } else {
+    de.setAttribute('data-afk','1');
+    de.style.setProperty('--afk', String(v/15));
+    de.style.setProperty('--afk-inv', String(15/v));
+  }
+  const lab = document.getElementById('appFontLabel');
+  if(lab) lab.textContent = v + ' بكسل';
+  const range = document.getElementById('inpAppFont');
+  if(range && +range.value !== v) range.value = String(v);
+  return v;
+}
+(function bindAppFont(){
+  const r = document.getElementById('inpAppFont');
+  if(r) r.addEventListener('input', function(){ appFontApply(r.value); });
+  const rb = document.getElementById('appFontReset');
+  if(rb) rb.addEventListener('click', function(){ appFontApply(15); toast('أُعيد حجم خط الواجهات إلى الافتراضي 15','ok'); });
+  try{ appFontApply(appFontGet()); }catch(e){}
+})();
+
+
+/* =====================================================================
+   📲 تثبيت التطبيق على الشاشة الرئيسية (PWA)
+   أيقونة التطبيق: app-icon-512/192/180.png بجانب الملف + نسخة مدمجة احتياطية
+   ===================================================================== */
+/* تسجيل خدمة العمل بلا إنترنت: بعد أول فتح للرابط يعمل التطبيق دون اتصال */
+(function offlineService(){
+  try{
+    if(!('serviceWorker' in navigator)) return;
+    if(!/^https?:$/.test(location.protocol)) return;
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('./sw.js').catch(function(){});
+    });
+  }catch(e){}
+})();
+(function installAppFeature(){
+  const ICON_EMBED = 'data:image/png;base64,' + '__ICON_B64__';
+  let deferredPrompt = null;
+  let installedDone = false;
+  function abs(u){ try{ return new URL(u, location.href).href; }catch(e){ return u; } }
+  function isStandalone(){
+    try{ return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }catch(e){ return false; }
+  }
+  function isIOS(){
+    try{ return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1); }catch(e){ return false; }
+  }
+  function buildManifest(){
+    try{
+      const m = {
+        name: 'الجدول الأسبوعي الذكي',
+        short_name: 'جدول الحصص',
+        description: 'جدول الحصص الأسبوعي — مدرسة النبراس الابتدائية — تصميم الأستاذ حسين ناهي المسعودي',
+        dir: 'rtl', lang: 'ar',
+        start_url: abs(location.pathname + location.search),
+        scope: abs('./'),
+        display: 'standalone',
+        orientation: 'any',
+        background_color: '#faf4f7',
+        theme_color: '#5c1848',
+        icons: [
+          {src: abs('app-icon-192.png'), sizes: '192x192', type: 'image/png', purpose: 'any'},
+          {src: abs('app-icon-512.png'), sizes: '512x512', type: 'image/png', purpose: 'any'},
+          {src: abs('app-icon-512.png'), sizes: '512x512', type: 'image/png', purpose: 'maskable'},
+          {src: ICON_EMBED, sizes: '192x192', type: 'image/png', purpose: 'any'}
+        ]
+      };
+      let link = document.querySelector('link[rel="manifest"]');
+      if(!link){ link = document.createElement('link'); link.rel = 'manifest'; document.head.appendChild(link); }
+      link.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(m));
+    }catch(e){}
+  }
+  function iconSrc(){
+    return abs('app-icon-192.png');
+  }
+  function updateInstallUI(){
+    const st = document.getElementById('installStatus');
+    const btn = document.getElementById('btnInstallApp');
+    const help = document.getElementById('installHelp');
+    const img = document.getElementById('installIconPreview');
+    if(img && !img.getAttribute('src')) img.src = iconSrc();
+    if(!st || !btn) return;
+    if(installedDone || isStandalone()){
+      st.textContent = '✔ التطبيق مثبّت على هذا الجهاز';
+      st.style.color = 'var(--success)';
+      btn.textContent = '✔ التطبيق مثبّت';
+      btn.disabled = true;
+      if(help) help.textContent = 'يمكنك فتحه من أيقونته على الشاشة الرئيسية أو سطح المكتب في أي وقت.';
+      return;
+    }
+    btn.disabled = false;
+    if(deferredPrompt){
+      st.textContent = 'التثبيت المباشر متاح الآن على هذا الجهاز';
+      st.style.color = 'var(--gold)';
+      btn.textContent = '📲 تثبيت التطبيق الآن';
+      if(help) help.textContent = 'اضغط الزر ووافق على التثبيت وستظهر أيقونة التطبيق على سطح المكتب/الشاشة الرئيسية مباشرة.';
+    } else if(isIOS()){
+      st.textContent = 'على الآيفون/الآيباد: يُضاف من قائمة المشاركة';
+      st.style.color = 'var(--ink-soft)';
+      btn.textContent = '📲 إرشادات الإضافة على الآيفون';
+      if(help) help.textContent = '';
+    } else {
+      st.textContent = 'المتصفح الحالي لا يعرض زر تثبيت مباشرًا الآن';
+      st.style.color = 'var(--ink-soft)';
+      btn.textContent = '📲 كيف أثبّت التطبيق؟';
+      if(help) help.textContent = 'الحاسوب: من كروم/إيدج افتح قائمة المتصفح (⋮) ثم «تثبيت التطبيق». الأندرويد: من قائمة المتصفح (⋮) «إضافة إلى الشاشة الرئيسية». للتثبيت المباشر بزر واحد افتح التطبيق عبر رابط (http/https) ثم أعد هذه الصفحة.';
+    }
+  }
+  function installStepsModal(title, stepsHtml){
+    const root = document.getElementById('modal-root');
+    if(!root) return;
+    root.innerHTML = '<div class="modal-bg center"><div class="modal-card" style="max-width:520px">'
+      + '<h3>' + title + '</h3>'
+      + '<div style="display:flex;align-items:center;gap:12px;margin:10px 0">'
+      + '<img src="' + ICON_EMBED + '" alt="" style="width:64px;height:64px;border-radius:16px;border:1px solid var(--line)">'
+      + '<b>الجدول الأسبوعي الذكي</b></div>'
+      + stepsHtml
+      + '<div class="modal-actions"><button class="btn btn-gold" id="mdOk">فهمت</button></div>'
+      + '</div></div>';
+    const ok = document.getElementById('mdOk');
+    if(ok) ok.onclick = function(){ root.innerHTML = ''; };
+  }
+  function doInstall(){
+    if(installedDone || isStandalone()){ updateInstallUI(); return; }
+    if(deferredPrompt){
+      try{ deferredPrompt.prompt(); }catch(e){}
+      let p = null;
+      try{ if(deferredPrompt.userChoice && deferredPrompt.userChoice.then) p = deferredPrompt.userChoice; }catch(e){}
+      if(!p) p = Promise.resolve({outcome:'accepted'});
+      p.then(function(ch){
+        if(ch && ch.outcome==='accepted'){ toast('تم تثبيت التطبيق — تجد أيقونته على الشاشة الرئيسية','ok'); installedDone = true; }
+        else { toast('لم يتم التثبيت — يمكنك المحاولة في أي وقت','err'); }
+        deferredPrompt = null;
+        updateInstallUI();
+      }).catch(function(){ deferredPrompt = null; updateInstallUI(); });
+      return;
+    }
+    if(isIOS()){
+      installStepsModal('📲 إضافة التطبيق على الآيفون / الآيباد',
+        '<ol style="margin:8px 0 4px;padding-inline-start:20px;line-height:2.1;font-size:13.5px">'
+        + '<li>افتح التطبيق بمتصفح <b>Safari</b>.</li>'
+        + '<li>اضغط زر <b>المشاركة</b> □↑ أسفل الشاشة.</li>'
+        + '<li>انزل واختر <b>«إضافة إلى الشاشة الرئيسية»</b>.</li>'
+        + '<li>اضغط <b>إضافة</b> — وستظهر أيقونة التطبيق على شاشتك الرئيسية.</li>'
+        + '</ol>');
+      return;
+    }
+    installStepsModal('📲 تثبيت التطبيق على هذا الجهاز',
+      '<div style="line-height:2;font-size:13.5px;margin:6px 0">'
+      + '<b>على الحاسوب (كروم / إيدج):</b> افتح قائمة المتصفح <b>⋮ / ⋯</b> ثم اختر <b>«تثبيت التطبيق»</b> أو «تثبيت الجدول الأسبوعي الذكي».<br>'
+      + '<b>على الأندرويد (كروم):</b> افتح قائمة المتصفح <b>⋮</b> ثم <b>«إضافة إلى الشاشة الرئيسية»</b> ووافق.<br>'
+      + 'وللتثبيت المباشر بزر واحد: افتح التطبيق عبر رابط (http/https) وانتظر قليلًا ثم أعد هذه الصفحة وسيظهر زر التثبيت الفوري. وبعد أول فتح للرابط يبقى التطبيق يعمل حتى بدون إنترنت.'
+      + '</div>');
+  }
+  try{
+    window.addEventListener('beforeinstallprompt', function(e){
+      e.preventDefault();
+      deferredPrompt = e;
+      updateInstallUI();
+    });
+    window.addEventListener('appinstalled', function(){
+      installedDone = true; deferredPrompt = null;
+      toast('تم تثبيت التطبيق بنجاح — أيقونته الآن على الشاشة الرئيسية','ok');
+      updateInstallUI();
+    });
+  }catch(e){}
+  buildManifest();
+  window.__nibrasInstall = { update: updateInstallUI, do: doInstall, get deferred(){ return deferredPrompt; } };
+  function boot(){
+    const b = document.getElementById('btnInstallApp');
+    if(b && !b.getAttribute('data-bound')){
+      b.setAttribute('data-bound','1');
+      b.addEventListener('click', doInstall);
+    }
+    updateInstallUI();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  setTimeout(boot, 300);
+})();
+
 (function bindSettingsNav(){
   const wrap = document.getElementById('settingsNav');
   if(!wrap) return;
@@ -5133,10 +5412,16 @@ function renderTeacherGrid(teacherId){
   html += '</tbody></table></div>';
   wrap.innerHTML = html;
   if(acts){
-    acts.innerHTML = '<div style="margin-top:12px"><button type="button" class="btn btn-gold" id="btnPrintThisTeacher">🖨️ طباعة جدول '+esc(teacher?teacher.name:'المعلم')+'</button></div>';
+    acts.innerHTML = '<div style="display:flex;align-items:center;gap:10px;margin:12px 0 0;flex-wrap:wrap;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper-2)">'
+      + '<b style="font-size:12.5px;color:var(--ink)">🔠 حجم خط الطباعة:</b>'
+      + '<input type="range" min="10" max="50" step="1" id="ptFontTeach" aria-label="حجم خط الطباعة" style="flex:1;min-width:130px;max-width:240px;accent-color:var(--gold)">'
+      + '<span id="ptFontTeachVal" style="font-weight:900;color:var(--gold);min-width:34px;text-align:center;font-size:14px">'+ptPrintFont()+'</span>'
+      + '<span style="font-size:11.5px;color:var(--ink-soft)">(من 10 إلى 50 — تأثيره يظهر عند الطباعة)</span>'
+      + '<button type="button" class="btn btn-gold" id="btnPrintThisTeacher" style="margin-inline-start:auto">🖨️ طباعة جدول '+esc(teacher?teacher.name:'المعلم')+'</button>'
+      + '</div>';
     const pb = document.getElementById('btnPrintThisTeacher');
     if(pb) pb.addEventListener('click', function(){
-      try{ paginateAndPrint([buildTeacherTableHtml(teacherId)], 1, 'row', 'landscape', printPaper||'A4'); }
+      try{ paginateAndPrintFit([buildTeacherTableHtml(teacherId)], 1, 'row', 'landscape', printPaper||'A4'); }
       catch(err){ toast('تعذّرت الطباعة','err'); }
     });
   }
@@ -7362,6 +7647,7 @@ function generateFullSchedule(){
     return {success:false, unplaced:[], reason:'incomplete-load', gaps:gaps};
   }
   const result = generateScheduleFor(DB, 90);
+  if(result && result.success){ try{ savedClearCurrentId(); }catch(e){} }
   saveDB();
   return result;
 }
@@ -7527,6 +7813,8 @@ document.getElementById('btnGenerate').addEventListener('click', async ()=>{
            </div>`;
       const bsg=document.getElementById('btnSaveAfterGen');
       if(bsg) bsg.onclick=function(){ openSaveScheduleModal(); };
+      /* حفظ تلقائي: فور نجاح التوليد تُفتح نافذة الاسم، وبحفظها يُخزَّن الجدول ويُعتمد تلقائيًا */
+      setTimeout(function(){ try{ openSaveScheduleModal(); }catch(e){} }, 350);
       const bp=document.getElementById('btnReportPrint');
       if(bp) bp.onclick=function(){ printReportCard(DB, elapsedMs); };
       const bc=document.getElementById('btnReportCopy');
@@ -8334,7 +8622,8 @@ function fitPrintPagesOnePage(paper){
       fragHead.style.cssText = 'position:absolute;top:0;left:0;right:0;z-index:3;';
       fragFoot.style.cssText = 'position:absolute;bottom:0;left:0;right:0;z-index:3;';
       fragBody.style.cssText = 'position:absolute;left:0;right:0;overflow:hidden;z-index:1;top:'+top+'px;height:'+availH+'px;';
-      rScaler.style.cssText = 'position:absolute;top:0;right:0;transform-origin:top right;transform:scale('+s+');width:'+tw+'px;height:'+th+'px;';
+      /* صفحات الجداول المفردة/المزدوجة: الجدول يتمدد ليملأ الورقة كاملة */
+      rScaler.style.cssText = 'position:absolute;top:0;right:0;transform-origin:top right;transform:scale('+s+');width:'+tw+'px;height:'+availH+'px;';
       rScaler.querySelectorAll('table').forEach(tb=>{ tb.style.width = tw + 'px'; tb.style.tableLayout='fixed'; tb.style.borderCollapse='collapse'; });
     } else {
       const fragHead = pageNode.querySelector('.master-abs-head');
@@ -8345,7 +8634,9 @@ function fitPrintPagesOnePage(paper){
       if(fragFoot) fragFoot.style.cssText = 'position:absolute;bottom:0;left:0;right:0;z-index:3;';
       if(fragBody) fragBody.style.cssText = 'position:absolute;left:0;right:0;overflow:hidden;z-index:1;top:'+top+'px;height:'+availH+'px;';
       if(rScaler){
-        rScaler.style.cssText = 'position:absolute;top:0;right:0;transform-origin:top right;transform:scale('+s+');width:'+tw+'px;height:'+th+'px;';
+        /* جداول الشعب والمعلمين (pt): يبقى المُمدّد بارتفاع الورقة كاملة ليملأ الجدول الصفحة */
+        const isPtPage = !!rScaler.querySelector('table.pt');
+        rScaler.style.cssText = 'position:absolute;top:0;right:0;transform-origin:top right;transform:scale('+s+');width:'+tw+'px;height:'+(isPtPage ? availH : th)+'px;';
         rScaler.querySelectorAll('table').forEach(tb=>{ tb.style.width = tw + 'px'; tb.style.tableLayout='fixed'; tb.style.borderCollapse='collapse'; });
       }
     }
@@ -8354,13 +8645,51 @@ function fitPrintPagesOnePage(paper){
 }
 
 function paginateAndPrint(tableHtmlList, n, dir, orient, paper){
+  buildPaginatedPrintPages(tableHtmlList, n, dir, orient, paper);
+  paper = paper || printPaper || 'A4';
+  const run = ()=>{
+    try{ fitPrintPagesOnePage(paper); fitPrintPagesOnePage(paper); }catch(e){ console && console.error && console.error(e); }
+    setTimeout(()=> window.print(), 120);
+  };
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(()=> setTimeout(run, 60)).catch(()=> setTimeout(run, 60));
+  } else setTimeout(run, 100);
+}
+
+/* ===== حجم خط طباعة جداول المعلم/الشعبة (مؤشر من 10 إلى 50) =====
+   يؤثر على المطبوع فقط، ولا يغير شاشات البرنامج ولا بقية الطباعات. */
+function ptPrintFont(){
+  try{ const v = parseInt(localStorage.getItem('nibras-print-pt-font-v1'),10); if(v>=10 && v<=50) return v; }catch(e){}
+  return 15;
+}
+function ptPrintFontSet(v){
+  v = Math.min(50, Math.max(10, parseInt(v,10)||15));
+  try{ localStorage.setItem('nibras-print-pt-font-v1', String(v)); }catch(e){}
+  return v;
+}
+function ptFontVars(){
+  const n = ptPrintFont(), k = n/15;
+  const px = function(x,cap){ return Math.min(cap||99, Math.max(7, Math.round(x*k))); };
+  return '--pt-subj:'+n+'px;--pt-sec:'+px(11.5,30)+'px;--pt-base:'+px(12,30)+'px;--pt-th:'+px(13,24)+'px;--pt-day:'+px(14,26)+'px;--pt-title:'+px(16,28)+'px;';
+}
+function ptSyncFontUI(){
+  const v = ptPrintFont();
+  [['ptFontSched','ptFontSchedVal'],['ptFontTeach','ptFontTeachVal']].forEach(function(pair){
+    const i = document.getElementById(pair[0]), l = document.getElementById(pair[1]);
+    if(i) i.value = v;
+    if(l) l.textContent = v;
+  });
+}
+
+/* بناء صفحات الطباعة (رأس + جسم + تذييل) — التخطيط نفسه المستخدم في كل الطباعات */
+function buildPaginatedPrintPages(tableHtmlList, n, dir, orient, paper){
   n = n || 1;
   dir = dir || 'row';
   orient = orient || 'landscape';
-  paper = paper || printPaper || 'A4';
   injectPrintPageStyle(orient, paper);
 
   const out = document.getElementById('print-output');
+  try{ out.setAttribute('style', ptFontVars()); }catch(e){}
   let pages = '';
   const orientClass = orient === 'portrait' ? 'orient-portrait' : 'orient-landscape';
   const flowClass = dir === 'col' ? 'rows' : 'cols';
@@ -8384,9 +8713,61 @@ function paginateAndPrint(tableHtmlList, n, dir, orient, paper){
   const cleanup = ()=> out.classList.remove('printing');
   try{ window.addEventListener('afterprint', cleanup, {once:true}); }catch(e){}
   setTimeout(cleanup, 120000);
+}
 
+/* تثبيت الاكتمال: يعيد قياس كل صفحة جاهزة بمقاس الورق الفعلي ويضبط التحجيم
+   بهامش أمان صغير حتى يظهر كامل محتوى الجدول داخل الصفحة مهما اختلفت الخطوط
+   أو إعدادات الطابعة. يعمل على الصفحات الجاهزة فقط ولا يغيّر التخطيط. */
+function hardenPrintedPages(pages, shrink){
+  shrink = (typeof shrink === 'number' && shrink > 0 && shrink <= 1) ? shrink : 0.97;
+  const paper = (String(printPaper||'A4').toUpperCase()==='A3') ? 'A3' : 'A4';
+  const pageMM = paper === 'A3' ? {w:420,h:297} : {w:297,h:210};
+  const contentWmm = pageMM.w - 10;
+  const contentHmm = pageMM.h - 10;
+  let host = document.getElementById('print-measure-host');
+  if(!host){
+    host = document.createElement('div');
+    host.id = 'print-measure-host';
+    document.body.appendChild(host);
+  }
+  host.style.cssText = 'position:fixed;left:-30000px;top:0;width:'+contentWmm+'mm;height:'+contentHmm+'mm;overflow:hidden;background:#fff;z-index:-1;opacity:1;pointer-events:none;';
+  pages.forEach((pageNode)=>{
+    try{
+      const fragBody = pageNode.querySelector('.master-abs-body');
+      const scaler = pageNode.querySelector('.master-abs-scale, .print-scale-wrap, .master-fit-scaler');
+      if(!fragBody || !scaler) return;
+      host.innerHTML = '';
+      const clone = pageNode.cloneNode(true);
+      clone.style.cssText = 'position:relative;width:100%;height:100%;overflow:hidden;background:#fff;box-sizing:border-box;display:block;';
+      host.appendChild(clone);
+      const cBody = clone.querySelector('.master-abs-body');
+      const cScaler = clone.querySelector('.master-abs-scale, .print-scale-wrap, .master-fit-scaler');
+      if(!cBody || !cScaler) return;
+      const bw = cBody.clientWidth  || cBody.getBoundingClientRect().width  || 1;
+      const bh = cBody.clientHeight || cBody.getBoundingClientRect().height || 1;
+      const tw = parseFloat(cScaler.style.width)  || cScaler.scrollWidth  || cScaler.getBoundingClientRect().width  || 1;
+      const th = parseFloat(cScaler.style.height) || cScaler.scrollHeight || cScaler.getBoundingClientRect().height || 1;
+      let s = Math.min(bw / tw, bh / th);
+      if(!isFinite(s) || s <= 0) return;
+      /* إذا كان المحتوى داخل الحدود فلا تمس شيئًا؛ تخلَّ فقط عند التجاوز الفعلي */
+      const mCur = /scale\(([\d.]+)\)/.exec(scaler.style.transform || '');
+      const cur = mCur ? parseFloat(mCur[1]) : 1;
+      if(s >= cur) return;
+      s = Math.min(Math.max(s * shrink, 0.05), 6);
+      scaler.style.transform = 'scale(' + s + ')';
+      scaler.style.transformOrigin = 'top right';
+    }catch(e){}
+  });
+  host.innerHTML = '';
+}
+
+/* نفس الطباعة تمامًا (التخطيط والرأس والتذييل) + ضمان اكتمال المحتوى داخل كل صفحة */
+function paginateAndPrintFit(tableHtmlList, n, dir, orient, paper, shrink){
+  buildPaginatedPrintPages(tableHtmlList, n, dir, orient, paper);
+  paper = paper || printPaper || 'A4';
   const run = ()=>{
     try{ fitPrintPagesOnePage(paper); fitPrintPagesOnePage(paper); }catch(e){ console && console.error && console.error(e); }
+    try{ hardenPrintedPages(Array.from(document.querySelectorAll('#print-output .print-page')), shrink); }catch(e){ console && console.error && console.error(e); }
     setTimeout(()=> window.print(), 120);
   };
   if(document.fonts && document.fonts.ready){
@@ -8399,19 +8780,19 @@ if(_btnPrintClasses) _btnPrintClasses.addEventListener('click', ()=>{
   const keys = Array.from(document.querySelectorAll('.printClassChk:checked')).map(b=>b.value);
   if(keys.length===0){ toast('اختر شعبة واحدة على الأقل','err'); return; }
   const tables = keys.map(buildClassTableHtml);
-  paginateAndPrint(tables, printLayoutN, 'row', 'landscape', printPaper);
+  paginateAndPrintFit(tables, printLayoutN, 'row', 'landscape', printPaper);
 });
 const _btnPrintTeacher = document.getElementById('btnPrintTeacher');
 if(_btnPrintTeacher) _btnPrintTeacher.addEventListener('click', ()=>{
   const id = document.getElementById('selPrintTeacher').value;
   if(!id){ toast('لا يوجد معلمون','err'); return; }
-  paginateAndPrint([buildTeacherTableHtml(id)], 1, 'row', 'landscape', printPaper);
+  paginateAndPrintFit([buildTeacherTableHtml(id)], 1, 'row', 'landscape', printPaper);
 });
 const _btnPrintAllTeachers = document.getElementById('btnPrintAllTeachers');
 if(_btnPrintAllTeachers) _btnPrintAllTeachers.addEventListener('click', ()=>{
   if(DB.teachers.length===0){ toast('لا يوجد معلمون','err'); return; }
   const tables = DB.teachers.map(t=>buildTeacherTableHtml(t.id));
-  paginateAndPrint(tables, 1, 'row', 'landscape', printPaper);
+  paginateAndPrintFit(tables, 1, 'row', 'landscape', printPaper);
 });
 
 // Real full master schedule (same engine as demo)
@@ -11267,19 +11648,53 @@ const SAVED_KEY = 'nibras-jadwal-saved-v1';
 function savedLibRead(){
   try{
     const raw = localStorage.getItem(SAVED_KEY);
-    if(!raw) return {v:1, items:[]};
+    if(!raw) return {v:1, items:[], currentId:null};
     const parsed = JSON.parse(raw);
-    if(!parsed || !Array.isArray(parsed.items)) return {v:1, items:[]};
-    return {v:1, items:parsed.items.filter(function(x){ return x && x.id && x.name; })};
-  }catch(e){ return {v:1, items:[]}; }
+    if(!parsed || !Array.isArray(parsed.items)) return {v:1, items:[], currentId:null};
+    const items = parsed.items.filter(function(x){ return x && x.id && x.name; });
+    const currentId = (parsed.currentId && items.some(function(x){ return x.id===parsed.currentId; })) ? parsed.currentId : null;
+    return {v:1, items:items, currentId:currentId};
+  }catch(e){ return {v:1, items:[], currentId:null}; }
 }
-function savedLibWrite(items){
+function savedLibWrite(items, currentId){
   try{
-    localStorage.setItem(SAVED_KEY, JSON.stringify({v:1, items:items, updated:Date.now()}));
+    let cur = (currentId === undefined) ? (savedLibRead().currentId||null) : (currentId||null);
+    if(cur && !(items||[]).some(function(x){ return x.id===cur; })) cur = null;
+    localStorage.setItem(SAVED_KEY, JSON.stringify({v:1, items:items, currentId:cur, updated:Date.now()}));
     return '';
   }catch(e){
     return 'تعذّر الحفظ: المساحة المتاحة في هذا المتصفح امتلأت. احذف بعض الجداول القديمة أو نزّلها كملفات ثم أعد المحاولة.';
   }
+}
+/* ---------------- الجدول المعمول به حاليًا ----------------
+   يختار المستخدم أي جدول محفوظ ليكون هو «المعمول به»: تتبعه جداول الشعب
+   وجداول المعلمين والطباعة. المؤشر يُحفظ داخل الجهاز ويبقى بعد إغلاق الصفحة. */
+function savedCurrentItem(){
+  const lib = savedLibRead();
+  if(!lib.currentId) return null;
+  for(let i=0;i<lib.items.length;i++){ if(lib.items[i].id===lib.currentId) return lib.items[i]; }
+  return null;
+}
+function savedSetCurrentId(id){
+  const lib = savedLibRead();
+  const cur = (id && lib.items.some(function(x){ return x.id===id; })) ? id : null;
+  const err = savedLibWrite(lib.items, cur);
+  try{ renderAdoptChips(); }catch(e){}
+  return err;
+}
+function savedClearCurrentId(){ return savedSetCurrentId(null); }
+function renderAdoptChips(){
+  let it = null;
+  try{ it = savedCurrentItem(); }catch(e){}
+  const html = it
+    ? ('📌 الجدول المعمول به حاليًا: <b>' + esc(it.name) + '</b><span class="adopt-chip-sub">— جداول الشعب وجداول المعلمين والطباعة تتبعه</span>')
+    : '';
+  ['adoptChipSched','adoptChipFull'].forEach(function(cid){
+    const el = document.getElementById(cid);
+    if(!el) return;
+    el.innerHTML = html;
+    el.style.display = it ? '' : 'none';
+  });
 }
 function savedLibSizeKb(){
   try{ const raw = localStorage.getItem(SAVED_KEY) || ''; return Math.max(1, Math.round((raw.length*2)/1024)); }
@@ -11438,22 +11853,28 @@ function openSaveScheduleModal(){
     };
     const idx = lib2.items.findIndex(function(x){ return x.id === item.id; });
     if(idx >= 0) lib2.items[idx] = item; else lib2.items.unshift(item);
-    const err = savedLibWrite(lib2.items);
+    const err = savedLibWrite(lib2.items, item.id);
     if(err){ toast(err,'err'); return; }
     close();
-    toast(dup ? ('تم استبدال الجدول «'+name+'»') : ('تم حفظ الجدول باسم «'+name+'» — تجده في تبويب: الجداول المحفوظة'), 'ok');
+    toast(dup ? ('تم استبدال الجدول «'+name+'»') : ('تم حفظ الجدول باسم «'+name+'» واعتماده — تجده ضمن قسم الجداول ← 🗂️ الجداول المحفوظة'), 'ok');
+    try{ renderAdoptChips(); }catch(e){}
     try{ renderSavedTab(); }catch(e){}
   };
 }
 
-/* ---------------- فتح جدول محفوظ ---------------- */
+/* ---------------- اعتماد جدول محفوظ (جعله المعمول به) ---------------- */
 async function applySavedItem(id){
   const it = savedItemById(id);
-  if(!it){ toast('الجدول المحفوظ غير موجود','err'); return; }
+  if(!it){ toast('الجدول المحفوظ غير موجود','err'); return false; }
   const curFp = scheduleFingerprint(scheduleCopyOf(DB));
-  if(scheduleFingerprint(it.schedule) === curFp){ toast('هذا الجدول هو المعروض حاليًا على الشاشة'); return; }
-  const ok = await confirmDialog('عرض الجدول المحفوظ؟','سيتم استبدال الجدول المعروض حاليًا بالجدول «'+it.name+'» المحفوظ في '+savedFmtDate(it.created)+'. (الجدول المحفوظ نفسه يبقى محفوظًا ولا يُحذف)');
-  if(!ok) return;
+  if(scheduleFingerprint(it.schedule) === curFp){
+    savedSetCurrentId(id);
+    toast('هذا الجدول هو المعمول به حاليًا على الشاشة');
+    try{ renderSavedTab(); }catch(e){}
+    return true;
+  }
+  const ok = await confirmDialog('اعتماد الجدول المحفوظ؟','سيصبح «'+it.name+'» هو الجدول المعمول به حاليًا: تتبعه جداول الشعب وجداول المعلمين وأوراق الطباعة، ويُستبدل به الجدول المعروض الآن. (الجدول المحفوظ نفسه يبقى محفوظًا ولا يُحذف)');
+  if(!ok) return false;
   const curD = (DB.settings.days||[]).length, curP = DB.settings.periodsPerDay || 0;
   const meta = it.meta || {};
   const sD = meta.days && meta.days.length, sP = meta.periods || 0;
@@ -11485,15 +11906,18 @@ async function applySavedItem(id){
   lastUnplaced = [];
   selectedCell = null; conflictTargets = [];
   try{ saveDB(); }catch(e){}
+  savedSetCurrentId(id);
   refreshAfterScheduleChange();
-  toast('تم عرض الجدول المحفوظ «'+it.name+'»','ok');
+  toast('تم اعتماد الجدول «'+it.name+'» — جداول الشعب وجداول المعلمين تتبعه الآن','ok');
   if(skipped.length) toast('تنبيه: '+skipped.length+' شعبة من الجدول المحفوظ لم تعد موجودة في البرنامج وتم تجاهلها','err');
   try{ renderSavedTab(); }catch(e){}
+  return true;
 }
 function refreshAfterScheduleChange(){
   try{ refreshConflictCache(DB); }catch(e){}
   try{ renderScheduleTab(); }catch(e){}
   try{ renderDashboard(); }catch(e){}
+  try{ renderAdoptChips(); }catch(e){}
   try{ if(currentViewName==='full') renderFullMasterTab(); }catch(e){}
   try{ if(currentViewName==='demo') renderDemoTab(); }catch(e){}
 }
@@ -11525,7 +11949,7 @@ async function renameSavedItem(id){
     lib.items.forEach(function(x){ if(x.id===id){ x.name = name; x.updated = Date.now(); } });
     const err = savedLibWrite(lib.items);
     if(err){ toast(err,'err'); return; }
-    root.innerHTML=''; toast('تم تغيير الاسم','ok'); renderSavedTab();
+    root.innerHTML=''; toast('تم تغيير الاسم','ok'); try{ renderAdoptChips(); }catch(e){} renderSavedTab();
   };
   try{ inp.focus(); inp.select(); }catch(e){}
 }
@@ -11578,7 +12002,7 @@ async function deleteSavedItem(id){
   lib.items = lib.items.filter(function(x){ return x.id !== id; });
   const err = savedLibWrite(lib.items);
   if(err){ toast(err,'err'); return; }
-  toast('تم حذف الجدول المحفوظ','ok'); renderSavedTab();
+  toast('تم حذف الجدول المحفوظ','ok'); try{ renderAdoptChips(); }catch(e){} renderSavedTab();
 }
 function exportSavedItem(id){
   if(typeof requireActivation==='function' && !requireActivation()) return;
@@ -11632,12 +12056,15 @@ function renderSavedTab(){
   const list = document.getElementById('savedList');
   if(!list) return;
   const lib = savedLibRead();
-  const curFp = scheduleFingerprint(scheduleCopyOf(DB));
+  const curId = lib.currentId || null;
+  const curFp = curId ? null : scheduleFingerprint(scheduleCopyOf(DB));
   const info = document.getElementById('savedLibInfo');
   if(info){
-    info.innerHTML = lib.items.length
+    const curIt = curId ? lib.items.find(function(x){ return x.id===curId; }) : null;
+    info.innerHTML = (lib.items.length
       ? ('عدد الجداول المحفوظة: <b>'+lib.items.length+'</b> · الحجم التقريبي: <b>'+savedLibSizeKb()+'</b> كيلوبايت من مساحة المتصفح')
-      : 'لا توجد جداول محفوظة بعد.';
+      : 'لا توجد جداول محفوظة بعد.')
+      + (curIt ? (' · 📌 المعمول به حاليًا: <b>'+esc(curIt.name)+'</b>') : '');
   }
   let items = lib.items.slice();
   const q = savedSearchQ.trim();
@@ -11665,12 +12092,12 @@ function renderSavedTab(){
     const meta = it.meta || {};
     const D = (meta.days && meta.days.length) || 0;
     const P = meta.periods || 0;
-    const isCur = scheduleFingerprint(it.schedule) === curFp;
+    const isCur = curId ? (it.id===curId) : (scheduleFingerprint(it.schedule)===curFp);
     return ''
     + '<div class="saved-card' + (isCur ? ' is-current' : '') + '">'
     +   '<div class="saved-card-head">'
     +     '<span class="saved-name">' + esc(it.name) + '</span>'
-    +     (isCur ? '<span class="saved-badge">✔ المعروض حاليًا</span>' : '')
+    +     (isCur ? '<span class="saved-badge">✔ المعمول به حاليًا</span>' : '')
     +   '</div>'
     +   '<div class="saved-meta">🕒 حُفظ في ' + esc(savedFmtDate(it.created))
     +     ((meta.schoolName) ? (' · 🏫 ' + esc(meta.schoolName)) : '')
@@ -11683,7 +12110,7 @@ function renderSavedTab(){
     +   '</div>'
     +   (it.note ? ('<div class="saved-note">📝 ' + esc(it.note) + '</div>') : '')
     +   '<div class="saved-actions">'
-    +     '<button class="btn btn-gold btn-sm" data-saved-act="load" data-id="' + it.id + '">📂 عرض هذا الجدول</button>'
+    +     '<button class="btn btn-gold btn-sm" data-saved-act="load" data-id="' + it.id + '">' + (isCur ? '📂 معروض الآن' : '✅ اعتماد هذا الجدول') + '</button>'
     +     '<button class="btn btn-outline btn-sm" data-saved-act="rename" data-id="' + it.id + '">✏️ تسمية</button>'
     +     '<button class="btn btn-outline btn-sm" data-saved-act="note" data-id="' + it.id + '">📝 ملاحظة</button>'
     +     '<button class="btn btn-outline btn-sm" data-saved-act="dup" data-id="' + it.id + '">⧉ نسخة</button>'
@@ -11722,11 +12149,40 @@ document.addEventListener('click', function(e){
   if(sort) sort.addEventListener('change', function(){ savedSortMode = sort.value || 'new'; renderSavedTab(); });
   const btnSched = document.getElementById('btnSaveFromSched');
   if(btnSched) btnSched.addEventListener('click', function(){ openSaveScheduleModal(); });
+  try{ renderAdoptChips(); }catch(e){}
+  try{ ptSyncFontUI(); }catch(e){}
+})();
+
+/* مؤشر حجم خط الطباعة: تفويض دائم للمؤشرين (شعبة/معلم) حتى مع إعادة رسم الشاشات */
+document.addEventListener('input', function(e){
+  const t = e.target;
+  if(t && (t.id==='ptFontSched' || t.id==='ptFontTeach')){
+    ptPrintFontSet(t.value);
+    try{ ptSyncFontUI(); }catch(err){}
+  }
+});
+
+/* زر «طباعة هذه الشعبة»: يطبع الشعبة المعروضة بمفردها في صفحة كاملة بضمان الاكتمال */
+(function bindPrintThisClass(){
+  const b = document.getElementById('btnPrintThisClass');
+  if(!b) return;
+  b.addEventListener('click', function(){
+    try{
+      ensureScheduleShape();
+      let key = (typeof currentSchedClass !== 'undefined' && currentSchedClass) ? currentSchedClass : null;
+      if(!key){ const first = allClasses()[0]; key = first ? first.key : null; }
+      const g = key ? (DB.schedule[key] && DB.schedule[key].grid) : null;
+      if(!key || !g || !g.some(function(r){ return r.some(Boolean); })){
+        toast('لا يوجد جدول لهذه الشعبة بعد — وزّع الحصص أولًا','err'); return;
+      }
+      paginateAndPrintFit([buildClassTableHtml(key)], 1, 'row', 'landscape', printPaper||'A4');
+    }catch(err){ toast('تعذّرت الطباعة','err'); }
+  });
 })();
 
 init();
 
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a331a5d2ca5a197e',t:'MTc4ODA3MDM4Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a332fdd26955e1b8',t:'MTc4ODA4NDQ3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a38c72e8da79ba2b',t:'MTc4OTAyMjUwNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a38c7d024d56d61b',t:'MTc4OTAyMjkyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
