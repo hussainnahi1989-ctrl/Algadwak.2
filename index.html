@@ -1529,6 +1529,12 @@ html[data-theme="night"] .day-shift-chip.morning{
 @media (min-width:720px){
   .dash-hero{grid-template-columns:1fr 1.2fr}
 }
+/* بطاقات إحصاء لوحة التحكم: المعلمون / حصص الأسبوع / المواد */
+.dash-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 14px}
+.dash-stat{text-align:center;padding:14px 10px}
+.dash-stat .num{font-size:30px;font-weight:900;color:var(--gold);line-height:1.25}
+.dash-stat .lbl{font-size:12.5px;color:var(--ink-soft);font-weight:800;margin-top:4px}
+
 .dash-card{
   background:var(--paper-2);border:1px solid var(--line);border-radius:16px;
   padding:18px 16px;box-shadow:var(--shadow), var(--card-glow);
@@ -5585,6 +5591,7 @@ function renderTeacherGrid(teacherId){
    تحديد → نقل/تبديل، تفريغ اليوم يمنع مع تنبيه، الانشغال في نفس الوقت يُنبَّه،
    والنقل يُنفَّذ حتى مع التعارض وتبقى الخانات حمراء حتى التصحيح. */
 function onTeacherCellClick(teacherId, d, p){
+  if(typeof nibrasIsActivated==='function' && !nibrasIsActivated()){ showActivateGate(); return; }
   const cls = allClasses();
   function findAt(dd,pp){
     for(let i=0;i<cls.length;i++){
@@ -8495,6 +8502,7 @@ function renderGridFor(classKey){
   });
   const clearBtn = document.getElementById('btnClearSelected');
   if(clearBtn) clearBtn.addEventListener('click', ()=>{
+    if(typeof nibrasIsActivated==='function' && !nibrasIsActivated()){ showActivateGate(); return; }
     const g = DB.schedule[classKey].grid;
     const cell = g[selectedCell.day][selectedCell.period];
     if(cell){ lastUnplaced.push({assignmentId:cell.assignmentId, classKey, subjectId:cell.subjectId, teacherId:cell.teacherId}); }
@@ -8658,6 +8666,7 @@ function flashConflict(targets, message){
 }
 
 function onCellClick(classKey, d, p){
+  if(typeof nibrasIsActivated==='function' && !nibrasIsActivated()){ showActivateGate(); return; }
   const grid = DB.schedule[classKey].grid;
 
   // placing leftover — same section only
@@ -11008,7 +11017,10 @@ function renderDashboard(){
 
     let periodIdx = st.periodIdx;
     const live = root.querySelector('.dash-count');
-    const sig = [st.status, st.slot && st.slot.label, periodIdx, st.dayIdx, shiftLabel].join('|');
+    let weeklyTotalSig = 0;
+    (DB.assignments||[]).forEach(function(a){ weeklyTotalSig += (+a.periodsPerWeek||0); });
+    const sig = [st.status, st.slot && st.slot.label, periodIdx, st.dayIdx, shiftLabel,
+      (DB.teachers||[]).length, weeklyTotalSig, (DB.subjects||[]).length].join('|');
     if(live && root.dataset.sig===sig){
       const tm = root.querySelector('.d-time');
       if(tm) tm.textContent = pad2(now.getHours())+':'+pad2(now.getMinutes())+':'+pad2(now.getSeconds());
@@ -11074,6 +11086,11 @@ function renderDashboard(){
           '<div class="dash-count">'+count+'</div>'+
           '<div class="meta">'+esc(meta)+'</div>'+
         '</div>'+
+      '</div>'+
+      '<div class="dash-stats">'+
+        '<div class="dash-card dash-stat"><div class="num">'+((DB.teachers||[]).length)+'</div><div class="lbl">عدد '+(function(){ try{ return schoolTerms().thePluralGen; }catch(e){ return 'المعلمين'; } })()+' (الكلي)</div></div>'+
+        '<div class="dash-card dash-stat"><div class="num">'+weeklyTotalSig+'</div><div class="lbl">حصص الأسبوع — كل المدرسة</div></div>'+
+        '<div class="dash-card dash-stat"><div class="num">'+((DB.subjects||[]).length)+'</div><div class="lbl">المواد المدخلة</div></div>'+
       '</div>'+
       '<div class="card"><h2>📅 جدول اليوم — '+esc(dayName)+'</h2>'+grid+'</div>'+
       dashSupervisorsHtml(dayName, st.dayIdx)+dashOffTeachersHtml(dayName, st.dayIdx)+
