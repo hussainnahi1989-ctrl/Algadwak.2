@@ -3,7 +3,7 @@
    بعد أول فتح للرابط تُخزَّن نسخة كاملة في الجهاز، وتبقى تعمل بلا إنترنت.
    عند أي تحديث للنسخة: غيّر رقم الإصدار أدناه (v1 ← v2) لتُحدَّث تلقائيًا.
    ===================================================================== */
-const CACHE = 'nibras-schedule-v1';
+const CACHE = 'nibras-schedule-v3';
 const CORE = ['./', './index.html', './app-icon-192.png', './app-icon-512.png', './app-icon-180.png'];
 
 self.addEventListener('install', function(e){
