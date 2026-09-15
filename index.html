@@ -1529,6 +1529,20 @@ html[data-theme="night"] .day-shift-chip.morning{
 @media (min-width:720px){
   .dash-hero{grid-template-columns:1fr 1.2fr}
 }
+/* صفوف «عدد حصص كل يوم» في الإعدادات */
+.dp-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--paper-2)}
+.dp-row .dp-day{font-weight:900;min-width:90px}
+.dp-row select{padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;font-weight:800}
+.dp-row .dp-hint{font-size:11.5px;color:var(--ink-soft)}
+
+/* شريط منع الحصص المضمّن في قوائم المعلمين والمواد */
+.inline-ban{display:flex;flex-direction:column;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line-2)}
+.inline-ban .iban-row{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+.inline-ban .iban-lbl{font-size:11px;color:var(--ink-soft);font-weight:800;white-space:nowrap}
+.inline-ban .daycheck{padding:3px 8px;font-size:11px;border-radius:7px}
+.ban-clear{align-self:flex-start;border:1px solid var(--line-2);background:transparent;color:var(--ink-soft);border-radius:7px;padding:3px 10px;font-size:11px;font-family:inherit;font-weight:700;cursor:pointer}
+.ban-clear:hover{color:var(--danger);border-color:var(--danger)}
+
 /* بطاقات إحصاء لوحة التحكم: المعلمون / حصص الأسبوع / المواد */
 .dash-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 14px}
 .dash-stat{text-align:center;padding:14px 10px}
@@ -3042,6 +3056,11 @@ html[data-theme="night"] #generateProgress{
         <select id="inpPeriods" aria-label="عدد الحصص في اليوم"></select>
       </div>
     </div>
+    <div class="card">
+      <h2>عدد حصص كل يوم</h2>
+      <p class="hint">حدّد لكل يوم عدد حصصه الخاصة (من ١ إلى عدد الحصص اليومية). التوزيع يعتمد عليها: اليوم الأقصر تُفرَّغ نهايته تلقائيًا ولا تُجدول فيه بعد آخر حصة.</p>
+      <div id="dayPeriodsBox"></div>
+    </div>
     </div>
 
     <div class="build-pane" id="set-theme">
@@ -3661,6 +3680,28 @@ const DEFAULT_SUBJECTS = [
 function cloneDefaultSubjects(){
   return DEFAULT_SUBJECTS.map(s=>({id:s.id, name:s.name, color:s.color}));
 }
+/* البيانات الافتراضية عند أول تشغيل: ٥ معلمين + مرحلة بشعبتين ومواد مسندة (كلها قابلة للتعديل والحذف) */
+function cloneDefaultTeachers(){
+  return [
+    {id:'t-def-1', name:'علي حسين', excludedDays:[], noFirstPeriod:false},
+    {id:'t-def-2', name:'فاطمة الكعبي', excludedDays:[], noFirstPeriod:false},
+    {id:'t-def-3', name:'محمد الربيعي', excludedDays:[], noFirstPeriod:false},
+    {id:'t-def-4', name:'زينب العبيدي', excludedDays:[], noFirstPeriod:false},
+    {id:'t-def-5', name:'أحمد الجبوري', excludedDays:[], noFirstPeriod:false}
+  ];
+}
+function defaultStage(){
+  return {id:'st-def-1', name:'الصف الأول', weeklyPeriods:28, sections:[{id:'sec-def-a',name:'أ'},{id:'sec-def-b',name:'ب'}]};
+}
+function defaultAssignments(){
+  const plan=[['subj-ar',7,'t-def-1'],['subj-math',6,'t-def-2'],['subj-sci',4,'t-def-3'],['subj-en',4,'t-def-4'],
+              ['subj-isl',3,'t-def-3'],['subj-soc',2,'t-def-4'],['subj-pe',1,'t-def-5'],['subj-art',1,'t-def-5']];
+  let n=0; const out=[];
+  ['sec-def-a','sec-def-b'].forEach(sec=>{
+    plan.forEach(pl=>{ n++; out.push({id:'da-def-'+n, stageId:'st-def-1', sectionId:sec, subjectId:pl[0], teacherId:pl[2], periodsPerWeek:pl[1]}); });
+  });
+  return out;
+}
 
 function defaultShiftCfg(start, lessons){
   return {
@@ -3711,10 +3752,10 @@ function defaultDB(){
       welcomeSeen:false,
       peCourts:1
     },
-    teachers:[],
+    teachers: cloneDefaultTeachers(),
     subjects: cloneDefaultSubjects(),
-    stages:[],
-    assignments:[],
+    stages:[defaultStage()],
+    assignments: defaultAssignments(),
     schedule:{},
     timings: defaultTimings(),
     supervisors:[]
@@ -5726,6 +5767,31 @@ function confirmDialog(title, message){
 }
 
 /* ============================= SETTINGS TAB ============================= */
+/* عدد حصص كل يوم: التطبيع والعرض */
+function normalizeDayPeriods(){
+  const D=DB.settings.days.length, P=DB.settings.periodsPerDay;
+  let arr=Array.isArray(DB.settings.dayPeriods)?DB.settings.dayPeriods.slice():[];
+  for(let d=0;d<D;d++){ let v=parseInt(arr[d],10); if(!isFinite(v)||v<1) v=P; arr[d]=Math.max(1,Math.min(P,v)); }
+  arr.length=D;
+  DB.settings.dayPeriods=arr;
+}
+function renderDayPeriodsBox(){
+  const box=document.getElementById('dayPeriodsBox'); if(!box) return;
+  normalizeDayPeriods();
+  box.innerHTML = '<div class="dp-row dp-head" style="border:none;background:none;padding:0 10px 2px"><span class="dp-day" style="font-size:11.5px;color:var(--ink-soft)">اليوم</span><span style="font-size:11.5px;color:var(--ink-soft)">عدد الحصص</span></div>' +
+    DB.settings.days.map(function(d,i){
+      const opts=Array.from({length:DB.settings.periodsPerDay},function(_,k){ return '<option value="'+(k+1)+'"'+(DB.settings.dayPeriods[i]===k+1?' selected':'')+'>'+(k+1)+'</option>'; }).join('');
+      return '<div class="dp-row"><span class="dp-day">'+esc(d)+'</span><select data-d="'+i+'" aria-label="عدد حصص '+esc(d)+'">'+opts+'</select><span class="dp-hint">حصة/يوم</span></div>';
+    }).join('');
+  box.querySelectorAll('select').forEach(function(sel){
+    sel.addEventListener('change', function(){
+      normalizeDayPeriods();
+      DB.settings.dayPeriods[+sel.dataset.d]=Math.max(1,Math.min(DB.settings.periodsPerDay,parseInt(sel.value,10)||DB.settings.periodsPerDay));
+      saveDB(); renderDayPeriodsBox();
+      toast('حصص '+DB.settings.days[+sel.dataset.d]+' = '+DB.settings.dayPeriods[+sel.dataset.d],'ok');
+    });
+  });
+}
 function renderSettingsTab(){
   const dayB = document.getElementById('themeDayBtn');
   const nightB = document.getElementById('themeNightBtn');
@@ -5779,6 +5845,7 @@ function renderSettingsTab(){
     el.addEventListener('click', ()=>{
       if(DB.settings.days.length<=1){ toast('يجب أن يبقى يوم واحد على الأقل','err'); return; }
       DB.settings.days.splice(+el.dataset.del,1);
+      if(Array.isArray(DB.settings.dayPeriods)) DB.settings.dayPeriods.splice(+el.dataset.del,1);
       // fix teacher excluded days indices > removed
       DB.teachers.forEach(t=>{
         t.excludedDays = (t.excludedDays||[]).filter(x=>x < DB.settings.days.length);
@@ -5788,6 +5855,7 @@ function renderSettingsTab(){
       saveDB(); ensureScheduleShape(); saveDB(); renderSettingsTab();
     });
   });
+  renderDayPeriodsBox();
 }
 document.getElementById('inpSchoolName').addEventListener('input', e=>{
   DB.settings.schoolName = e.target.value; saveDB();
@@ -5841,12 +5909,15 @@ document.getElementById('inpDocTitle').addEventListener('input', e=>{
 document.getElementById('inpPeriods').addEventListener('change', e=>{
   let v = parseInt(e.target.value)||1; v = Math.max(1,Math.min(100,v));
   DB.settings.periodsPerDay = v; e.target.value=v;
+  normalizeDayPeriods();
   saveDB(); ensureScheduleShape(); saveDB();
+  renderDayPeriodsBox();
   toast('تم تحديث عدد الحصص اليومية');
 });
 document.getElementById('btnAddDay').addEventListener('click', ()=>{
   if(DB.settings.days.length>=7){ toast('الحد الأقصى 7 أيام','err'); return; }
   DB.settings.days.push('يوم جديد');
+  if(Array.isArray(DB.settings.dayPeriods)) DB.settings.dayPeriods.push(DB.settings.periodsPerDay);
   ensureSupervisors(DB);
   saveDB(); ensureScheduleShape(); saveDB(); renderSettingsTab();
 });
@@ -5964,6 +6035,46 @@ document.getElementById('btnAddTeacher').addEventListener('click', ()=>{
   renderTeachersList();
   toast('تمت إضافة المعلم','ok');
 });
+function banStripHtml(kind,id,forbidden){
+  return '<div class="inline-ban" data-iban="'+kind+':'+id+'">'
+    +'<div class="iban-row"><span class="iban-lbl">⛔ منع من الحصص:</span>'
+    +periodBanChips(forbidden)
+    +'</div>'
+    +'<button type="button" class="ban-clear" data-ibanclear>🧹 تفريغ الكلي</button>'
+    +'</div>';
+}
+function attachInlineBans(wrap){
+  if(!wrap) return;
+  wrap.querySelectorAll('[data-iban]').forEach(box=>{
+    const parts=(box.dataset.iban||'').split(':');
+    const kind=parts[0], id=parts.slice(1).join(':');
+    const getObject=()=> kind==='t' ? getTeacher(id) : getSubject(id);
+    box.querySelectorAll('[data-p]').forEach(ch=>{
+      ch.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        const obj=getObject(); if(!obj) return;
+        const p=+ch.dataset.p;
+        const arr=Array.isArray(obj.forbiddenPeriods)?obj.forbiddenPeriods.slice():[];
+        const ix=arr.indexOf(p);
+        if(ix>=0){ arr.splice(ix,1); toast('أُلغي منع ح'+(p+1),'ok'); }
+        else { arr.push(p); toast('مُنع من ح'+(p+1),'ok'); }
+        arr.sort((a,b)=>a-b);
+        if(arr.length) obj.forbiddenPeriods=arr; else delete obj.forbiddenPeriods;
+        saveDB();
+        renderTeachersList(); renderSubjectsList();
+      });
+    });
+    const clr=box.querySelector('[data-ibanclear]');
+    if(clr) clr.addEventListener('click',(e)=>{
+      e.stopPropagation();
+      const obj=getObject(); if(!obj) return;
+      delete obj.forbiddenPeriods;
+      saveDB();
+      toast('تم تفريغ كل المنع','ok');
+      renderTeachersList(); renderSubjectsList();
+    });
+  });
+}
 function renderTeachersList(){
   const wrap = document.getElementById('teacherList');
   document.getElementById('teacherCount').textContent = DB.teachers.length;
@@ -5972,9 +6083,10 @@ function renderTeachersList(){
     const days = (t.excludedDays||[]).map(i=>DB.settings.days[i]).filter(Boolean);
     let sub = days.length ? 'تفريغ: ' + days.join('، ') : 'متاح كل الأيام';
     if(t.noFirstPeriod) sub += ' • 🚫 لا يبدأ بالحصة الأولى';
+    if((t.forbiddenPeriods||[]).length) sub += ' • ⛔ ممنوع في '+(t.forbiddenPeriods||[]).map(p=>'ح'+(p+1)).join('، ');
     return `<div class="item-row">
       <div class="item-dot" style="background:var(--ink-2)"></div>
-      <div class="item-main"><b>${esc(t.name)}</b><span>${esc(sub)}</span></div>
+      <div class="item-main"><b>${esc(t.name)}</b><span>${esc(sub)}</span>${banStripHtml('t',t.id,t.forbiddenPeriods)}</div>
       <div class="item-actions">
         <button class="icon-btn" data-edit="${t.id}" title="تعديل">✎</button>
         <button class="icon-btn danger" data-del="${t.id}" title="حذف">🗑</button>
@@ -5993,6 +6105,7 @@ function renderTeachersList(){
     if(teacherSubTab==='mon') renderSupervisorsTable();
   }));
   wrap.querySelectorAll('[data-edit]').forEach(b=> b.addEventListener('click', ()=> openEditTeacher(b.dataset.edit)));
+  attachInlineBans(wrap);
 }
 function clearTeacherFromSchedule(teacherId){
   Object.values(DB.schedule).forEach(sc=>{
@@ -6000,6 +6113,16 @@ function clearTeacherFromSchedule(teacherId){
       for(let i=0;i<row.length;i++){ if(row[i] && row[i].teacherId===teacherId) row[i]=null; }
     });
   });
+}
+/* رقائق «حصص ممنوعة» للمواد والمعلمين: الحمراء = ممنوعة */
+function periodBanChips(forbidden){
+  const P = DB.settings.periodsPerDay;
+  const arr = Array.isArray(forbidden)?forbidden:[];
+  let out = '';
+  for(let p=0;p<P;p++){
+    out += '<button type="button" class="daycheck '+(arr.indexOf(p)>=0?'off':'')+'" data-p="'+p+'">ح '+(p+1)+'</button>';
+  }
+  return out;
 }
 function openEditTeacher(id){
   const t = getTeacher(id); if(!t) return;
@@ -6015,6 +6138,7 @@ function openEditTeacher(id){
           <label>قيود إضافية</label>
           <label class="check-item"><input type="checkbox" id="edTeacherNoFirst" ${t.noFirstPeriod?'checked':''}> لا تُجدول حصصه في الحصة الأولى من اليوم</label>
         </div>
+        <div class="field"><label>حصص لا يُجدَول فيها إطلاقًا (اضغط الحصة لتصبح حمراء = ممنوعة)</label><div class="daychecks" id="edTeacherBan">${periodBanChips(t.forbiddenPeriods)}</div></div>
         <div class="modal-actions">
           <button class="btn btn-outline" id="edCancel">إلغاء</button>
           <button class="btn btn-primary" id="edSave">حفظ</button>
@@ -6022,6 +6146,7 @@ function openEditTeacher(id){
       </div>
     </div>`;
   root.querySelectorAll('#edTeacherDays .daycheck').forEach(b=> b.addEventListener('click', ()=>b.classList.toggle('off')));
+  root.querySelectorAll('#edTeacherBan .daycheck').forEach(b=> b.addEventListener('click', ()=>b.classList.toggle('off')));
   root.querySelector('#edCancel').onclick = ()=> root.innerHTML='';
   root.querySelector('#edSave').onclick = ()=>{
     const name = root.querySelector('#edTeacherName').value.trim();
@@ -6030,6 +6155,8 @@ function openEditTeacher(id){
     t.excludedDays = Array.from(root.querySelectorAll('#edTeacherDays .daycheck.off')).map(b=>+b.dataset.day);
     const nf = root.querySelector('#edTeacherNoFirst');
     if(nf && nf.checked) t.noFirstPeriod = true; else delete t.noFirstPeriod;
+    const bans = Array.from(root.querySelectorAll('#edTeacherBan .daycheck.off')).map(b=>+b.dataset.p);
+    if(bans.length) t.forbiddenPeriods = bans; else delete t.forbiddenPeriods;
     saveDB(); root.innerHTML=''; renderTeachersList();
     toast('تم الحفظ','ok');
   };
@@ -6078,12 +6205,13 @@ function renderSubjectsList(){
   wrap.innerHTML = DB.subjects.map(s=>`
     <div class="item-row">
       <div class="item-dot" style="background:${s.color}"></div>
-      <div class="item-main"><b>${esc(s.name)}</b><span>أولوية التوزيع: ${prioLabelOf(s)} ${prioBarsOf(s)}</span></div>
+      <div class="item-main"><b>${esc(s.name)}</b><span>أولوية التوزيع: ${prioLabelOf(s)} ${prioBarsOf(s)}</span>${banStripHtml('s',s.id,s.forbiddenPeriods)}</div>
       <div class="item-actions">
         <button class="icon-btn" data-editsubj="${s.id}" title="تعديل">✎</button>
         <button class="icon-btn danger" data-del="${s.id}" title="حذف">🗑</button>
       </div>
     </div>`).join('');
+  attachInlineBans(wrap);
   wrap.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', async ()=>{
     const used = DB.assignments.some(a=>a.subjectId===b.dataset.del);
     const ok = await confirmDialog('حذف المادة؟', used ? 'هذه المادة مستخدمة في توزيع الحصص، سيتم حذف توزيعاتها.' : 'سيتم حذف المادة نهائيًا.');
@@ -6106,6 +6234,7 @@ function renderSubjectsList(){
         <div class="field" style="flex:0 0 170px"><label>أولوية التوزيع</label><select id="edSubjPriority"><option value="5">5 — عالية جدًا</option><option value="4">4 — عالية</option><option value="3">3 — عادية</option><option value="2">2 — منخفضة</option><option value="1">1 — منخفضة جدًا</option></select></div>
       </div>
       <p class="hint" style="margin:2px 0 0">الأعلى أولوية تُوزَّع أولًا وتحصل على أفضل الأوقات، وتُمنع تكرارها في اليوم بقوة أكبر.</p>
+      <div class="field"><label>حصص لا تظهر فيها المادة (اضغط الحصة لتصبح حمراء = ممنوعة)</label><div class="daychecks" id="edSubjBan">${periodBanChips(s.forbiddenPeriods)}</div></div>
       <div class="modal-actions">
         <button class="btn btn-outline" id="edCancel">إلغاء</button>
         <button class="btn btn-primary" id="edSave">حفظ</button>
@@ -6113,6 +6242,7 @@ function renderSubjectsList(){
     </div></div>`;
     const _pselInit = root.querySelector('#edSubjPriority');
     if(_pselInit) _pselInit.value = String(subjectPriorityOf(s));
+    root.querySelectorAll('#edSubjBan .daycheck').forEach(b=> b.addEventListener('click', ()=>b.classList.toggle('off')));
     root.querySelector('#edCancel').onclick = ()=> root.innerHTML='';
     root.querySelector('#edSave').onclick = ()=>{
       const name = root.querySelector('#edSubjName').value.trim();
@@ -6120,6 +6250,8 @@ function renderSubjectsList(){
       s.name = name; s.color = root.querySelector('#edSubjColor').value;
       const psel2 = root.querySelector('#edSubjPriority');
       s.priority = psel2 ? Math.max(1,Math.min(5,parseInt(psel2.value,10)||3)) : 3;
+      const bans = Array.from(root.querySelectorAll('#edSubjBan .daycheck.off')).map(b=>+b.dataset.p);
+      if(bans.length) s.forbiddenPeriods = bans; else delete s.forbiddenPeriods;
       saveDB(); root.innerHTML=''; renderSubjectsList(); toast('تم الحفظ','ok');
     };
   }));
@@ -6689,6 +6821,11 @@ function generateScheduleFor(store, attempts){
   const P=Math.max(1,parseInt((store.settings&&store.settings.periodsPerDay)||6,10)||0);
   if(!D||!P||!store.stages||!store.stages.length){ return {success:false, unplaced:[], reason:'no-classes'}; }
   const CAP=D*P;
+  /* قيد جديد: عدد الحصص المحدد لكل يوم (dayPeriods) — اليوم الأقصر يُفرَّغ نهايته تلقائيًا */
+  const dayPerCfg=(store.settings&&Array.isArray(store.settings.dayPeriods))?store.settings.dayPeriods:null;
+  const dayCapArr=new Array(D);
+  for(let d=0;d<D;d++){ let v=(dayPerCfg&&dayPerCfg[d]!=null)?parseInt(dayPerCfg[d],10):P; if(!isFinite(v)||v<1) v=P; dayCapArr[d]=Math.max(1,Math.min(P,v)); }
+  const dayCapConfigured=dayPerCfg?dayCapArr.some(function(v){ return v<P; }):false;
   const COURTS=(parseInt((store.settings&&store.settings.peCourts),10)===2)?2:1;
   const tIndex={};
   (store.teachers||[]).forEach(function(t,i){ tIndex[t.id]=i; });
@@ -6698,6 +6835,12 @@ function generateScheduleFor(store, attempts){
   const kindOfId=function(sid){ const s=subjOf[sid]; return s?subjectKindByName(s.name):'other'; };
   /* قيد: منع حصص معلم معيّن في الحصة الأولى من اليوم */
   const forbFirst=(store.teachers||[]).map(function(t){ return !!t.noFirstPeriod; });
+  /* قيدان جديدان: منع ظهور المادة في حصص محددة، ومنع ظهور المدرس في حصص محددة
+     (قناع بتّي: البت p-1 مضاء = ممنوع في الحصة p) */
+  /* الأرقام صفرية الأساس (0 = الحصة الأولى) مطابقة لواجهة رقائق الحصص */
+  const periodBits=function(arr){ let b=0; (Array.isArray(arr)?arr:[]).forEach(function(x){ const v=parseInt(x,10); if(isFinite(v)&&v>=0&&v<P) b|=(1<<v); }); return b; };
+  const sBanMap=new Map(); (store.subjects||[]).forEach(function(s){ const b=periodBits(s&&s.forbiddenPeriods); if(b) sBanMap.set(s.id,b); });
+  const tBanBits=new Int32Array(T); (store.teachers||[]).forEach(function(t,i){ tBanBits[i]=periodBits(t&&t.forbiddenPeriods); });
   /* أولوية التوزيع لكل مادة (1..5) — الأعلى تُوزَّع أولًا وتحصل على أفضل الأوقات */
   const prioOf=function(sid){
     const s=subjOf[sid];
@@ -6763,6 +6906,8 @@ function generateScheduleFor(store, attempts){
     const f=new Array(D).fill(0);
     if(E>0){
       for(let d=0;d<D;d++) f[d]=Math.max(0, P-availOnDay(ci,d));
+      /* أيام أقل حصصًا: الخانات من dayCapArr[d] وما بعدها فراغ نهاية يوم إجباري */
+      if(dayCapConfigured){ for(let d=0;d<D;d++){ const nf=P-dayCapArr[d]; if(nf>f[d]) f[d]=nf; } }
       let used=0; for(let d=0;d<D;d++) used+=f[d];
       if(used>E){
         freeIssues.push({key:cls[ci].key, why:'توزيع الفراغات', needed:used, capacity:E, subjects:cls[ci].units.length, slots:CAP});
@@ -6780,6 +6925,9 @@ function generateScheduleFor(store, attempts){
           f[bd]++; rest--;
         }
       }
+    } else if(dayCapConfigured){
+      let used=0; for(let d=0;d<D;d++) used+=(P-dayCapArr[d]);
+      if(used>0) freeIssues.push({key:cls[ci].key, why:'أيام أقل حصصًا', needed:used, capacity:E, subjects:cls[ci].units.length, slots:CAP});
     }
     freeCnt.push(f);
   }
@@ -6830,6 +6978,7 @@ function generateScheduleFor(store, attempts){
       if(excl[ti][d]) continue;
       for(let p=0;p<P;p++){
         if(p===0&&forbFirst[ti]) continue;
+        if((tBanBits[ti]>>p)&1) continue;
         const col=d*P+p;
         let ok=false;
         for(let ci=0;ci<nC&&!ok;ci++){
@@ -6856,6 +7005,7 @@ function generateScheduleFor(store, attempts){
       if(!need[ti]) continue;
       if(excl[ti][d]) continue;
       if(forbFirst[ti]) continue;
+      if(tBanBits[ti]&1) continue;
       availT.push(ti);
     }
     const m=new Array(availT.length).fill(-1);
@@ -6907,8 +7057,10 @@ function generateScheduleFor(store, attempts){
     const m=new Array(slots.length).fill(-1);
     const seen=new Array(slots.length).fill(0);
     const tryK=function(ci){
+      const peSub=(cls[ci].units.find(function(u){ return u.kind==='pe'; })||{}).sub||null;
       for(let col=0;col<CAP;col++){
         if(isTail(ci,col)) continue;
+        if(peSub&&(((sBanMap.get(peSub)||0)>>PER(col))&1)) continue;
         for(let s2=0;s2<slots.length;s2++){
           if(slots[s2]!==col||seen[s2]) continue;
           seen[s2]=1;
@@ -6945,7 +7097,7 @@ function generateScheduleFor(store, attempts){
   const peAt=new Int32Array(CAP);
   const dayCount=cls.map(function(){ const a=[]; for(let d=0;d<D;d++) a.push(new Map()); return a; });
   const isFirstBlocked=function(ti,col){ return ti>=0 && forbFirst[ti] && PER(col)===0; };
-  let busyV=0, offV=0, peV=0, firstV=0;
+  let busyV=0, offV=0, peV=0, firstV=0, banV=0;
   /* فراغات المعلمين في وسط النهار (محسوبة دوالّيًا لكل معلم/يوم) */
   const tgaps=new Int32Array(T*D);
   let gapTotal=0;
@@ -6972,6 +7124,8 @@ function generateScheduleFor(store, attempts){
       tbusy[idx]=b+1; if(b>=1) busyV++;
       if(excl[ti][d]) offV++;
       if(isFirstBlocked(ti,col)) firstV++;
+      if((tBanBits[ti]>>PER(col))&1) banV++;
+      if(((sBanMap.get(u.sub)||0)>>PER(col))&1) banV++;
       setGap(ti,d);
     }
     if(isPE){ const b=peAt[col]; if(b>=COURTS) peV++; peAt[col]=b+1; }
@@ -6986,6 +7140,8 @@ function generateScheduleFor(store, attempts){
       tbusy[idx]=b-1; if(b>=2) busyV--;
       if(excl[ti][d]) offV--;
       if(isFirstBlocked(ti,col)) firstV--;
+      if((tBanBits[ti]>>PER(col))&1) banV--;
+      if(((sBanMap.get(u.sub)||0)>>PER(col))&1) banV--;
       setGap(ti,d);
     }
     if(isPE){ const b=peAt[col]; if(b>COURTS) peV--; peAt[col]=b-1; }
@@ -7032,7 +7188,7 @@ function generateScheduleFor(store, attempts){
     return cost;
   }
   const GAPW=58;   /* وزن فراغ المعلم في وسط النهار داخل دالة الهدف */
-  const hardTotal=function(){ return busyV+offV+peV+firstV; };
+  const hardTotal=function(){ return busyV+offV+peV+firstV+banV; };
   const softOfAll=function(){ let s=0; for(let ci=0;ci<nC;ci++) s+=classSoft(ci); return s+GAPW*gapTotal; };
 
   /* عدد حالات تكرار مادة \"مرة واحدة في اليوم\" لنفس الشعبة */
@@ -7058,7 +7214,9 @@ function generateScheduleFor(store, attempts){
       if(tbusy[u.ti*CAP+col]>1) v++;
       if(excl[u.ti][DAY(col)]) v++;
       if(isFirstBlocked(u.ti,col)) v++;
+      if((tBanBits[u.ti]>>PER(col))&1) v++;
     }
+    if(((sBanMap.get(u.sub)||0)>>PER(col))&1) v++;
     if(u.kind==='pe'&&peAt[col]>COURTS) v++;
     return v;
   }
@@ -7341,7 +7499,7 @@ function generateScheduleFor(store, attempts){
   }
   function audit(){
     const t=new Int32Array(T*CAP), pe=new Int32Array(CAP);
-    let off=0, first=0;
+    let off=0, first=0, bans=0;
     for(let ci=0;ci<nC;ci++){
       const g=grid[ci];
       let cnt=0;
@@ -7356,7 +7514,9 @@ function generateScheduleFor(store, attempts){
             t[u.ti*CAP+d*P+p]++;
             if(excl[u.ti][d]) off++;
             if(isFirstBlocked(u.ti,d*P+p)) first++;
+            if((tBanBits[u.ti]>>p)&1) bans++;
           }
+          if(((sBanMap.get(u.sub)||0)>>p)&1) bans++;
           if(u.kind==='pe') pe[d*P+p]++;
         }
       }
@@ -7364,7 +7524,7 @@ function generateScheduleFor(store, attempts){
     }
     for(let x=0;x<T*CAP;x++) if(t[x]>1) return false;
     for(let col=0;col<CAP;col++) if(pe[col]>COURTS) return false;
-    return off===0 && first===0;
+    return off===0 && first===0 && bans===0;
   }
   function commitSchedule(){
     for(let ci=0;ci<nC;ci++){
@@ -7421,7 +7581,9 @@ function generateScheduleFor(store, attempts){
           const d=DAY(col);
           if(excl[g.ti][d]) continue;
           if(PER(col)===0&&forbFirst[g.ti]) continue;
+          if((tBanBits[g.ti]>>PER(col))&1) continue;
         }
+        if(((sBanMap.get(g.sub)||0)>>PER(col))&1) continue;
         if(forb&&forb.has(gi+'|'+col)) continue;
         out.push(col);
       }
@@ -7517,15 +7679,17 @@ function generateScheduleFor(store, attempts){
     };
     /* ---------- ١) حصص الرياضة أولًا: ساحة واحدة على الأكثر في العمود ---------- */
     const peUnits=[];
-    for(let ci=0;ci<nC;ci++) tasks[ci].forEach(function(e){ if(e.kind==='pe') for(let k=0;k<e.n;k++) peUnits.push({ci:ci, key:e.key}); });
+    for(let ci=0;ci<nC;ci++) tasks[ci].forEach(function(e){ if(e.kind==='pe') for(let k=0;k<e.n;k++) peUnits.push({ci:ci, key:e.key, sub:e.sub}); });
     if(peUnits.length){
       peUnits.sort(function(a,b){ return usableColsOf(a.ci).length-usableColsOf(b.ci).length; });
       const takenCol={};
       const tryPE=function(i,seen){
         const cols=shuffleArr(usableColsOf(peUnits[i].ci));
+        const peBan=(sBanMap.get(peUnits[i].sub)||0);
         for(let k=0;k<cols.length;k++){
           const col=cols[k];
           if(seen[col]) continue;
+          if((peBan>>PER(col))&1) continue;
           seen[col]=1;
           if(peUsed[col]>=COURTS) continue;
           const other=takenCol[col];
@@ -7578,8 +7742,10 @@ function generateScheduleFor(store, attempts){
           if(e.ti>=0){
             if(excl[e.ti][d0]) return;
             if(p0===0&&forbFirst[e.ti]) return;
+            if((tBanBits[e.ti]>>p0)&1) return;
             if(tUsed[e.ti*CAP+col]) return;
           }
+          if(((sBanMap.get(e.sub)||0)>>p0)&1) return;
           if(e.kind==='pe') return;              /* الرياضة حُلّت مسبقًا */
           list.push(key);
         });
@@ -7692,6 +7858,8 @@ function generateScheduleFor(store, attempts){
           const d=DAY(col);
           if(excl[ti][d]) continue;
           if(PER(col)===0&&forbFirst[ti]) continue;
+          if((tBanBits[ti]>>PER(col))&1) continue;
+          if(((sBanMap.get(item.u.sub)||0)>>PER(col))&1) continue;
           if(item.u.kind==='pe'&&peUsed[col]>=COURTS) continue;
           list.push(col);
         }
@@ -7806,6 +7974,7 @@ function generateScheduleFor(store, attempts){
         if(excl[ti][d]) continue;
         for(let p=0;p<P;p++){
           if(p===0&&forbFirst[ti]) continue;
+          if((tBanBits[ti]>>p)&1) continue;
           const col=d*P+p;
           let ok=false;
           for(let ci=0;ci<nC&&!ok;ci++){
@@ -7893,6 +8062,9 @@ function generateScheduleFor(store, attempts){
      ========================================================================= */
   function balanceTeachers(budget){
     const end=Date.now()+budget;
+    /* أمانة الإسناد: خريطة حجم مجموعات (مادة|معلم) لكل شعبة — تمنع تبديل حصص
+       بين شعبتين إلا إذا كانت الحصتان من نصاب الشعبة الأخرى نفسها بالعدد ذاته */
+    const grpN=cls.map(function(c){ const m=new Map(); c.units.forEach(function(u2){ const k=u2.sub+'|'+u2.t; m.set(k,(m.get(k)||0)+1); }); return m; });
     const allowed=[];
     for(let ti=0;ti<T;ti++){ const ar=[]; for(let d=0;d<D;d++) if(!excl[ti][d]) ar.push(d); allowed.push(ar); }
     function loads(){
@@ -7983,9 +8155,17 @@ function generateScheduleFor(store, attempts){
                   }
                   doMove(ci,col2,col);
                 } else {
-                  /* تبديل عابر للشعب: حصة المعلم u تنتقل إلى ci2@d2 وحصة المعلم الآخر x إلى ci@d1 */
+                  /* تبديل عابر للشعب: حصة المعلم u تنتقل إلى ci2@d2 وحصة المعلم الآخر x إلى ci@d1
+                     لا يتم إلا إذا كان (مادة+معلم) كل حصة ضمن إسناد الشعبة المستقبِلة وبالعدد نفسه،
+                     حتى لا يظهر معلم في شعبة لم يُسند إليها ولا يتغيّر نصاب أي مادة */
                   const t2=x.ti;
                   if(tbusy[t2*CAP+col]>0) continue;
+                  /* الشرط الصحيح الوحيد: الحصتان لنفس الزوج (مادة+معلم) ونصابهما متساوٍ
+                     في الشعبتين — يتبادل المعلم يومَي حصتيه فقط ولا يتزحزح أي نصاب */
+                  const gkU=u.sub+'|'+u.t, gkX=x.sub+'|'+x.t;
+                  if(gkU!==gkX) continue;
+                  const nU1=grpN[ci].get(gkU), nU2=grpN[ci2].get(gkU);
+                  if(!nU2||nU1!==nU2) continue;
                   const s0=classSoft(ci)+classSoft(ci2);
                   removeUnit(ci,col); removeUnit(ci2,col2);
                   addUnit(ci,col,x); addUnit(ci2,col2,u);
@@ -8008,6 +8188,8 @@ function generateScheduleFor(store, attempts){
   let unitTotal=0; cls.forEach(function(c){ unitTotal+=c.units.length; });
   const deadline=Date.now()+Math.min(5000, Math.max(1200, unitTotal*8));
   let bestState=null, bestSoft=1e18, rounds=0;
+  let __retryLeft=1;
+  while(true){
   while(Date.now()<deadline){
     rounds++;
     if(rounds===1) loadFlow();
@@ -8038,6 +8220,9 @@ function generateScheduleFor(store, attempts){
         if(sf<bestSoft){ bestSoft=sf; bestState=snapshot(); }
       }
     }
+  }
+  if(!bestState&&__retryLeft>0){ __retryLeft--; deadline=Date.now()+5000; continue; }
+  break;
   }
   if(bestState){
     loadGrid(bestState);
