@@ -8186,7 +8186,7 @@ function generateScheduleFor(store, attempts){
   }
 
   let unitTotal=0; cls.forEach(function(c){ unitTotal+=c.units.length; });
-  const deadline=Date.now()+Math.min(5000, Math.max(1200, unitTotal*8));
+  let deadline=Date.now()+Math.min(5000, Math.max(1200, unitTotal*8));
   let bestState=null, bestSoft=1e18, rounds=0;
   let __retryLeft=1;
   while(true){
@@ -8403,7 +8403,9 @@ document.getElementById('btnGenerate').addEventListener('click', async ()=>{
   if(progressBox) progressBox.style.display='block';
   const tGenStart = Date.now();
   setTimeout(()=>{
-    const result = generateFullSchedule();
+    let result;
+    try{ result = generateFullSchedule(); }
+    catch(err){ console.error(err); result = {success:false, unplaced:[], reason:'generator-error', error:String(err&&err.message||err)}; }
     const elapsedMs = Date.now()-tGenStart;
     lastUnplaced = result.unplaced;
     btn.disabled = false; btn.textContent = '⚡ توزيع تلقائي لكل الشعب';
