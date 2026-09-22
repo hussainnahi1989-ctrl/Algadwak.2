@@ -570,6 +570,54 @@ html[data-theme="night"] .print-pop{
 }
 
 /* keep print always light */
+
+/* ===== Print text auto-fit improvement: teacher & subject names ===== */
+.print-page.master-fit table.master-print .mp-cell{
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+  gap:0!important;
+}
+.print-page.master-fit table.master-print .mp-cell b,
+.print-page.master-fit table.master-print .mp-cell span,
+.print-page.master-one table.master-print .mp-cell b,
+.print-page.master-one table.master-print .mp-cell span{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0 1px!important;
+  text-align:center!important;
+  white-space:normal!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+  line-height:1.08!important;
+}
+.print-page.master-fit table.master-print .mp-cell b,
+.print-page.master-one table.master-print .mp-cell b{
+  font-size:clamp(9px, 1.25vw, 15px)!important;
+  font-weight:900!important;
+}
+.print-page.master-fit table.master-print .mp-cell span,
+.print-page.master-one table.master-print .mp-cell span{
+  font-size:clamp(8px, 1.05vw, 12px)!important;
+  font-weight:800!important;
+}
+/* side layout: keep both names readable without collision */
+.print-page.master-fit table.master-print.layout-side .mp-cell b,
+.print-page.master-fit table.master-print.layout-side .mp-cell span{
+  flex:1 1 0!important;
+  height:100%!important;
+}
+/* small cells: reduce only text, never the print dimensions */
+.print-page.master-fit .mp-cell.tight b{
+  font-size:8.5px!important;}
+.print-page.master-fit .mp-cell.tight span{
+  font-size:8.2px!important;
+}
+
 @media print{
   html, body, html[data-theme="night"], html[data-theme="night"] body{
     background:#fff !important;
@@ -578,6 +626,15 @@ html[data-theme="night"] .print-pop{
   }
 }
 
+
+/* ===== Print names smart fit ===== */
+.print-page .mp-cell b,.print-page .mp-cell span{
+  letter-spacing:0!important;
+  text-rendering:geometricPrecision!important;
+  -webkit-font-smoothing:antialiased!important;
+  max-height:48%;
+  overflow:hidden!important;
+}
 
 /* ===== Layout ===== */
 main{max-width:1100px;margin:0 auto;padding:16px 14px 90px}
@@ -2880,6 +2937,9 @@ html[data-theme="night"] #generateProgress{
           <button type="button" class="orient-opt active" data-pp-orient="landscape">أفقي</button>
           <button type="button" class="orient-opt" data-pp-orient="portrait">عمودي</button>
         </div>
+        <label class="check-item" id="pdfModeRow" style="margin-top:10px;border:1px dashed var(--line,#cfc6ac);border-radius:8px;padding:8px 10px;font-weight:800;font-size:12.5px">
+          <input type="checkbox" id="chkPdfExport"> 📄 تنزيل ملف PDF حقيقي بدل الطباعة
+        </label>
         <button type="button" class="btn btn-gold btn-block" id="btnTopPrintGo" style="margin-top:12px">🖨️ طباعة</button>
         <button type="button" class="btn btn-outline btn-block" id="btnTopPrintCut2" style="margin-top:8px">✂️ قص عمودي — ورقتان A4</button>
         <button type="button" class="btn btn-outline btn-block" id="btnTopPrintCut2L" style="margin-top:8px">✂️ قص أفقي — ورقتان A4</button>
@@ -3892,9 +3952,138 @@ function nibrasBuildChromePrintHtml(){
   html += '<scr'+'ipt>'+auto+'</scr'+'ipt></body></ht'+'ml>';
   return html;
 }
+
+/* ===================================================================
+   تصدير PDF حقيقي (ميزة إضافية لا تؤثر على مسار الطباعة الأصلي إطلاقًا)
+   تعمل فقط عندما تُفعَّل عبر خانة "تنزيل PDF" في نافذة الطباعة، وتُستهلك
+   مرة واحدة فقط (__nibrasPdfExportOnce). أي طباعة عادية تسلك مسارها القديم
+   دون أي تغيير.
+   =================================================================== */
+function nibrasLoadScriptOnce(src){
+  return new Promise(function(resolve, reject){
+    if(document.querySelector('script[data-nibras-lib="'+src+'"]')){ resolve(); return; }
+    var s = document.createElement('script');
+    s.src = src; s.async = true; s.setAttribute('data-nibras-lib', src);
+    s.onload = function(){ resolve(); };
+    s.onerror = function(){ reject(new Error('تعذّر تحميل مكوّن التصدير (يلزم اتصال بالإنترنت أول مرة)')); };
+    document.head.appendChild(s);
+  });
+}
+function nibrasEnsurePdfLibs(){
+  if(!window.__nibrasPdfLibsPromise){
+    var need = [];
+    if(!window.html2canvas) need.push(nibrasLoadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'));
+    if(!(window.jspdf && window.jspdf.jsPDF)) need.push(nibrasLoadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'));
+    window.__nibrasPdfLibsPromise = Promise.all(need);
+  }
+  return window.__nibrasPdfLibsPromise;
+}
+function nibrasPdfFileName(kind){
+  var base = (DB && DB.settings && DB.settings.schoolName) ? DB.settings.schoolName : 'الجدول_الاسبوعي';
+  base = String(base).replace(/[\\\/:*?"<>|]/g,'').trim() || 'الجدول_الاسبوعي';
+  var d = new Date();
+  var pad = function(n){ return (n<10?'0':'')+n; };
+  var stamp = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  return base+'_'+(kind||'جدول')+'_'+stamp+'.pdf';
+}
+async function nibrasExportPrintOutputAsPDF(sizeMm){
+  var out = document.getElementById('print-output');
+  if(!out || !out.children.length){ try{ toast('لا يوجد محتوى جاهز للتصدير','err'); }catch(e){} return; }
+  var pages = Array.prototype.slice.call(out.children).filter(function(el){ return el.nodeType===1; });
+  if(!pages.length){ try{ toast('لا توجد صفحات للتصدير','err'); }catch(e){} return; }
+
+  try{ toast('جارٍ تجهيز ملف PDF…','ok'); }catch(e){}
+  await nibrasEnsurePdfLibs();
+  var jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
+  if(!jsPDFCtor || !window.html2canvas) throw new Error('تعذّر تحميل مكوّنات إنشاء PDF');
+
+  var isCut2 = pages.length===2 && !!out.querySelector('.cut2-page');
+  /* مقاس كل صفحة يصلنا جاهزًا محسوبًا بنفس معادلة الدالة التي بنت هذا المحتوى تحديدًا،
+     فيطابق قياسات الطباعة الحقيقية دون أي افتراض أو تخمين */
+  var singleWmm = (sizeMm && sizeMm.wmm) || 287;
+  var singleHmm = (sizeMm && sizeMm.hmm) || 200;
+
+  var outPrevStyle = out.getAttribute('style');
+  var outHadPrinting = out.classList.contains('printing');
+  if(!outHadPrinting) out.classList.add('printing');
+
+  /* بعض قواعد الطباعة (مثل صفحات القص) مكتوبة داخل @media print فقط، فلا تعمل
+     على الشاشة. نفعّلها مؤقتًا أثناء الالتقاط فقط (بنفس نصّها دون أي تعديل على
+     مضمونها) لضمان مطابقة كاملة، ثم نزيلها فور الانتهاء دون أثر دائم. */
+  var forceStyleEl = null;
+  var dynStyleEl = document.getElementById('dynamic-print-style');
+  if(dynStyleEl && dynStyleEl.textContent){
+    var stripped = dynStyleEl.textContent.replace(/@media\s+print\s*{/,'').trim();
+    if(stripped.slice(-1)==='}') stripped = stripped.slice(0, -1);
+    forceStyleEl = document.createElement('style');
+    forceStyleEl.id = 'nibras-pdf-force-style';
+    forceStyleEl.textContent = stripped;
+    document.head.appendChild(forceStyleEl);
+  }
+
+  /* نُخرج الحاوية عن حدود الشاشة المرئية مؤقتًا مع سماح كامل بالحجم الطبيعي
+     كي لا يقصّها overflow الخاص بعرض الشاشة الفعلي أثناء الالتقاط، ثم نعيدها كما كانت.
+     أولوية !important هنا فقط لضمان الغلبة على القواعد المفعَّلة أعلاه مؤقتًا. */
+  out.style.cssText = 'display:block!important;position:fixed!important;left:-20000px!important;top:0!important;right:auto!important;bottom:auto!important;inset:auto!important;width:auto!important;height:auto!important;overflow:visible!important;background:#fff!important;';
+
+  var restores = pages.map(function(pg){ return {el:pg, style:pg.getAttribute('style')}; });
+  pages.forEach(function(pg){
+    pg.style.setProperty('width', singleWmm+'mm', 'important');
+    pg.style.setProperty('height', singleHmm+'mm', 'important');
+    pg.style.setProperty('max-height', singleHmm+'mm', 'important');
+    pg.style.setProperty('min-height', singleHmm+'mm', 'important');
+    pg.style.setProperty('overflow', 'hidden', 'important');
+    pg.style.setProperty('display', 'block', 'important');
+    pg.style.setProperty('position', 'relative', 'important');
+    pg.style.setProperty('background', '#fff', 'important');
+    pg.style.setProperty('page-break-after', 'auto', 'important');
+  });
+
+  try{
+    if(document.fonts && document.fonts.ready){ try{ await document.fonts.ready; }catch(e){} }
+    await new Promise(function(r){ setTimeout(r, 150); });
+
+    var pdf = null;
+    for(var i=0;i<pages.length;i++){
+      var pg = pages[i];
+      var rectW = pg.getBoundingClientRect().width || (singleWmm*96/25.4);
+      var scaleFactor = Math.max(2, Math.min(3.5, 2200/Math.max(rectW,1)));
+      var canvas = await window.html2canvas(pg, { scale:scaleFactor, useCORS:true, backgroundColor:'#ffffff', logging:false });
+      var img = canvas.toDataURL('image/jpeg', 0.95);
+      var orientCode = singleWmm >= singleHmm ? 'l' : 'p';
+      if(!pdf){ pdf = new jsPDFCtor({ orientation:orientCode, unit:'mm', format:[singleWmm, singleHmm], compress:true }); }
+      else { pdf.addPage([singleWmm, singleHmm], orientCode); }
+      pdf.addImage(img, 'JPEG', 0, 0, singleWmm, singleHmm, undefined, 'FAST');
+    }
+    var blob = pdf.output('blob');
+    var url = URL.createObjectURL(blob);
+    var fname = nibrasPdfFileName(isCut2 ? 'مقسم' : (pages.length>1 ? 'شعب' : 'كامل'));
+    var a = document.createElement('a');
+    a.href = url; a.download = fname; a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ try{ a.remove(); }catch(e){} }, 1500);
+    try{ toast('تم تنزيل ملف PDF: '+fname,'ok'); }catch(e){}
+  } finally {
+    restores.forEach(function(r){ if(r.style===null) r.el.removeAttribute('style'); else r.el.setAttribute('style', r.style); });
+    if(outPrevStyle===null) out.removeAttribute('style'); else out.setAttribute('style', outPrevStyle);
+    if(!outHadPrinting) out.classList.remove('printing');
+    if(forceStyleEl && forceStyleEl.parentNode) forceStyleEl.parentNode.removeChild(forceStyleEl);
+  }
+}
+
 (function nibrasNativeBridge(){
   var origPrint = window.print.bind(window);
   window.print = function(){
+    if(window.__nibrasPdfExportOnce && window.__nibrasPdfExportOnce.on){
+      var _pdfSize = window.__nibrasPdfExportOnce;
+      window.__nibrasPdfExportOnce = null;
+      nibrasExportPrintOutputAsPDF(_pdfSize).catch(function(err){
+        try{ console && console.error && console.error(err); }catch(e2){}
+        try{ toast('تعذّر إنشاء ملف PDF: '+((err&&err.message)||err),'err'); }catch(e3){}
+      }).then(function(){ try{ nibrasHidePrintOverlay(); }catch(e){} });
+      return;
+    }
     if(window.NibrasAndroid && NibrasAndroid.printInChrome){
       try{ NibrasAndroid.printInChrome(nibrasBuildChromePrintHtml()); }catch(e){}
       setTimeout(nibrasHidePrintOverlay, 50);
@@ -4997,8 +5186,37 @@ function renderFullMasterTab(){
   const btn = document.getElementById('btnTopPrint');
   const pop = document.getElementById('printPop');
   const go = document.getElementById('btnTopPrintGo');
+  const chkPdf = document.getElementById('chkPdfExport');
   if(!btn || !pop) return;
   let paper = 'A4', orient = 'landscape';
+  /* نحسب مقاس الصفحة نفسه بنفس معادلة الدالة التي ستُنفَّذ فعليًا،
+     كي يطابق ملف الـPDF قياسات الطباعة الحقيقية تمامًا دون أي تغيير عليها */
+  function fullScheduleSizeMm(){
+    const p = (paper==='A3') ? 'A3' : 'A4';
+    const o = (orient==='portrait') ? 'portrait' : 'landscape';
+    const w = p==='A3' ? (o==='portrait'?297:420) : (o==='portrait'?210:297);
+    const h = p==='A3' ? (o==='portrait'?420:297) : (o==='portrait'?297:210);
+    return { wmm:w-10, hmm:h-10 };
+  }
+  function cut2SizeMm(o){
+    const horiz = (String(o||'portrait').toLowerCase()==='landscape');
+    return { wmm: horiz?287:200, hmm: horiz?200:287 };
+  }
+  function eachClassSizeMm(){
+    const p = (paper==='A3') ? 'A3' : 'A4';
+    const w = p==='A3'?420:297, h = p==='A3'?297:210;
+    return { wmm:w-10, hmm:h-10 };
+  }
+  function armPdfExport(sizeMm){
+    const on = !!(chkPdf && chkPdf.checked);
+    clearTimeout(window.__nibrasPdfExportOnceTimer);
+    if(on){
+      window.__nibrasPdfExportOnce = { on:true, wmm:sizeMm.wmm, hmm:sizeMm.hmm };
+      window.__nibrasPdfExportOnceTimer = setTimeout(()=>{ window.__nibrasPdfExportOnce = null; }, 8000);
+    } else {
+      window.__nibrasPdfExportOnce = null;
+    }
+  }
   function syncPop(){
     pop.querySelectorAll('[data-pp-paper]').forEach(b=> b.classList.toggle('active', b.dataset.ppPaper===paper));
     pop.querySelectorAll('[data-pp-orient]').forEach(b=> b.classList.toggle('active', b.dataset.ppOrient===orient));
@@ -5023,6 +5241,7 @@ function renderFullMasterTab(){
     if(currentViewName==='demo'){
       try{ ensureDemoReady(); }catch(err){}
       if(!DEMO){ toast('لا يوجد جدول تجريبي للطباعة','err'); return; }
+      armPdfExport(fullScheduleSizeMm());
       printMasterSchedule(paper, DEMO, orient);
       return;
     }
@@ -5032,12 +5251,14 @@ function renderFullMasterTab(){
       return g && g.some(row=>row.some(Boolean));
     });
     if(!has){ toast('لا يوجد جدول للطباعة — وزّع الحصص أولًا','err'); return; }
+    armPdfExport(fullScheduleSizeMm());
     printMasterSchedule(paper, DB, orient);
   });
   function runCutTwo(orient){
     if(currentViewName==='demo'){
       try{ ensureDemoReady(); }catch(err){}
       if(!DEMO){ toast('لا يوجد جدول تجريبي للطباعة','err'); return; }
+      armPdfExport(cut2SizeMm(orient));
       printMasterCutTwo(DEMO, orient);
       return;
     }
@@ -5047,6 +5268,7 @@ function renderFullMasterTab(){
       return g && g.some(function(row){ return row.some(Boolean); });
     });
     if(!has){ toast('لا يوجد جدول للطباعة — وزّع الحصص أولًا','err'); return; }
+    armPdfExport(cut2SizeMm(orient));
     printMasterCutTwo(DB, orient);
   }
   const cut2 = document.getElementById('btnTopPrintCut2');
@@ -5067,6 +5289,7 @@ function renderFullMasterTab(){
       return g && g.some(function(r){ return r.some(Boolean); });
     });
     if(!withSched.length){ toast('لا يوجد جدول للطباعة — وزّع الحصص أولًا','err'); return; }
+    armPdfExport(eachClassSizeMm());
     /* كل شعبة بمفردها في صفحة كاملة: رأس + جدول الشعبة + تذييل، وبضمان الاكتمال */
     paginateAndPrintFit(withSched.map(c=>buildClassTableHtml(c.key)), 1, 'row', orient, paper);
   });
@@ -10062,13 +10285,18 @@ function printMasterSchedule(paper, store, orient){
     }
   `;
 
+  function teacherPrintName(n){
+    n = String(n||'').trim().replace(/\s+/g,' ');
+    if(!n) return '';
+    return n.split(' ').slice(0,2).join(' ');
+  }
   function cellHtml(cell){
     if(!cell) return `<td class="mp-slot"><div class="mp-cell empty">—</div></td>`;
     const subj = getS(cell.subjectId);
     const teach = getT(cell.teacherId);
     return `<td class="mp-slot"><div class="mp-cell">
       <b>${esc(shortName(subj?subj.name:'', 10))}</b>
-      <span>${esc(shortName(teach?teach.name:'', 10))}</span>
+      <span>${esc(teacherPrintName(teach?teach.name:''))}</span>
     </div></td>`;
   }
 
