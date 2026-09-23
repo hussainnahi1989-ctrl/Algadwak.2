@@ -5701,7 +5701,7 @@ async function downloadDirectFullSchedulePdfA3(isDemo){
       return;
     }
 
-    if(typeof toast === 'function') toast('جارٍ إنشاء وتنزيل ملف PDF للجدول (A3 أفقي)…', 'ok');
+    if(typeof toast === 'function') toast('جارٍ إنشاء وتجهيز ملف PDF للجدول (A3 أفقي)…', 'ok');
 
     // Ensure jsPDF and html2canvas exist
     if(!window.html2canvas || !(window.jspdf && window.jspdf.jsPDF)){
@@ -5792,7 +5792,6 @@ async function downloadDirectFullSchedulePdfA3(isDemo){
     const dayImages = days.map(d => makeDayDataUrl(d, 60, dayCellH));
 
     // Professional Luxury Gradient Header: ultra-clear text with rich deep turquoise gradient
-    // Clean Arabic layout without English paper size text, perfectly balanced
     const logoHtml = schoolLogo
       ? `<div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:#ffffff;border-radius:8px;padding:2px;box-sizing:border-box;box-shadow:0 1px 4px rgba(0,0,0,0.3);"><img src="${schoolLogo}" style="max-width:100%;max-height:100%;object-fit:contain;" alt=""></div>`
       : `<div style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.35);color:#fff;border-radius:10px;font-size:22px;">🏫</div>`;
@@ -5814,7 +5813,7 @@ async function downloadDirectFullSchedulePdfA3(isDemo){
       </div>
     `;
 
-    // Professional Luxury Gradient Footer: crisp white text with rich deep turquoise gradient & clean white stamp box with blank stamp box
+    // Professional Luxury Gradient Footer: crisp white text with rich deep turquoise gradient & clean white stamp box without 'محل الختم'
     const prepStampHtml = (typeof DEFAULT_STAMP !== 'undefined' && DEFAULT_STAMP)
       ? `<div style="width:34px;height:22px;margin:1px auto 0;background:#ffffff;border-radius:4px;padding:1px;"><img src="${DEFAULT_STAMP}" style="max-width:100%;max-height:100%;object-fit:contain;"></div>`
       : '';
@@ -5925,7 +5924,7 @@ async function downloadDirectFullSchedulePdfA3(isDemo){
     loaderOverlay.innerHTML = `
       <div style="background:#fff;border-radius:18px;padding:26px 36px;text-align:center;box-shadow:0 12px 36px rgba(0,0,0,0.3);max-width:440px;display:flex;flex-direction:column;align-items:center;gap:14px;">
         <div style="font-size:42px;">📄</div>
-        <div style="font-size:19px;font-weight:900;color:#04272d;">جارٍ إنشاء وتنزيل ملف PDF للجدول</div>
+        <div style="font-size:19px;font-weight:900;color:#04272d;">جارٍ إنشاء وتجهيز ملف PDF للجدول</div>
         <div style="font-size:13.5px;font-weight:700;color:#555;">قياس A3 أفقي بملء الورقة مع رأس وتذييل متدرج وهوامش 0.5 سم</div>
       </div>
     `;
@@ -6002,15 +6001,145 @@ async function downloadDirectFullSchedulePdfA3(isDemo){
     const dateStamp = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
     const fileName = String(baseName).replace(/[\/:*?"<>|]/g, '').trim() + '_A3_كامل_' + dateStamp + '.pdf';
 
-    pdf.save(fileName);
-    if(typeof toast === 'function') toast('تم تنزيل ملف PDF للجدول (A3) بنجاح!', 'ok');
+    const blob = pdf.output('blob');
+    const pdfFile = new File([blob], fileName, { type: 'application/pdf' });
+    const ua = navigator.userAgent || '';
+    const isAndroid = /Android/i.test(ua);
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    const isMobile = isAndroid || isIOS;
+    const isWindows = /Windows/i.test(ua);
+    const isWebView = isAndroid && (/wv/i.test(ua) || /Version\/[\d.]+/i.test(ua) || !window.chrome || typeof window.Android !== 'undefined');
+
+    // 1. إذا كان التطبيق يعمل على الهاتف (أندرويد / آيفون / WebView) ويدعم واجهة المشاركة النظامية:
+    // يتم تمرير الملف فوراً إلى نظام الهاتف لتجاوز قيود DownloadManager وحفظه في التنزيلات أو فتحه في WPS Office
+    if(isMobile && navigator.canShare && navigator.canShare({ files: [pdfFile] })){
+      try{
+        await navigator.share({
+          files: [pdfFile],
+          title: fileName,
+          text: 'جدول الحصص الأسبوعي قياس A3'
+        });
+        if(typeof toast === 'function') toast('تم حفظ / مشاركة ملف PDF للجدول (A3) بنجاح!', 'ok');
+        return;
+      }catch(e_share){
+        if(e_share && e_share.name === 'AbortError'){
+          return;
+        }
+      }
+    }
+
+    // 2. التنزيل المباشر القياسي والشامل (لبرنامج الويندوز والمتصفح العادي):
+    // يعمل في تطبيقات الويندوز المنصبة (WebView2 / Electron / C#) والمتصفحات المباشرة
+    const blobUrl = URL.createObjectURL(blob);
+    let downloaded = false;
+
+    if(window.navigator && window.navigator.msSaveOrOpenBlob){
+      try{
+        window.navigator.msSaveOrOpenBlob(blob, fileName);
+        downloaded = true;
+      }catch(e_ms){}
+    }
+
+    if(!downloaded){
+      try{
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = fileName;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function(){ try{ a.remove(); }catch(e){} }, 3000);
+        downloaded = true;
+      }catch(e_dl){
+        try{ pdf.save(fileName); downloaded = true; }catch(e_save){}
+      }
+    }
+
+    // 3. في بيئة تطبيقات الهواتف أو أندرويد WebView حيث قد يفشل DownloadManager في روابط الذاكرة:
+    // نظهر للمستخدم فوراً نافذة خيارات الحفظ والفتح المباشرة في WPS Office أو درايف
+    if(isMobile || isWebView){
+      showAndroidPdfSuccessModal(blob, blobUrl, pdfFile, fileName);
+    } else {
+      if(typeof toast === 'function') toast('تم تنزيل ملف PDF للجدول (A3) بنجاح!', 'ok');
+    }
   } catch(err){
     try{ if(host) host.remove(); }catch(e){}
     try{ if(loaderOverlay) loaderOverlay.remove(); }catch(e){}
     console && console.error && console.error(err);
-    if(typeof toast === 'function') toast('تعذّر تنزيل ملف PDF: ' + ((err && err.message) || err), 'err');
+    if(typeof toast === 'function') toast('تعذّر إنشاء ملف PDF: ' + ((err && err.message) || err), 'err');
   }
 }
+
+function showAndroidPdfSuccessModal(blob, blobUrl, pdfFile, fileName){
+  let old = document.getElementById('android-pdf-success-modal');
+  if(old) old.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'android-pdf-success-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(4,39,45,0.85);backdrop-filter:blur(4px);z-index:9999999;display:flex;align-items:center;justify-content:center;padding:16px;direction:rtl;font-family:"Tajawal",sans-serif;';
+
+  modal.innerHTML = `
+    <div style="background:#ffffff;border-radius:20px;padding:26px 22px;max-width:440px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.4);border:2px solid #083e47;box-sizing:border-box;text-align:center;">
+      <div style="width:58px;height:58px;background:#e8f4f6;color:#083e47;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px;box-shadow:0 4px 12px rgba(8,62,71,0.15);">📄</div>
+      <div style="font-size:18px;font-weight:900;color:#04272d;margin-bottom:6px;">تم تجهيز ملف الـ PDF بنجاح!</div>
+      <div style="font-size:13px;font-weight:700;color:#555;line-height:1.5;margin-bottom:18px;">
+        الجدول الأسبوعي الكامل (A3 أفقي)<br>
+        <span style="font-size:11.5px;color:#777;">إذا ظهر تنبيه "فشل التنزيل" من تطبيق الهاتف، اضغط على زر <b>«فتح / حفظ في الهاتف»</b> لحفظه في التنزيلات أو فتحه مباشرة في WPS Office.</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button id="btnAndroidSharePdf" style="display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg, #083e47, #0e5b69);color:#ffffff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(8,62,71,0.3);font-family:'Tajawal',sans-serif;">
+          <span>📲</span> فتح / حفظ في الهاتف (WPS / درايف)
+        </button>
+
+        <button id="btnAndroidViewPdf" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#f0f7f8;color:#083e47;border:1.5px solid #083e47;border-radius:12px;padding:11px;font-size:14px;font-weight:900;cursor:pointer;font-family:'Tajawal',sans-serif;">
+          <span>👁️</span> معاينة الـ PDF في المتصفح
+        </button>
+
+        <button id="btnAndroidClosePdf" style="background:transparent;color:#777;border:none;padding:8px;font-size:13px;font-weight:800;cursor:pointer;margin-top:2px;font-family:'Tajawal',sans-serif;">
+          إغلاق النافذة ✕
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const btnShare = modal.querySelector('#btnAndroidSharePdf');
+  const btnView = modal.querySelector('#btnAndroidViewPdf');
+  const btnClose = modal.querySelector('#btnAndroidClosePdf');
+
+  if(btnShare){
+    btnShare.addEventListener('click', async function(){
+      if(navigator.canShare && navigator.canShare({ files: [pdfFile] })){
+        try{
+          await navigator.share({
+            files: [pdfFile],
+            title: fileName,
+            text: 'جدول الحصص الأسبوعي قياس A3'
+          });
+          modal.remove();
+          return;
+        }catch(err_s){}
+      }
+      window.open(blobUrl, '_blank');
+      modal.remove();
+    });
+  }
+
+  if(btnView){
+    btnView.addEventListener('click', function(){
+      window.open(blobUrl, '_blank');
+    });
+  }
+
+  if(btnClose){
+    btnClose.addEventListener('click', function(){
+      modal.remove();
+    });
+  }
+}
+
 
 
 async function nibrasExportPrintOutputAsPDF(sizeMm, customKind){
@@ -16079,5 +16208,5 @@ init();
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3f0fffc2e6cb5c8',t:'MTc5MDA3Njg2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3f1493a7bd1559e',t:'MTc5MDA3OTg2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();
 
 
-</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3f992b55dd62e4b',t:'MTc5MDE2Njc1Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3f9cd36188eac8b',t:'MTc5MDE2OTE1Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
