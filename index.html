@@ -3708,32 +3708,6 @@ html[data-theme="night"] .about-badge {
   color: #93c5fd;
 }
 </style>
-<!-- Firebase foundation: authentication only; application data remains local -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script>
-(function(){
-  'use strict';
-  var firebaseConfig = {
-    apiKey: "AIzaSyCHgE3t-5o1wAkr6cYADN9FBtjXBScYucE",
-    authDomain: "gadwal2-e13ab.firebaseapp.com",
-    projectId: "gadwal2-e13ab",
-    storageBucket: "gadwal2-e13ab.firebasestorage.app",
-    messagingSenderId: "270372951569",
-    appId: "1:270372951569:web:5c4d2a22a296bb1b7403b0"
-  };
-  try {
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    window.gadwal2Db = firebase.firestore();
-    firebase.auth().signInAnonymously().catch(function(err){
-      console.warn('Firebase anonymous authentication unavailable:', err && err.code || err);
-    });
-  } catch (err) {
-    console.warn('Firebase initialization skipped:', err);
-  }
-})();
-</script>
 </head>
 <body>
 
@@ -4439,7 +4413,7 @@ html[data-theme="night"] .about-badge {
 
       <!-- أزرار الدعم وتطبيقات أخرى في أعلى التبويب (بدون إظهار رقم الهاتف أو الرابط، فقط نص الزر الواضح) -->
       <div class="about-contact-bar">
-        <a href="https://wa.me/9647749355259?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%AD%D8%AA%D8%A7%D8%AC%20%D8%AF%D8%B9%D9%85%D8%A7%D9%8B%20%D9%81%D9%86%D9%8A%D8%A7%D9%8B%20%D9%81%D9%8A%20%D8%AA%D8%B7%D8%A8%D9%8A%D9%82%20%D8%AC%D8%AF%D9%88%D9%84%20%D8%A7%D9%84%D8%AF%D8%B1%D9%88%D8%B3" 
+        <a href="https://wa.me/9647712080871?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%AD%D8%AA%D8%A7%D8%AC%20%D8%AF%D8%B9%D9%85%D8%A7%D9%8B%20%D9%81%D9%86%D9%8A%D8%A7%D9%8B%20%D9%81%D9%8A%20%D8%AA%D8%B7%D8%A8%D9%8A%D9%82%20%D8%AC%D8%AF%D9%88%D9%84%20%D8%A7%D9%84%D8%AF%D8%B1%D9%88%D8%B3" 
            target="_blank" rel="noopener noreferrer" class="about-btn about-btn-wa" title="تواصل مع الدعم الفني">
           <span class="about-btn-icon">💬</span>
           <span class="about-btn-title">الدعم الفني</span>
@@ -4702,14 +4676,6 @@ html[data-theme="night"] .about-badge {
     <h1>تفعيل البرنامج</h1>
     <p class="sub">يمكنك تصفّح التطبيق للتجربة. توليد الجدول وتبويب <b>الجداول</b> يحتاجان تفعيلاً دائماً مربوطاً بجهازك. أرسل رمز الجهاز للبائع.</p>
     <div class="field">
-      <label>اسم المدرسة <b>*</b></label>
-      <input type="text" id="actSchoolName" placeholder="اكتب اسم المدرسة" autocomplete="organization">
-    </div>
-    <div class="field" style="margin-top:14px">
-      <label>رقم الهاتف <b>*</b></label>
-      <input type="tel" id="actPhone" placeholder="07xxxxxxxxx" dir="ltr" autocomplete="tel">
-    </div>
-    <div class="field" style="margin-top:14px">
       <label>رمز الجهاز</label>
       <div class="act-dev" id="actDeviceCode">————-————-————</div>
       <button type="button" class="act-copy-mini" id="btnCopyDevice">📋 نسخ الرمز</button>
@@ -6585,10 +6551,7 @@ function syncTrialMode(){
 function nibrasWaActivationMessage(){
   const code = obGetDeviceCode();
   const st = (DB && DB.settings) || {};
-  const enteredSchool = (document.getElementById('actSchoolName') || {}).value || '';
-  const enteredPhone = (document.getElementById('actPhone') || {}).value || '';
-  const name = String(enteredSchool || st.schoolName || '—').trim();
-  const phone = String(enteredPhone || '—').trim();
+  const name = (st.schoolName && String(st.schoolName).trim()) || '—';
   const lv = (typeof schoolLevelLabel==='function' && schoolLevelLabel()) || 'غير محدد';
   const g = st.schoolGender==='boys'?'بنين': st.schoolGender==='girls'?'بنات': st.schoolGender==='mixed'?'مختلطة':'غير محدد';
   return 'السلام عليكم ورحمة الله\n\n'
@@ -6600,13 +6563,7 @@ function nibrasWaActivationMessage(){
     + 'أرجو تزويدي بمفتاح التفعيل الدائم المرتبط بهذا الجهاز.';
 }
 function nibrasWaActivationUrl(){
-  return 'https://wa.me/9647749355259?text='+encodeURIComponent(nibrasWaActivationMessage());
-}
-function activationRequestReady(){
-  const school = String((document.getElementById('actSchoolName')||{}).value||'').trim();
-  const phone = String((document.getElementById('actPhone')||{}).value||'').trim();
-  if(!school || !phone){ toast('أدخل اسم المدرسة ورقم الهاتف أولاً','err'); return false; }
-  return true;
+  return 'https://wa.me/9647712080871?text='+encodeURIComponent(nibrasWaActivationMessage());
 }
 function syncActivateWaLinks(){
   const url = nibrasWaActivationUrl();
@@ -6634,23 +6591,6 @@ function bindActivation(){
         navigator.clipboard.writeText(code).then(function(){ toast('تم نسخ رمز الجهاز','ok'); }).catch(function(){ toast(code,'ok'); });
       } else toast(code,'ok');
     }catch(e){ toast(code,'ok'); }
-  });
-  ['actSchoolName','actPhone'].forEach(function(id){
-    const el=document.getElementById(id);
-    if(el) el.addEventListener('input', syncActivateWaLinks);
-  });
-  const request = document.getElementById('btnRequestKey');
-  if(request) request.addEventListener('click', function(e){
-    if(!activationRequestReady()){ e.preventDefault(); return false; }
-    request.href=nibrasWaActivationUrl();
-    try {
-      const schoolName=String(document.getElementById('actSchoolName').value).trim();
-      const phone=String(document.getElementById('actPhone').value).trim();
-      const deviceId=obGetDeviceCode();
-      if(window.gadwal2Db && firebase.auth().currentUser){
-        window.gadwal2Db.collection('activationRequests').add({schoolName:schoolName,phone:phone,deviceId:deviceId,uid:firebase.auth().currentUser.uid,status:'pending',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-      }
-    } catch(err) { console.warn('Activation request was not saved online',err); }
   });
   const go = document.getElementById('btnActivateApp');
   if(go) go.addEventListener('click', function(){
