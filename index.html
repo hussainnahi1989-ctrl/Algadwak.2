@@ -306,6 +306,22 @@ input,select,textarea{font-family:inherit}
 }
 .print-pop-title{font-weight:900;font-size:13.5px;margin-bottom:10px}
 .print-pop-label{font-size:11.5px;font-weight:800;color:var(--ink-soft);margin:8px 0 6px}
+/* لوحة أدوات الطباعة: تصميم أفقي في وسط الشاشة */
+#printPop{
+  display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:min(500px, calc(100vw - 32px));min-width:0;max-height:calc(100vh - 40px);overflow:auto;
+  box-sizing:border-box;z-index:200;
+}
+#printPop[hidden]{display:none}
+#printPop > .print-pop-title{order:0;width:100%}
+#printPop > .print-pop-label{order:1;margin:0 !important}
+#printPop > .orient-row{order:1;flex:none;gap:6px}
+#printPop > .orient-row .orient-opt{flex:0 1 auto;padding:9px 13px;font-size:13px}
+#printPop > .check-item{order:1;margin:0 !important;flex:0 1 auto}
+#printPop > .btn{order:2;width:auto !important;flex:1 1 auto;min-width:126px;margin:0 !important;font-size:13px}
+#printPop > .print-pop-direct-pdf-card{order:3;width:100%;margin:0 !important}
+#printPop > p.print-pop-label{order:4;width:100%}
 .theme-toggle:hover{filter:brightness(1.08)}
 .theme-toggle:active{transform:scale(.94)}
 .theme-toggle .theme-ico{line-height:1;display:none;pointer-events:none}
@@ -473,6 +489,31 @@ html[data-theme="night"] table.demo-master .m-cell span.teach-hit{color:#b9cde8;
 html[data-theme="night"] table.demo-master.layout-side .m-cell:not(.empty) span.teach-hit{border-inline-start-color:#6a7384}
 html[data-theme="night"] table.demo-master .m-cell.empty{color:var(--empty-cell)}
 html[data-theme="night"] table.demo-master td.day-cell.day-cont{background:#0e1e3d}
+
+/* ===== وضع العرض: الشعب كصفوف (الأعمدة = أيام الأسبوع) ===== */
+.bc-master-table{border-collapse:collapse;table-layout:fixed;width:100%}
+.bc-master-table th,.bc-master-table td{border:1.2px solid var(--m-grid,#2f2c28);box-sizing:border-box;padding:0;overflow:hidden;vertical-align:middle}
+.bc-master-table thead th{background:linear-gradient(180deg,var(--m-head2,#2d4373),var(--m-head,#1b2a4a));color:var(--m-head-fg,#fff);font-weight:900;padding:7px 4px;line-height:1.2}
+.bc-master-table thead th.bc-class-col{border-top:2px solid var(--m-accent,#c9a227)}
+.bc-master-table .bc-col-class{width:34px;min-width:34px;max-width:34px}
+.bc-master-table tr.bc-row-a{background:var(--m-row-a,#fff)}
+.bc-master-table tr.bc-row-b{background:var(--m-row-b,#efe9d8)}
+.bc-master-table .bc-class-cell{background:var(--m-day,#1b2a4a);color:var(--m-day-fg,#f0d78c)}
+.bc-master-table .bc-class-cell .vword{font-size:18px;font-weight:900;letter-spacing:.3em}
+.bc-lines{height:100%;display:flex;flex-direction:column;justify-content:space-evenly}
+.bc-line{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:2px 6px;padding:2px 4px;min-height:30px}
+.bc-line .bc-p{flex:0 0 auto;font-size:12px;font-weight:900;color:var(--m-per-fg,#2d4373);background:var(--m-per,#f3efe4);border-radius:4px;padding:1px 6px;min-width:20px;text-align:center}
+.bc-line .bc-s{flex:1 1 auto;min-width:0;font-size:var(--master-subj,14px);font-weight:900;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.bc-line .bc-t{flex:1 1 100%;min-width:0;font-size:var(--master-teach,12px);font-weight:800;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.bc-master-table.layout-side .bc-line{flex-wrap:nowrap}
+.bc-master-table.layout-side .bc-line .bc-t{flex:1 1 auto;border-inline-start:1px dashed #8a8a8a}
+.bc-line.bc-empty{opacity:.45}
+.bc-line.selected{outline:3px solid #1e6fff;outline-offset:-2px;background:rgba(30,111,255,.18);border-radius:4px}
+.bc-line.conflict{outline:3px solid var(--danger,#e02424);outline-offset:-2px;background:rgba(224,36,36,.15);border-radius:4px}
+.bc-line.drop-ok{background:rgba(32,191,107,.12)}
+html.master-hide-teach .bc-line .bc-t{display:none!important}
+html[data-theme="night"] .bc-master-table .bc-line .bc-s{color:#eef6ff}
+html[data-theme="night"] .bc-master-table .bc-line .bc-t{color:#b9cde8}
 html[data-theme="night"] table.demo-master th, 
 html[data-theme="night"] table.demo-master td{border-color:rgba(126,196,255,.08)}
 html[data-theme="night"] .demo-master-wrap{border-color:var(--line);background:var(--paper-2)}
@@ -1324,6 +1365,9 @@ html[data-theme="night"] .full-font-ctrl button{background:var(--elevated);borde
 .full-font-bar .full-font-sep{width:1px;height:22px;background:var(--line);margin:0 4px}
 .full-font-ctrl .btn-master-layout{width:auto;padding:0 10px;font-size:12px;font-weight:800}
 .full-font-ctrl .btn-master-layout.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.full-font-ctrl .btn-viewmode{font-size:15px;line-height:1}
+.full-font-ctrl .btn-viewmode.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+html[data-theme="night"] .full-font-ctrl .btn-viewmode.active{background:var(--gold);color:#2e2216;border-color:var(--gold)}
 html[data-theme="night"] .full-font-ctrl .btn-master-layout.active{background:var(--gold);color:#2e2216;border-color:var(--gold)}
 .full-font-ctrl .btn-hide-teach{width:auto;padding:0 10px;font-size:12px;font-weight:800}
 .full-font-ctrl .btn-hide-teach.active{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -1646,7 +1690,16 @@ html[data-theme="night"] .inline-ban.inline-day-off .daycheck.off{background:#ef
   display:inline-block;margin-top:10px;padding:4px 10px;border-radius:999px;
   font-size:12px;font-weight:800;background:var(--chip-bg);border:1px solid var(--line);color:var(--ink-2);
 }
-.dash-now{position:relative;overflow:hidden}
+.dash-now{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px}
+.dash-now-txt{flex:1 1 auto;min-width:0}
+.dash-ring-wrap{flex:0 0 auto;width:96px;height:96px;position:relative;filter:drop-shadow(0 1px 3px rgba(0,0,0,.10))}
+.dash-ring-wrap svg{width:96px;height:96px;display:block;transform:rotate(-90deg)}
+.dash-ring-track{fill:none;stroke:rgba(127,127,127,.18);stroke-width:10}
+.dash-ring-fg{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .9s linear}
+.dash-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.dash-ring-pct{font-size:21px;font-weight:900;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
+.dash-ring-lbl{font-size:9.5px;font-weight:800;color:var(--ink-soft);margin-top:3px;white-space:nowrap}
+@media (max-width:480px){.dash-ring-wrap{width:80px;height:80px}.dash-ring-wrap svg{width:80px;height:80px}.dash-ring-pct{font-size:18px}.dash-now{gap:10px}}
 .dash-now.now{background:linear-gradient(135deg,var(--success-bg),var(--paper-2));border-color:var(--success)}
 .dash-now.break{background:linear-gradient(135deg,var(--warn-bg),var(--paper-2));border-color:var(--gold)}
 .dash-now.off{background:linear-gradient(135deg,var(--paper),var(--paper-2))}
@@ -1684,6 +1737,115 @@ table.dash-today th.cur, table.dash-today td.cur{
 table.dash-today th.cur{background:var(--success)!important;color:#fff!important}
 table.dash-today td.sec{font-weight:800;white-space:nowrap;background:var(--sched-day);color:var(--ink-2)}
 .dash-empty{padding:18px;text-align:center;color:var(--ink-soft);font-size:13.5px;line-height:1.9}
+
+/* ===== لمسة احترافية لموجز لوحة التحكم ===== */
+#dashRoot{animation:dashFadeIn .4s ease}
+@keyframes dashFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#dashRoot .dash-card{position:relative}
+#dashRoot .dash-hero .dash-card::before,
+#dashRoot .dash-stat::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent 5%,var(--gold,#c9a227) 50%,transparent 95%);opacity:.7;pointer-events:none}
+#dashRoot .dash-now.now::before{background:linear-gradient(90deg,transparent 5%,#2ecc71 50%,transparent 95%);opacity:.95}
+#dashRoot .dash-now.break::before{background:linear-gradient(90deg,transparent 5%,var(--gold,#c9a227) 55%,#e67e22 95%);opacity:.95}
+#dashRoot .dash-clock .d-date{display:inline-block;padding:4px 12px;border-radius:999px;background:var(--chip-bg);border:1px solid var(--line);font-size:13px;margin-bottom:12px}
+#dashRoot .dash-clock .d-time{font-size:46px;text-shadow:0 2px 14px rgba(4,39,45,.10)}
+.dash-status-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.3px;margin-bottom:8px;background:var(--chip-bg);border:1px solid var(--line);color:var(--ink-2)}
+.dash-status-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--ink-soft);flex:0 0 auto}
+.dash-status-chip.live{background:rgba(46,204,113,.12);border-color:rgba(46,204,113,.5);color:#1e8449}
+.dash-status-chip.live .dot{background:#2ecc71;animation:dashLivePulse 1.4s ease infinite}
+.dash-status-chip.rest{background:rgba(230,126,34,.12);border-color:rgba(230,126,34,.5);color:#b9600f}
+.dash-status-chip.rest .dot{background:#e67e22}
+.dash-status-chip.soon{background:rgba(41,128,185,.12);border-color:rgba(41,128,185,.5);color:#1a5276}
+.dash-status-chip.soon .dot{background:#2980b9;animation:dashLivePulse 1.8s ease infinite}
+@keyframes dashLivePulse{0%,100%{box-shadow:0 0 0 0 rgba(46,204,113,.5)}50%{box-shadow:0 0 0 5px rgba(46,204,113,0)}}
+#dashRoot .dash-now .name{font-size:24px}
+#dashRoot .dash-stat{padding:16px 12px 14px}
+#dashRoot .dash-stat .num{font-size:32px;background:linear-gradient(180deg,var(--gold,#c9a227),#a97d18);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 rgba(255,255,255,.35))}
+#dashRoot .dash-stat-ico{width:38px;height:38px;margin:0 auto 8px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(201,162,39,.14);border:1px solid rgba(201,162,39,.35)}
+#dashRoot .dash-today-wrap{box-shadow:var(--shadow);border-radius:14px}
+#dashRoot table.dash-today th{background:linear-gradient(180deg,#2d4373,#1b2a4a);font-size:12.5px;padding:9px 4px;letter-spacing:.3px}
+#dashRoot table.dash-today td{padding:8px 4px;font-weight:700}
+#dashRoot table.dash-today tbody tr:nth-child(even) td{background:rgba(11,77,88,.045)}
+#dashRoot table.dash-today tbody tr:hover td{background:rgba(201,162,39,.10)}
+#dashRoot table.dash-today td b{font-size:12.5px}
+#dashRoot .card h2{position:relative;padding-right:14px}
+#dashRoot .card h2::before{content:"";position:absolute;right:0;top:5px;bottom:5px;width:4px;border-radius:4px;background:linear-gradient(180deg,var(--gold,#c9a227),#a97d18)}
+#dashRoot .dash-person{transition:background .15s ease;border-radius:10px}
+#dashRoot .dash-person:hover{background:rgba(201,162,39,.08)}
+#dashRoot .dash-av{box-shadow:0 0 0 2px rgba(255,255,255,.55),0 2px 6px rgba(0,0,0,.18)}
+html[data-theme="night"] #dashRoot .dash-stat .num{filter:drop-shadow(0 1px 6px rgba(201,162,39,.25))}
+html[data-theme="night"] #dashRoot table.dash-today tbody tr:nth-child(even) td{background:rgba(126,196,255,.03)}
+html[data-theme="night"] #dashRoot table.dash-today tbody tr:hover td{background:rgba(201,162,39,.08)}
+
+/* جدول الحصص المسندة لكل معلم (4 حقول: معلم/حصص × مجموعة) */
+.dash-tp-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+table.dash-tp{border-collapse:collapse;width:100%;min-width:560px;background:var(--paper-2);font-size:13px}
+table.dash-tp th,table.dash-tp td{border:1px solid var(--line);padding:9px 10px;vertical-align:middle}
+table.dash-tp th{background:linear-gradient(180deg,#2d4373,#1b2a4a);color:#fff;font-weight:800;font-size:12.5px;text-align:center;letter-spacing:.3px}
+table.dash-tp th.g2{background:linear-gradient(180deg,#0d5966,#083b42)}
+table.dash-tp th:nth-child(3),table.dash-tp td:nth-child(3){border-inline-start:2.5px solid rgba(201,162,39,.65)}
+table.dash-tp td.name{font-weight:800;text-align:right}
+table.dash-tp td.cnt{text-align:center}
+table.dash-tp .cnt-pill{display:inline-block;min-width:36px;padding:3px 12px;border-radius:999px;background:rgba(201,162,39,.15);border:1px solid rgba(201,162,39,.4);color:#8a6a14;font-weight:900;font-size:13px;font-variant-numeric:tabular-nums}
+table.dash-tp tbody tr:nth-child(even) td{background:rgba(11,77,88,.045)}
+table.dash-tp tbody tr:hover td{background:rgba(201,162,39,.10)}
+table.dash-tp td.empty{color:var(--ink-soft);text-align:center}
+html[data-theme="night"] table.dash-tp th{background:linear-gradient(180deg,#172d57,#13264b)}
+html[data-theme="night"] table.dash-tp th.g2{background:linear-gradient(180deg,#0d5966,#083238)}
+html[data-theme="night"] table.dash-tp tbody tr:nth-child(even) td{background:rgba(126,196,255,.03)}
+html[data-theme="night"] table.dash-tp tbody tr:hover td{background:rgba(201,162,39,.08)}
+html[data-theme="night"] table.dash-tp .cnt-pill{color:#e8c96a;border-color:rgba(201,162,39,.5);background:rgba(201,162,39,.12)}
+table.dash-tp tbody tr[data-tid]{cursor:pointer}
+.ta-hint{font-size:12px;font-weight:700;color:var(--ink-soft);background:rgba(201,162,39,.08);border:1px dashed rgba(201,162,39,.4);border-radius:10px;padding:7px 12px;margin:0 0 10px;line-height:1.7}
+/* بطاقة تفاصيل حصص المعلم */
+.ta-card{max-width:580px;width:calc(100% - 24px)}
+.ta-head{display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:2px solid rgba(201,162,39,.35);margin-bottom:12px}
+.ta-av{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;background:linear-gradient(135deg,#2d4373,#0d5966);box-shadow:0 6px 18px rgba(45,67,115,.35);flex:0 0 auto}
+.ta-id{flex:1 1 auto;min-width:0}
+.ta-name{font-size:19px;font-weight:900;color:var(--ink);line-height:1.3}
+.ta-sub{font-size:12px;color:var(--ink-soft);font-weight:700;margin-top:3px}
+.ta-total{text-align:center;flex:0 0 auto;background:linear-gradient(160deg,rgba(201,162,39,.18),rgba(201,162,39,.06));border:1px solid rgba(201,162,39,.45);border-radius:14px;padding:8px 14px}
+.ta-total b{display:block;font-size:24px;font-weight:900;color:#a97d18;line-height:1}
+.ta-total span{display:block;font-size:10.5px;font-weight:800;color:var(--ink-soft);margin-top:3px}
+.ta-group{padding:10px 12px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper);margin-bottom:10px}
+.ta-ghead{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.ta-gcode{font-size:11.5px;font-weight:900;color:#fff;background:linear-gradient(135deg,#2d4373,#0d5966);padding:3px 9px;border-radius:8px;flex:0 0 auto}
+.ta-gname{flex:1 1 auto;min-width:0;font-size:14.5px;font-weight:900;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ta-gcount{font-size:11px;font-weight:800;color:#8a6a14;background:rgba(201,162,39,.14);border:1px solid rgba(201,162,39,.4);padding:2px 9px;border-radius:999px;white-space:nowrap;flex:0 0 auto}
+.ta-chips{display:flex;flex-wrap:wrap;gap:6px}
+.ta-chip{display:inline-flex;align-items:center;gap:2px;font-size:12px;font-weight:700;color:var(--ink-2);background:var(--chip-bg);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+.ta-chip b{font-weight:900}
+html[data-theme="night"] .ta-name{color:#eef6ff}
+html[data-theme="night"] .ta-chip{background:rgba(126,196,255,.05);color:#cfe3ff}
+html[data-theme="night"] .ta-gname{color:#eef6ff}
+html[data-theme="night"] .ta-total b{color:#e8c96a}
+/* جدول تواقيت الدروس — لوحة التحكم */
+#dashRoot .dt-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+#dashRoot .dt-single{max-width:560px;margin:0 auto}
+@media (max-width:720px){ #dashRoot .dt-2col{grid-template-columns:1fr} }
+.dt-panel{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--paper);box-shadow:0 2px 10px rgba(27,42,74,.06)}
+.dt-head{display:flex;align-items:center;gap:10px;padding:11px 14px;color:#fff}
+.dt-panel.dt-m .dt-head{background:linear-gradient(135deg,#e8b93c,#c9922a)}
+.dt-panel.dt-e .dt-head{background:linear-gradient(135deg,#2d4373,#1b2a4a)}
+.dt-ico{font-size:18px;line-height:1}
+.dt-title{font-size:15px;font-weight:900;flex:1 1 auto}
+.dt-days{font-size:11px;font-weight:800;background:rgba(255,255,255,.22);padding:3px 10px;border-radius:999px;line-height:1.6}
+.dt-wrap{overflow-x:auto}
+table.dt-table{width:100%;border-collapse:collapse;min-width:300px}
+table.dt-table thead th{padding:9px 10px;font-size:12.5px;font-weight:900;text-align:center;background:var(--paper-2);color:var(--ink-soft);border-bottom:2px solid var(--line)}
+table.dt-table tbody td{padding:8px 10px;text-align:center;border-bottom:1px solid var(--line)}
+table.dt-table tbody tr:last-child td{border-bottom:none}
+table.dt-table tbody tr:nth-child(even) td{background:rgba(201,162,39,.04)}
+.p-badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;font-size:14px;font-weight:900;background:rgba(201,162,39,.14);border:1.5px solid rgba(201,162,39,.55);color:#8a6a14}
+.p-time{font-size:15px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.dt-now td{background:rgba(201,162,39,.14)}
+tr.dt-now .p-time{color:#a97d18}
+.now-tag{display:inline-block;margin-right:6px;font-size:9.5px;font-weight:900;background:#c9a227;color:#fff;border-radius:999px;padding:2px 8px;vertical-align:2px}
+.dt-foot{padding:9px 12px;font-size:11.5px;font-weight:800;color:var(--ink-soft);text-align:center;background:rgba(45,67,115,.05);border-top:1px solid var(--line)}
+html[data-theme="night"] .dt-panel{background:rgba(126,196,255,.03)}
+html[data-theme="night"] .dt-days{background:rgba(255,255,255,.14)}
+html[data-theme="night"] .dt-foot{background:rgba(126,196,255,.05)}
+html[data-theme="night"] table.dt-table thead th{background:rgba(126,196,255,.04)}
+html[data-theme="night"] .p-badge{color:#e8c96a;border-color:rgba(201,162,39,.5)}
 .sup-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
 table.sup{border-collapse:collapse;width:100%;min-width:640px;background:var(--paper-2);font-size:13px}
 table.sup th, table.sup td{border:1px solid var(--line);text-align:center;padding:8px 6px;vertical-align:middle}
@@ -1748,6 +1910,34 @@ html[data-theme="night"] table.timing tr.t-now td{outline-color:var(--gold-light
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.err{background:var(--danger)}
 #toast.ok{background:var(--success)}
+
+/* عدد حصص المعلم في الأسبوع */
+.tname-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tname-line b{display:inline-block;font-size:14.5px}
+.ppw-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;background:rgba(51,209,222,.14);color:#0e7490;border:1px solid rgba(51,209,222,.4);white-space:nowrap}
+html[data-theme="night"] .ppw-badge{background:rgba(51,209,222,.2);color:#7fefff;border-color:rgba(51,209,222,.55)}
+
+/* زر المساعدة العائم */
+.help-fab{
+  position:fixed;left:14px;bottom:calc(16px + env(safe-area-inset-bottom));
+  width:46px;height:46px;border-radius:50%;z-index:500;
+  background:var(--gold-light);color:#241a02;border:2px solid rgba(0,0,0,.15);
+  font-size:19px;font-weight:900;cursor:pointer;
+  box-shadow:0 6px 18px rgba(0,0,0,.28);
+  display:flex;align-items:center;justify-content:center;line-height:1;
+}
+.help-fab:active{transform:scale(.94)}
+html[data-theme="night"] .help-fab{background:#ffd76a}
+
+/* نافذة دليل العمل لكل تبويبة */
+.help-bg{align-items:center;padding:16px}
+.help-card{width:100%;max-width:540px;max-height:82vh;overflow:auto}
+.help-intro{font-size:13.5px;color:var(--ink-soft);line-height:1.75;margin:4px 0 14px}
+.help-steps{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
+.help-step{display:flex;gap:10px;align-items:flex-start}
+.help-step-num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--gold-light);color:#241a02;font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center}
+.help-step > div{font-size:13.5px;line-height:1.75;padding-top:2px}
+.help-tip{margin-top:14px;background:rgba(196,160,74,.12);border:1px solid rgba(196,160,74,.4);border-radius:10px;padding:10px 12px;font-size:12.5px;font-weight:700;line-height:1.7}
 
 /* modal */
 .modal-bg{
@@ -1910,6 +2100,11 @@ html[data-theme="night"] .theme-preview-day{border-color:rgba(126,196,255,.08)}
 }
 .print-body.cols{grid-auto-flow:column;grid-auto-columns:1fr}
 .print-body.rows{grid-auto-flow:row;grid-auto-rows:1fr}
+/* صفحة المعلمين العمودية: معلم في النصف الأعلى ومعلم في النصف الأسفل */
+.print-body.multi-2.dir-col{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
+#print-output .print-body.multi-2.dir-col > .print-table-wrap{border-radius:0;min-height:0}
+#print-output .print-body.multi-2.dir-col > .print-table-wrap + .print-table-wrap{border-top:2px solid #1b2a4a}
+#print-output .print-body.multi-2.dir-col .print-table-wrap table.pt{flex:1 1 auto;min-height:0;height:auto}
 .print-table-wrap{
   display:flex;flex-direction:column;min-height:0;min-width:0;
   height:100%;
@@ -2163,7 +2358,7 @@ table.pt td.slot span, table.pt td.slot .mp-cell span{display:block!important;wi
 @media print{
   html,body{margin:0!important;padding:0!important;background:#fff!important;height:auto!important}
   /* Hide app UI */
-  .no-print, .topbar, main, #toast, #modal-root, #print-measure-host{display:none!important}
+  .no-print, .topbar, main, #toast, #modal-root, #print-measure-host, .help-fab{display:none!important}
   /* Show only print root */
   body *{visibility:hidden}
   #print-output{display:block!important;position:absolute!important;top:0!important;left:0!important;width:100%!important;height:auto!important;visibility:visible!important}
@@ -4656,6 +4851,7 @@ html[data-theme="night"] .about-badge {
 
 <div id="toast"></div>
 <div id="modal-root"></div>
+<button type="button" class="help-fab" id="helpFab" title="طريقة العمل في هذه التبويبة" aria-label="طريقة العمل في هذه التبويبة">؟</button>
 <div id="print-output"></div>
 
 
@@ -5701,6 +5897,16 @@ async function downloadDirectFullSchedulePdfA3(isDemo){
       return;
     }
 
+    /* وضع الشعب كصفوف: نفس مسار صفحة الطباعة المعتمدة (A3 أفقي) ثم تصدير PDF بهامش 5مم */
+    if(typeof getMasterViewMode === 'function' && getMasterViewMode()==='byClass'){
+      if(typeof toast === 'function') toast('جارٍ إنشاء ملف PDF (A3 أفقي) — وضع الشعب كصفوف…', 'ok');
+      clearTimeout(window.__nibrasPdfExportOnceTimer);
+      window.__nibrasPdfExportOnce = { on:true, wmm:410, hmm:287 };
+      window.__nibrasPdfExportOnceTimer = setTimeout(function(){ window.__nibrasPdfExportOnce = null; }, 10000);
+      printMasterSchedule('A3', store, 'landscape');
+      return;
+    }
+
     if(typeof toast === 'function') toast('جارٍ إنشاء وتجهيز ملف PDF للجدول (A3 أفقي)…', 'ok');
 
     // Ensure jsPDF and html2canvas exist
@@ -6142,7 +6348,7 @@ function showAndroidPdfSuccessModal(blob, blobUrl, pdfFile, fileName){
 
 
 
-async function nibrasExportPrintOutputAsPDF(sizeMm, customKind){
+async function nibrasExportPrintOutputAsPDF(sizeMm, customKind, opts){
   var out = document.getElementById('print-output');
   if(!out || !out.children.length){ try{ toast('لا يوجد محتوى جاهز للتصدير','err'); }catch(e){} return; }
   var pages = Array.prototype.slice.call(out.children).filter(function(el){ return el.nodeType===1; });
@@ -6274,12 +6480,15 @@ async function nibrasExportPrintOutputAsPDF(sizeMm, customKind){
       var scaleFactor = Math.max(2, Math.min(3.5, 2200/Math.max(rectW,1)));
       var canvas = await window.html2canvas(pg, { scale:scaleFactor, useCORS:true, backgroundColor:'#ffffff', logging:false });
       var img = canvas.toDataURL('image/jpeg', 0.95);
-      var orientCode = singleWmm >= singleHmm ? 'l' : 'p';
-      if(!pdf){ pdf = new jsPDFCtor({ orientation:orientCode, unit:'mm', format:[singleWmm, singleHmm], compress:true }); }
-      else { pdf.addPage([singleWmm, singleHmm], orientCode); }
-      pdf.addImage(img, 'JPEG', 0, 0, singleWmm, singleHmm, undefined, 'FAST');
+      /* الصفحة في الملف بحجم الورقة الكامل (A4/A3) والمحتوى داخلها بهامش 5مم من كل جهة */
+      var fullWmm = singleWmm + 10, fullHmm = singleHmm + 10;
+      var orientCode = fullWmm >= fullHmm ? 'l' : 'p';
+      if(!pdf){ pdf = new jsPDFCtor({ orientation:orientCode, unit:'mm', format:[fullWmm, fullHmm], compress:true }); }
+      else { pdf.addPage([fullWmm, fullHmm], orientCode); }
+      pdf.addImage(img, 'JPEG', 5, 5, singleWmm, singleHmm, undefined, 'FAST');
     }
     var blob = pdf.output('blob');
+    if(opts && opts.returnBlob){ return blob; }
     var url = URL.createObjectURL(blob);
     var fname = nibrasPdfFileName(customKind || (isCut2 ? 'مقسم' : (pages.length>1 ? 'شعب' : 'كامل')));
     var a = document.createElement('a');
@@ -6297,6 +6506,52 @@ async function nibrasExportPrintOutputAsPDF(sizeMm, customKind){
   }
 }
 
+/* ===== إرسال جدول معلم عبر واتساب (PDF) ===== */
+async function teacherSchedulePdfBlob(teacherId){
+  const paper = (String(printPaper||'A4').toUpperCase()==='A3') ? 'A3' : 'A4';
+  const orient = 'portrait';
+  buildPaginatedPrintPages([buildTeacherTableHtml(teacherId)], 2, 'col', orient, paper);
+  try{ fitPrintPagesOnePage(paper, orient); fitPrintPagesOnePage(paper, orient); }catch(e){}
+  try{ hardenPrintedPages(Array.from(document.querySelectorAll('#print-output .print-page')), 0.97, orient); }catch(e){}
+  const isA3 = paper==='A3';
+  const pageMM = isA3 ? {w:297,h:420} : {w:210,h:297};
+  return await nibrasExportPrintOutputAsPDF({ wmm: pageMM.w-10, hmm: pageMM.h-10 }, 'teacher', { returnBlob:true });
+}
+async function shareTeacherSchedule(teacherId){
+  const t = getTeacher(teacherId); if(!t) return;
+  const displayName = getTeacherDisplayName(t);
+  const school = (DB.settings.schoolName||'مدرستي');
+  const year = (DB.settings.academicYear||'');
+  const msg = 'جدول '+displayName+' — '+school+(year?' — العام '+year:'');
+  try{
+    const blob = await teacherSchedulePdfBlob(teacherId);
+    if(!blob){ throw new Error('no blob'); }
+    const fname = 'جدول_معلم_'+String(displayName).replace(/\s+/g,'_')+'.pdf';
+    const file = new File([blob], fname, {type:'application/pdf'});
+    if(navigator.share){
+      let can = true;
+      try{ if(navigator.canShare) can = navigator.canShare({files:[file]}); }catch(e){}
+      if(can){
+        try{
+          await navigator.share({files:[file], title:fname, text:msg});
+          return;
+        }catch(e){
+          if(e && e.name==='AbortError'){ return; }
+        }
+      }
+    }
+    /* بديل: تنزيل الملف ليُشارك من تطبيق الملفات */
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fname; a.style.display='none';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ try{ a.remove(); }catch(_){} setTimeout(function(){ try{ URL.revokeObjectURL(url); }catch(_){} }, 5000); }, 900);
+    toast('تم تنزيل ملف الجدول — شاركه من تطبيق الملفات عبر واتساب أو تيليجرام','ok');
+  }catch(err){
+    if(console) console.error(err);
+    toast('تعذر تجهيز الجدول للمشاركة','err');
+  }
+}
 
 (function nibrasNativeBridge(){
   var origPrint = window.print.bind(window);
@@ -6775,7 +7030,7 @@ function getMasterCellLayout(){
 function applyMasterCellLayout(){
   const side = getMasterCellLayout()==='side';
   try{ document.documentElement.classList.toggle('master-layout-side', side); }catch(e){}
-  document.querySelectorAll('table.demo-master, table.master-print').forEach(function(t){
+  document.querySelectorAll('table.demo-master, table.master-print, table.bc-master-table').forEach(function(t){
     t.classList.toggle('layout-side', side);
   });
   document.querySelectorAll('.btn-master-layout').forEach(function(b){
@@ -6988,7 +7243,9 @@ function masterFontBarHtml(){
   const lay = getMasterCellLayout();
   const tt = (typeof schoolTerms==='function') ? schoolTerms() : {theOne:'المعلم', hideBtn:'إخفاء المعلم', showBtn:'إظهار المعلم'};
   const colorOn = getMasterColorSubjects();
-  return '<div class="full-font-bar"><span>حجم خط المادة</span><div class="full-font-ctrl">'
+  return '<div class="full-font-bar"><div class="full-font-ctrl">'
+    + '<button type="button" class="btn-viewmode'+(getMasterViewMode()==='byClass'?' active':'')+'" id="btnViewMode" title="وضع العرض: الأعمدة = أيام الأسبوع والصفوف = الشعب (يعمل في الشاشة والطباعة وPDF)">📊 '+(getMasterViewMode()==='byClass' ? '📋' : 'الشعب صفوف')+'</button>'
+    + '</div><span class="full-font-sep"></span><span>حجم خط المادة</span><div class="full-font-ctrl">'
     + '<button type="button" class="btn-master-font" data-dir="-1" aria-label="تصغير">−</button>'
     + '<b class="master-font-val">'+n+'</b>'
     + '<button type="button" class="btn-master-font" data-dir="1" aria-label="تكبير">+</button>'
@@ -7403,6 +7660,154 @@ document.getElementById('tabs').addEventListener('click', e=>{
   const btn = e.target.closest('.tab-btn');
   if(btn) showView(btn.dataset.view);
 });
+
+/* ===== دليل العمل لكل تبويبة (زر المساعدة العائم) ===== */
+const HELP_GUIDES = {
+  dash:{
+    title:"🖥️ لوحة التحكم",
+    intro:"هذه الشاشة تعرض لك نظرة حية على أعمال اليوم: الوقت الحالي، الحصة الجارية، جدول اليوم، والمعلمون المكلفون اليوم.",
+    steps:[
+      "الساعة الكبيرة تعرض الوقت الحالي، وبجانبها اسم <b>الحصة الجارية</b> إن كان وقت الدوام.",
+      "بطاقات الإحصاء تعرض: عدد المعلمين، حصص الأسبوع الكلية، وعدد المواد.",
+      "قسم <b>جدول اليوم</b> يوضح حصص اليوم حصةً حصة حسب التوقيت.",
+      "قسم <b>مراقبو اليوم</b> يعرض أسماء المعلمين المكلفين بالمراقبة اليوم.",
+      "قسم <b>مفرغو اليوم</b> يعرض المعلمين المفرّغين (لا يدرّسون اليوم).",
+      "انتقل بين الأقسام من شريط التبويبات أعلى الشاشة."
+    ],
+    tips:"اللوح يتحدث تلقائيًا حسب اليوم والوقت، فلا تحتاج إدخال أي شيء هنا — هو شاشة عرض فقط."
+  },
+  demo:{
+    title:"🧪 جدول تجريبي",
+    intro:"جدول تجريبي جاهز لمعاينة شكل التصميم قبل بناء جدولك الفعلي.",
+    steps:[
+      "هذا القسم مصمم للعرض في <b>الوضع الأفقي</b>، لذا أدر جهازك.",
+      "سترى جدولًا كاملًا بالشعب والحصص والمعلمين بشكل تجريبي.",
+      "استخدمه للتأكد من شكل التصميم والألوان قبل البدء بجدولك.",
+      "لبناء جدولك الفعلي انتقل إلى تبويب <b>🛠️ إنشاء الجدول</b>."
+    ],
+    tips:"هذا الجدول تجريبي فقط ولا يؤثر على بياناتك إطلاقًا."
+  },
+  settings:{
+    title:"⚙️ الإعدادات",
+    intro:"من هنا تضبط كل إعدادات المدرسة والتطبيق — وُضعت هنا حتى تبقى صحيحة قبل إنشاء الجدول.",
+    steps:[
+      "<b>بيانات المدرسة</b>: اكتب اسم المدرسة والبيانات التي تظهر في رأس الطباعة.",
+      "<b>أيام الدوام</b>: حدّد أيام الدوام الفعلية في الأسبوع.",
+      "<b>عدد الحصص اليومية</b>: اختر عدد الحصص في اليوم، وعدد حصص كل يوم إن اختلف.",
+      "<b>نوع الدوام</b>: اختر صباحي/مسائي، وضّع وقت بداية كل يوم ومدة الحصة والفاصل.",
+      "<b>مظهر التطبيق</b>: بدّل بين الوضع النهاري والليلي.",
+      "<b>نسخ احتياطي</b>: صدّر بياناتك ملفًا للحفظ، أو استوردها عند الحاجة.",
+      "<b>التنبيهات</b>: فعّل تنبيه بداية/نهاية الحصة واختر الصوت."
+    ],
+    tips:"اضبط هذه الإعدادات أولًا دائمًا، لأنها تحدد هيكل الجدول (الأيام، الحصص، التوقيتات) الذي سيُبنى عليه كل شيء."
+  },
+  teachers:{
+    title:"👤 المعلمون",
+    intro:"هنا تُضيف وتدير المعلمين، وتحكّم بأيام تفريغهم والحصص الممنوعة عليهم.",
+    steps:[
+      "<b>إضافة معلم</b>: اكتب اسمه ثم اضغط زر الإضافة.",
+      "بجانب اسم كل معلم ستجد شارة <b>📚 عدد الحصص المكلف بها خلال الأسبوع</b> (تُحسب تلقائيًا من توزيع النصاب في تبويب إنشاء الجدول).",
+      "للإشارة إلى <b>أيام التفريغ</b> اضغط أيام الأسبوع بجانب المعلم (تتحول للأحمر = لا يدرّس فيه).",
+      "اضغط <b>✎ تعديل</b> لتغيير الاسم، أو تفعيل خيار «لا يبدأ بالحصة الأولى» لمن يسكن بعيدًا.",
+      "لتحريم معلم من حصص معينة (كالحصة الأولى) استخدم أزرار <b>حصص ممنوعة</b> الحمراء بجانبه.",
+      "اضغط <b>🗑 حذف</b> لإزالة المعلم — وسيُحذف توزيعه على الحصص أيضًا.",
+      "اضغط <b>🖨️</b> لطباعة جدول المعلم، و<b>📄</b> لتنزيله PDF.",
+      "اضغط <b>📤</b> لمشاركة جدول المعلم (ملف PDF) عبر قائمة المشاركة: واتساب، تيليجرام، بريد، أو أي تطبيق آخر — دون الحاجة لرقم هاتف.",
+      "قسم <b>🛡️ جدول المراقبين</b> أسفل الشاشة لإدارة معلمي المراقبة."
+    ],
+    tips:"شارة «الحصص/أسبوع» تتحدّث تلقائيًا: كلما وزّعت مادة على معلم في تبويب إنشاء الجدول زادت، وكلما أزالتها نقصت."
+  },
+  subjects:{
+    title:"📘 المواد",
+    intro:"هنا تُضيف وتدير المواد الدراسية في المدرسة.",
+    steps:[
+      "<b>إضافة مادة</b>: اكتب اسم المادة ثم اضغط زر الإضافة.",
+      "اضغط <b>✎ تعديل</b> بجانب المادة لتغيير اسمها.",
+      "لتحريم مادة من حصص معينة (لا تُدرّس فيها إطلاقًا) استخدم أزرار الحصص الحمراء بجانبها.",
+      "اضغط <b>🗑 حذف</b> لإزالة المادة — وسيُحذف توزيعها على الشعب أيضًا."
+    ],
+    tips:"تأكد من إضافة جميع المواد قبل توزيع النصاب في تبويب «إنشاء الجدول»."
+  },
+  build:{
+    title:"🛠️ إنشاء الجدول",
+    intro:"هذا هو القسم الأساسي: تحدد المراحل والشعب، توزّع النصاب على المعلمين، ثم تولّد الجدول تلقائيًا.",
+    steps:[
+      "<b>إضافة مرحلة دراسية</b>: أنشئ المراحل (ابتدائي، متوسط، ثانوي...).",
+      "داخل كل مرحلة أضف <b>الشعب (الفصول)</b> الموجودة.",
+      "<b>توزيع النصاب</b>: لكل شعبة، أضف موادها وحدّد عدد حصص كل مادة في الأسبوع.",
+      "لكل مادة في الشعبة اختر <b>المعلم</b> المسؤول منها — يظهر فقط المعلمون المتاحون والذين بقي لهم نصاب.",
+      "اضغط <b>⚡ توليد الجدول تلقائيًا</b> — سيبني التطبيق الجدول ويحل التعارضات بنفسه.",
+      "إن ظهرت تعارضات، ستميز باللون لتصححها يدويًا بالنقر على الحصة وتغيير المعلم/المادة."
+    ],
+    tips:"مجموع «عدد حصص/مادة × عدد المواد» الموزعة على كل معلم هو ما يظهر كشارة الحصص الأسبوعية في تبويب المعلمين."
+  },
+  full:{
+    title:"📋 الجدول الكامل",
+    intro:"يعرض جدول كل الشعب في مخطط رئيسي واحد كبير.",
+    steps:[
+      "هذا القسم للعرض في <b>الوضع الأفقي</b>، لذا أدر جهازك.",
+      "سترى الجدول الرئيسي: الأعمدة = الحصص، الصفوف = الأيام، وبداخل كل خلية اسم الشعبة والمعلم والمادة.",
+      "انقر على أي خلية لتعديل محتوياتها (المعلم/المادة) مباشرة.",
+      "استخدم زر الطباعة <b>🖨️</b> أعلى الشاشة لطباعة الجدول الكامل أو قصّه لأوراق A4/A3.",
+      "زر <b>📊 وضع العرض</b> فوق الجدول يبدّل العرض إلى: <b>الأعمدة = أيام الأسبوع والصفوف = الشعب</b> — يظهر كذلك في الطباعة وPDF بنفس القياسات والهوامش، والضغط مرة أخرى يعيد الوضع العادي."
+    ],
+    tips:"الخلية الفارغة تعني أنه لا توجد حصة مخصصة لذلك اليوم والفترة."
+  },
+  schedule:{
+    title:"📅 الجداول",
+    intro:"هنا تعرض وتطبع وتنزّل جدول كل شعبة وجدول كل معلم.",
+    steps:[
+      "<b>جداول الشعب</b>: اختر الشعبة لعرض جدولها، ثم اطبعه (🖨️) أو نزّله PDF (📄).",
+      "<b>جداول المعلمين</b>: اختر المعلم لعرض جدول حصصه موزعة على الشعب، ثم اطبع أو نزّل.",
+      "<b>الجداول المحفوظة</b>: لإدارة النسخ المحفوظة من الجداول."
+    ],
+    tips:"قبل الطباعة استخدم زر الطباعة <b>🖨️</b> أعلى الشاشة لاختيار مقاس الورقة (A4/A3) والاتجاه (أفقي/عمودي)."
+  },
+  timings:{
+    title:"⏰ تواقيت الدروس",
+    intro:"من هنا تضبط وقت بداية كل حصة ومدة الفواصل، فتتولد جداول التواقيت كاملة.",
+    steps:[
+      "في قسم <b>جدول تواقيت الدروس</b> حدّد <b>وقت بداية</b> كل حصة و<b>مدها</b> بالدقائق.",
+      "سيحسب التطبيق تلقائيًا وقت نهاية كل حصة ووقت الفواصل.",
+      "الجدول الناتج يعرض التوقيتات (بداية – نهاية) لكل حصص كل يوم.",
+      "استخدم زر الطباعة <b>🖨️</b> أعلى الشاشة لطباعة أو تنزيل جدول التواقيت."
+    ],
+    tips:"تأكد أولًا من ضبط «نوع الدوام» وأوقات الأيام في تبويب الإعدادات، لأن التواقيت تُبنى عليها."
+  },
+  about:{
+    title:"ℹ️ حول التطبيق",
+    intro:"معلومات عن التطبيق وميزاته ودليل استخدامه الكامل.",
+    steps:[
+      "قسم <b>مميزات التطبيق</b>: يعرض قائمة كاملة بكل الوظائف الاحترافية.",
+      "قسم <b>طريقة الاستخدام خطوة بخطوة</b>: دليل كامل من البداية حتى الطباعة.",
+      "انتقل بين الأقسام من الأزرار الداخلية في أعلى الصفحة."
+    ],
+    tips:"إن كنت جديدًا على التطبيق، يُنصح بقراءة «طريقة الاستخدام خطوة بخطوة» أولًا."
+  }
+};
+function openHelpFor(view){
+  const g = HELP_GUIDES[view];
+  const root = document.getElementById('modal-root');
+  if(!g){ root.innerHTML=''; return; }
+  const stepsHtml = g.steps.map((sx,i)=>'<div class="help-step"><span class="help-step-num">'+(i+1)+'</span><div>'+sx+'</div></div>').join('');
+  root.innerHTML =
+    '<div class="modal-bg help-bg" id="helpBg">'
+    + '<div class="modal-card help-card">'
+    + '<h3>'+g.title+'</h3>'
+    + '<p class="help-intro">'+g.intro+'</p>'
+    + '<div class="help-steps">'+stepsHtml+'</div>'
+    + (g.tips ? '<div class="help-tip">💡 <b>نصيحة:</b> '+g.tips+'</div>' : '')
+    + '<div class="modal-actions"><button class="btn btn-primary" id="helpClose" style="flex:1">فهمت، إغلاق</button></div>'
+    + '</div></div>';
+  const close = ()=>{ root.innerHTML=''; };
+  root.querySelector('#helpClose').onclick = close;
+  root.querySelector('#helpBg').addEventListener('click', e=>{ if(e.target.id==='helpBg') close(); });
+}
+(function bindHelpFab(){
+  const fab = document.getElementById('helpFab');
+  if(!fab) return;
+  fab.addEventListener('click', ()=> openHelpFor(currentViewName));
+})();
 window.addEventListener('orientationchange', function(){
   setTimeout(updateFullMasterOrientation, 80);
   setTimeout(updateFullMasterOrientation, 320);
@@ -7429,6 +7834,98 @@ function syncMasterStickyCols(root){
     table.style.setProperty('--per-col-w', '22px');
   });
 }
+/* ===== وضع العرض: صفوف = شعب (أعمدة = أيام الأسبوع) ===== */
+let masterViewMode = 'normal';
+try{ const _mvm = localStorage.getItem('nibras_masterViewMode'); if(_mvm==='byClass'||_mvm==='normal') masterViewMode = _mvm; }catch(e){}
+function getMasterViewMode(){ return masterViewMode==='byClass' ? 'byClass' : 'normal'; }
+function setMasterViewMode(m){ masterViewMode = (m==='byClass') ? 'byClass' : 'normal'; try{ localStorage.setItem('nibras_masterViewMode', masterViewMode); }catch(e){} }
+/* زر وضع العرض: ربط عام (نسخة واحدة لكل شاشة) حتى لا تتعارض النسخ داخل عرض الجدول والتجريبي */
+document.addEventListener('click', function(e){
+  const b = (e.target && e.target.closest) ? e.target.closest('.btn-viewmode') : null;
+  if(!b) return;
+  e.preventDefault(); e.stopPropagation();
+  setMasterViewMode(getMasterViewMode()==='byClass' ? 'normal' : 'byClass');
+  try{
+    if(currentViewName==='full' && typeof renderFullMasterTab==='function') renderFullMasterTab();
+    else if(currentViewName==='demo' && typeof renderDemoAllOverview==='function') renderDemoAllOverview();
+  }catch(err){ if(console) console.error(err); }
+});
+
+function buildByClassTableHtml(store, opts){
+  store = store || DB;
+  opts = opts || {};
+  const cls = allClassesOf(store);
+  if(!cls.length) return '';
+  const days = (store.settings && store.settings.days) || [];
+  const periods = (store.settings && store.settings.periodsPerDay) || 6;
+  const getS = id => (store.subjects||[]).find(x=>x.id===id);
+  const getT = id => (store.teachers||[]).find(x=>x.id===id);
+  const hideT = (typeof getHideTeacherName==='function') && getHideTeacherName();
+  const side = (typeof getMasterCellLayout==='function') && getMasterCellLayout()==='side';
+  const colorSubjects = (typeof getMasterColorSubjects==='function') && getMasterColorSubjects();
+  let thead = '<th class="bc-class-col">الشعبة</th>';
+  for(let d=0; d<days.length; d++) thead += '<th class="bc-day-head" title="'+esc(days[d])+'">'+esc(days[d])+'</th>';
+  let colgroup = '<colgroup><col class="bc-col-class">';
+  for(let d=0; d<days.length; d++) colgroup += '<col class="bc-col-day">';
+  colgroup += '</colgroup>';
+  let tbody = '';
+  for(let ci=0; ci<cls.length; ci++){
+    const c = cls[ci];
+    tbody += '<tr class="bc-row '+(ci%2 ? 'bc-row-b' : 'bc-row-a')+'">';
+    tbody += '<td class="bc-class-cell" title="'+esc(c.label)+'">'+stackLabel(c.label)+'</td>';
+    for(let d=0; d<days.length; d++){
+      const grid = store.schedule[c.key] ? store.schedule[c.key].grid : null;
+      let lines = '';
+      for(let p=0; p<periods; p++){
+        const cell = grid && grid[d] ? grid[d][p] : null;
+        let bg = '';
+        if(cell && colorSubjects){
+          const colorObj = getSubjectPastelColor(cell.subjectId, store);
+          if(colorObj) bg = ' style="background:'+colorObj.bg+' !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;"';
+        }
+        const isSel = !!(typeof selectedCell!=='undefined' && selectedCell && selectedCell.classKey===c.key && selectedCell.day===d && selectedCell.period===p);
+        let lineCls = 'bc-line';
+        if(isSel) lineCls += ' selected';
+        else if(typeof isConflictTarget==='function' && isConflictTarget(d, p, c.key)) lineCls += ' conflict';
+        if(typeof selectedCell!=='undefined' && selectedCell && selectedCell.classKey===c.key && !isSel) lineCls += ' drop-ok';
+        if(cell){
+          const subj = getS(cell.subjectId);
+          const teach = getT(cell.teacherId);
+          lines += '<div class="'+lineCls+'" data-key="'+c.key+'" data-d="'+d+'" data-p="'+p+'"'+bg+'><span class="bc-p">'+(p+1)+'</span><span class="bc-s" data-subj="'+cell.subjectId+'">'+esc(shortName(subj?subj.name:'—',14))+'</span>'+(hideT?'':'<span class="bc-t" data-teach="'+cell.teacherId+'">'+esc(shortName(teach?getTeacherDisplayName(teach):'',14))+'</span>')+'</div>';
+        } else {
+          lines += '<div class="'+lineCls+' bc-empty" data-key="'+c.key+'" data-d="'+d+'" data-p="'+p+'"'+bg+'><span class="bc-p">'+(p+1)+'</span><span class="bc-s">—</span><span class="bc-t"></span></div>';
+        }
+      }
+      tbody += '<td class="bc-day-cell"><div class="bc-lines">'+lines+'</div></td>';
+    }
+    tbody += '</tr>';
+  }
+  return '<table class="bc-master-table'+(side?' layout-side':'')+'"'+(opts.tableId ? ' id="'+opts.tableId+'"' : '')+' style="border-collapse:collapse;table-layout:fixed;width:100%">'+colgroup+'<thead><tr>'+thead+'</tr></thead><tbody>'+tbody+'</tbody></table>';
+}
+
+function byClassPrintCss(){
+  const cs2 = function(k, fb){ try{ const v = getComputedStyle(document.documentElement).getPropertyValue(k).trim(); return v||fb; }catch(e){ return fb; } };
+  const headFsz = Math.max(11, (typeof getMasterFontSize==='function') ? getMasterFontSize() : 13);
+  const side = (typeof getMasterCellLayout==='function') && getMasterCellLayout()==='side';
+  return `
+    #print-output table.bc-master-table { min-width:100%!important; table-layout:fixed!important; }
+    #print-output table.bc-master-table col.bc-col-class { width:14mm!important; }
+    #print-output .bc-master-table th, #print-output .bc-master-table td { border:1.2px solid ${cs2('--m-grid','#2f2c28')}!important; box-sizing:border-box!important; padding:0!important; overflow:hidden!important; vertical-align:middle!important; }
+    #print-output .bc-master-table thead th { background:linear-gradient(180deg,${cs2('--m-head2','#2d4373')},${cs2('--m-head','#1b2a4a')})!important; color:${cs2('--m-head-fg','#fff')}!important; font-weight:900!important; font-size:${Math.max(12, Math.round(headFsz*0.95))}px!important; padding:2px 2px!important; line-height:1.15!important; -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
+    #print-output .bc-master-table thead th.bc-class-col { border-top:2px solid ${cs2('--m-accent','#c9a227')}!important; }
+    #print-output .bc-row-a { background:${cs2('--m-row-a','#fff')}!important; }
+    #print-output .bc-row-b { background:${cs2('--m-row-b','#efe9d8')}!important; }
+    #print-output .bc-class-cell { background:${cs2('--m-day','#1b2a4a')}!important; color:${cs2('--m-day-fg','#f0d78c')}!important; }
+    #print-output .bc-class-cell .vword { font-size:15px!important; font-weight:900!important; letter-spacing:2px!important; }
+    #print-output .bc-lines { height:100%!important; display:flex!important; flex-direction:column!important; justify-content:space-evenly!important; }
+    #print-output .bc-line { display:flex!important; flex-wrap:${side?'nowrap':'wrap'}!important; align-items:center!important; justify-content:center!important; gap:${side?'4px':'1px 4px'}!important; padding:0 2px!important; line-height:1.2!important; }
+    #print-output .bc-line .bc-p { flex:0 0 auto!important; font-size:${Math.max(9, Math.round(headFsz*0.78))}px!important; font-weight:900!important; color:${cs2('--m-per-fg','#2d4373')}!important; background:${cs2('--m-per','#f3efe4')}!important; border-radius:3px!important; padding:0 4px!important; min-width:15px!important; text-align:center!important; -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
+    #print-output .bc-line .bc-s { flex:1 1 auto!important; min-width:0!important; font-size:${headFsz}px!important; font-weight:900!important; color:#000000!important; white-space:nowrap!important; overflow:hidden!important; text-overflow:ellipsis!important; text-align:center!important; }
+    #print-output .bc-line .bc-t { flex:${side?'1 1 auto':'1 1 100%'}!important; min-width:0!important; font-size:${Math.max(10, Math.round(headFsz*0.85))}px!important; font-weight:800!important; color:#000000!important; white-space:nowrap!important; overflow:hidden!important; text-overflow:ellipsis!important; text-align:center!important; ${side?'border-inline-start:1px dashed #8a8a8a!important;':''} }
+    #print-output .bc-line.bc-empty { opacity:.45!important; }
+  `;
+}
+
 function renderFullMasterTab(){
   const wrap = document.getElementById('fullMasterWrap');
   if(!wrap) return;
@@ -7503,19 +8000,19 @@ function renderFullMasterTab(){
     }
   }
 
+  const isByClass = getMasterViewMode()==='byClass';
   let extra = masterFontBarHtml();
   if(selectedCell){
     const csel = cls.find(x=>x.key===selectedCell.classKey);
     extra += `<div class="full-edit-bar">
-      <span>🔵 محدد: ${esc(csel?realClassCode(csel):'')} · ${esc(days[selectedCell.day]||'')} · حصة ${selectedCell.period+1} — المس خانة في <b>نفس العمود</b> للنقل أو التبديل</span>
+      <span>🔵 محدد: ${esc(csel?realClassCode(csel):'')} · ${esc(days[selectedCell.day]||'')} · حصة ${selectedCell.period+1} — المس خانة في <b>${isByClass?'نفس الصف (نفس الشعبة)':'نفس العمود'}</b> للنقل أو التبديل</span>
       <button type="button" class="btn btn-outline btn-sm" id="btnFullCancelSel">إلغاء</button>
     </div>`;
   }
 
-  wrap.innerHTML = `<div class="full-master-stage">
-    ${extra}
-    <div class="demo-master-wrap">
-      <table class="demo-master${getMasterCellLayout()==='side'?' layout-side':''}">
+  const tableInner = isByClass
+    ? buildByClassTableHtml(DB, {})
+    : `<table class="demo-master${getMasterCellLayout()==='side'?' layout-side':''}">
         <thead>
           <tr>
             <th class="corner-day">اليوم</th>
@@ -7524,7 +8021,11 @@ function renderFullMasterTab(){
           </tr>
         </thead>
         <tbody>${body}</tbody>
-      </table>
+      </table>`;
+  wrap.innerHTML = `<div class="full-master-stage">
+    ${extra}
+    <div class="demo-master-wrap">
+      ${tableInner}
     </div>
   </div>`;
 
@@ -7568,6 +8069,13 @@ function renderFullMasterTab(){
         return;
       }
       onCellClick(classKey, d, p);
+    });
+  });
+  /* تحريك الحصص في وضع الشعب كصفوف: المس أي جزء من سطر الحصة (رقم/مادة/معلم)
+     لتحديدها ثم المس خانة أخرى في نفس الصف لنقلها أو تبديلها — نفس منطق الوضع العادي تمامًا */
+  wrap.querySelectorAll('.bc-line[data-key]').forEach(line=>{
+    line.addEventListener('click', (e)=>{
+      onCellClick(line.dataset.key, +line.dataset.d, +line.dataset.p);
     });
   });
   const cancel = document.getElementById('btnFullCancelSel');
@@ -7733,9 +8241,9 @@ function renderFullMasterTab(){
     const isPdf = !!(chkPdf && chkPdf.checked);
     const tables = DB.teachers.map(t=>buildTeacherTableHtml(t.id));
     if(isPdf){
-      exportTableListAsPdf(tables, 'جداول_المعلمين_والمدرسين', paper, orient);
+      exportTableListAsPdf(tables, 'جداول_المعلمين_والمدرسين', paper, 'portrait', 2, 'col');
     } else {
-      paginateAndPrintFit(tables, 1, 'row', orient, paper);
+      paginateAndPrintFit(tables, 2, 'col', 'portrait', paper);
     }
   });
   document.addEventListener('click', function(e){
@@ -8300,15 +8808,19 @@ function renderTeacherGrid(teacherId){
       + '<span style="font-size:11.5px;color:var(--ink-soft)">(من 10 إلى 50 — تأثيره يظهر عند الطباعة)</span>'
       + '<div style="display:flex;gap:8px;align-items:center;margin-inline-start:auto;flex-wrap:wrap">'
       + '<button type="button" class="btn btn-gold" id="btnPrintThisTeacher">🖨️ طباعة جدول '+esc(tDisplayName)+'</button>'
+      + '<button type="button" class="btn btn-outline" id="btnWaThisTeacher" style="border-color:#25D366;color:#128C7E;font-weight:bold">📤 مشاركة الجدول</button>'
       + '<button type="button" class="btn btn-outline" id="btnPdfThisTeacher" style="border-color:#10b981;color:#047857;font-weight:bold">📄 تنزيل جدول '+esc(tDisplayName)+' PDF</button>'
       + '<button type="button" class="btn btn-outline" id="btnPrintAllTeachersSched">🖨️ طباعة جميع المعلمين</button>'
       + '<button type="button" class="btn btn-outline" id="btnPdfAllTeachersSched" style="border-color:#10b981;color:#047857;font-weight:bold">📄 تنزيل جميع المعلمين PDF</button>'
       + '</div>'
       + '</div>';
 
+    const wab = document.getElementById('btnWaThisTeacher');
+    if(wab) wab.addEventListener('click', function(){ shareTeacherSchedule(teacherId); });
+
     const pb = document.getElementById('btnPrintThisTeacher');
     if(pb) pb.addEventListener('click', function(){
-      try{ paginateAndPrintFit([buildTeacherTableHtml(teacherId)], 1, 'row', 'landscape', printPaper||'A4'); }
+      try{ paginateAndPrintFit([buildTeacherTableHtml(teacherId)], 2, 'col', 'portrait', printPaper||'A4'); }
       catch(err){ toast('تعذّرت الطباعة','err'); }
     });
 
@@ -8316,7 +8828,7 @@ function renderTeacherGrid(teacherId){
     if(pdfb) pdfb.addEventListener('click', async function(){
       try{
         const safeName = 'جدول_معلم_' + tDisplayName.replace(/\s+/g,'_');
-        await exportTableListAsPdf([buildTeacherTableHtml(teacherId)], safeName, printPaper||'A4', 'landscape');
+        await exportTableListAsPdf([buildTeacherTableHtml(teacherId)], safeName, printPaper||'A4', 'portrait', 2, 'col');
       }catch(err){ toast('تعذّر تنزيل ملف PDF لجدول المعلم','err'); }
     });
 
@@ -8324,7 +8836,7 @@ function renderTeacherGrid(teacherId){
     if(pAll) pAll.addEventListener('click', function(){
       try{
         if(!DB.teachers || !DB.teachers.length){ toast('لا يوجد معلمون','err'); return; }
-        paginateAndPrintFit(DB.teachers.map(t=>buildTeacherTableHtml(t.id)), 1, 'row', 'landscape', printPaper||'A4');
+        paginateAndPrintFit(DB.teachers.map(t=>buildTeacherTableHtml(t.id)), 2, 'col', 'portrait', printPaper||'A4');
       }catch(err){ toast('تعذّرت الطباعة','err'); }
     });
 
@@ -8332,7 +8844,7 @@ function renderTeacherGrid(teacherId){
     if(pdfAll) pdfAll.addEventListener('click', async function(){
       try{
         if(!DB.teachers || !DB.teachers.length){ toast('لا يوجد معلمون','err'); return; }
-        await exportTableListAsPdf(DB.teachers.map(t=>buildTeacherTableHtml(t.id)), 'جداول_المعلمين_والمدرسين', printPaper||'A4', 'landscape');
+        await exportTableListAsPdf(DB.teachers.map(t=>buildTeacherTableHtml(t.id)), 'جداول_المعلمين_والمدرسين', printPaper||'A4', 'portrait', 2, 'col');
       }catch(err){ toast('تعذّر تنزيل ملف PDF لجداول المعلمين','err'); }
     });
   }
@@ -8847,6 +9359,10 @@ function attachInlineBans(wrap){
   });
 }
 
+/* عدد الحصص المكلف بها كل معلم خلال الأسبوع (مجموع توزيع النصاب) */
+function teacherWeekPeriods(teacherId){
+  return (DB.assignments||[]).filter(a=>a.teacherId===teacherId).reduce((sx,a)=>sx+(a.periodsPerWeek||0),0);
+}
 function renderTeachersList(){
   const wrap = document.getElementById("teacherList");
   document.getElementById("teacherCount").textContent = DB.teachers.length;
@@ -8856,15 +9372,18 @@ function renderTeachersList(){
     let sub = days.length ? "تفريغ: " + days.join("، ") : "متاح كل الأيام";
     if(t.noFirstPeriod) sub += " • 🚫 لا يبدأ بالحصة الأولى";
     if((t.forbiddenPeriods||[]).length) sub += " • ⛔ ممنوع في "+(t.forbiddenPeriods||[]).map(p=>"ح"+(p+1)).join("، ");
+    const ppw = teacherWeekPeriods(t.id);
+    const ppwBadge = ppw ? `<span class="ppw-badge" title="عدد الحصص المكلف بها خلال الأسبوع">📚 ${ppw} حصة/أسبوع</span>` : '';
     return `<div class="item-row">
       <div class="item-dot" style="background:var(--ink-2)"></div>
       <div class="item-main">
-        <b>${esc(t.name)}</b>
+        <div class="tname-line"><b>${esc(t.name)}</b>${ppwBadge}</div>
         <span>${esc(sub)}</span>
         ${teacherDayOffStripHtml(t.id, t.excludedDays)}
         ${banStripHtml("t",t.id,t.forbiddenPeriods)}
       </div>
       <div class="item-actions">
+        <button class="icon-btn" data-wa-t="${t.id}" title="مشاركة الجدول عبر واتساب أو تيليجرام" style="color:#128C7E">📤</button>
         <button class="icon-btn" data-print-t="${t.id}" title="طباعة جدول ${esc(t.name)}">🖨️</button>
         <button class="icon-btn" data-pdf-t="${t.id}" title="تنزيل جدول ${esc(t.name)} PDF" style="color:#059669">📄</button>
         <button class="icon-btn" data-edit="${t.id}" title="تعديل">✎</button>
@@ -8872,11 +9391,12 @@ function renderTeachersList(){
       </div>
     </div>`;
   }).join("");
+  wrap.querySelectorAll('[data-wa-t]').forEach(b=> b.addEventListener('click', ()=> shareTeacherSchedule(b.dataset.waT)));
   wrap.querySelectorAll('[data-print-t]').forEach(b=>{
     b.addEventListener('click', ()=>{
       const tid = b.dataset.printT;
       if(!tid) return;
-      try{ paginateAndPrintFit([buildTeacherTableHtml(tid)], 1, 'row', 'landscape', printPaper||'A4'); }
+      try{ paginateAndPrintFit([buildTeacherTableHtml(tid)], 2, 'col', 'portrait', printPaper||'A4'); }
       catch(err){ toast('تعذّرت الطباعة','err'); }
     });
   });
@@ -8886,7 +9406,7 @@ function renderTeachersList(){
       if(!tid) return;
       const t = getTeacher(tid);
       const safeName = 'جدول_معلم_' + (t ? getTeacherDisplayName(t).replace(/\s+/g,'_') : tid);
-      try{ await exportTableListAsPdf([buildTeacherTableHtml(tid)], safeName, printPaper||'A4', 'landscape'); }
+      try{ await exportTableListAsPdf([buildTeacherTableHtml(tid)], safeName, printPaper||'A4', 'portrait', 2, 'col'); }
       catch(err){ toast('تعذّر تنزيل ملف PDF','err'); }
     });
   });
@@ -12079,9 +12599,10 @@ function injectPrintPageStyle(orient, paper){
 }
 
 /* Fit one print page: absolute head/foot + scaled body content — ONE physical page */
-function fitPrintPagesOnePage(paper){
+function fitPrintPagesOnePage(paper, orient){
   paper = (String(paper||printPaper||'A4').toUpperCase()==='A3') ? 'A3' : 'A4';
-  const pageMM = paper === 'A3' ? {w:420,h:297} : {w:297,h:210};
+  const portrait = String(orient||'').toLowerCase() === 'portrait';
+  const pageMM = paper === 'A3' ? (portrait ? {w:297,h:420} : {w:420,h:297}) : (portrait ? {w:210,h:297} : {w:297,h:210});
   const contentWmm = pageMM.w - 10;
   const contentHmm = pageMM.h - 10;
 
@@ -12142,14 +12663,34 @@ function fitPrintPagesOnePage(paper){
     }
 
     void scaler.offsetWidth;
-    const tw = Math.max(scaler.scrollWidth, scaler.getBoundingClientRect().width, 1);
-    const th = Math.max(scaler.scrollHeight, scaler.getBoundingClientRect().height, 1);
+    let tw = Math.max(scaler.scrollWidth, scaler.getBoundingClientRect().width, 1);
+    let th = Math.max(scaler.scrollHeight, scaler.getBoundingClientRect().height, 1);
     let s = Math.min(availW / tw, availH / th);
     if(!isFinite(s) || s <= 0) s = 1;
     s = Math.min(Math.max(s, 0.05), 6);
 
     let targetTotalH = th;
-    if(tables.length === 1 && th * s < (availH - 6) && th > 50){
+    /* شبكة معلمين عمودية (نصفان): القياس نفسه شبكة بصفّين تملآن الصفحة — كل جدول يأخذ نصفًا بالضبط */
+    const isMulti2Col = pageNode.__multi2col || !!(body && body.classList && body.classList.contains('multi-2') && body.classList.contains('dir-col'));
+    if(isMulti2Col){
+      pageNode.__multi2col = true;
+      scaler.style.position = 'absolute';
+      scaler.style.top = '0';
+      scaler.style.left = '0';
+      scaler.style.right = '0';
+      scaler.style.width = availW + 'px';
+      scaler.style.display = 'grid';
+      scaler.style.gridTemplateColumns = '1fr';
+      scaler.style.gridTemplateRows = '1fr 1fr';
+      scaler.style.gap = '2mm';
+      scaler.style.boxSizing = 'border-box';
+      scaler.style.transform = 'none';
+      scaler.style.height = availH + 'px';
+      tw = availW;
+      th = availH;
+      s = 1;
+      targetTotalH = availH;
+    } else if(tables.length === 1 && th * s < (availH - 6) && th > 50){
       const titleEl = scaler.querySelector('.pt-title');
       const titleH = titleEl ? (titleEl.offsetHeight || 32) : 0;
       targetTotalH = Math.floor((availH - 6) / s);
@@ -12203,7 +12744,7 @@ function fitPrintPagesOnePage(paper){
         tb.style.width = tw + 'px';
         tb.style.tableLayout = 'fixed';
         tb.style.borderCollapse = 'collapse';
-        if(rScaler.querySelectorAll('table').length === 1 && th * safeScale < (availH - 6) && th > 50){
+        if(!pageNode.__multi2col && rScaler.querySelectorAll('table').length === 1 && th * safeScale < (availH - 6) && th > 50){
           const titleEl = rScaler.querySelector('.pt-title');
           const titleH = titleEl ? (titleEl.offsetHeight || 32) : 0;
           tb.style.height = Math.max(50, targetTotalH - titleH - 2) + 'px';
@@ -12224,11 +12765,27 @@ function fitPrintPagesOnePage(paper){
           tb.style.width = tw + 'px';
           tb.style.tableLayout = 'fixed';
           tb.style.borderCollapse = 'collapse';
-          if(rScaler.querySelectorAll('table').length === 1 && th * safeScale < (availH - 6) && th > 50){
+          if(!pageNode.__multi2col && rScaler.querySelectorAll('table').length === 1 && th * safeScale < (availH - 6) && th > 50){
             const titleEl = rScaler.querySelector('.pt-title');
             const titleH = titleEl ? (titleEl.offsetHeight || 32) : 0;
             tb.style.height = Math.max(50, targetTotalH - titleH - 2) + 'px';
           }
+        });
+      }
+    }
+    /* تطبيق الشبكة العمودية على الصفحة الفعلية: صفّان متساويان — جدول كامل في كل نصف دون قطع أو تراكب */
+    if(pageNode.__multi2col){
+      const rScalerFinal = pageNode.querySelector('.master-abs-scale, .print-scale-wrap, .master-fit-scaler');
+      if(rScalerFinal){
+        rScalerFinal.style.display = 'grid';
+        rScalerFinal.style.gridTemplateColumns = '1fr';
+        rScalerFinal.style.gridTemplateRows = '1fr 1fr';
+        rScalerFinal.style.gap = '2mm';
+        rScalerFinal.style.boxSizing = 'border-box';
+        rScalerFinal.querySelectorAll('table').forEach(tb=>{
+          tb.style.height = 'auto';
+          tb.style.flex = '1 1 auto';
+          tb.style.minHeight = '0';
         });
       }
     }
@@ -12240,7 +12797,7 @@ function paginateAndPrint(tableHtmlList, n, dir, orient, paper){
   buildPaginatedPrintPages(tableHtmlList, n, dir, orient, paper);
   paper = paper || printPaper || 'A4';
   const run = ()=>{
-    try{ fitPrintPagesOnePage(paper); fitPrintPagesOnePage(paper); }catch(e){ console && console.error && console.error(e); }
+    try{ fitPrintPagesOnePage(paper, orient); fitPrintPagesOnePage(paper, orient); }catch(e){ console && console.error && console.error(e); }
     setTimeout(()=> window.print(), 120);
   };
   if(document.fonts && document.fonts.ready){
@@ -12251,10 +12808,11 @@ function paginateAndPrint(tableHtmlList, n, dir, orient, paper){
 /* تثبيت الاكتمال: يعيد قياس كل صفحة جاهزة بمقاس الورق الفعلي ويضبط التحجيم
    بهامش أمان صغير حتى يظهر كامل محتوى الجدول داخل الصفحة مهما اختلفت الخطوط
    أو إعدادات الطابعة. يعمل على الصفحات الجاهزة فقط ولا يغيّر التخطيط. */
-function hardenPrintedPages(pages, shrink){
+function hardenPrintedPages(pages, shrink, orient){
   shrink = (typeof shrink === 'number' && shrink > 0 && shrink <= 1) ? shrink : 0.97;
   const paper = (String(printPaper||'A4').toUpperCase()==='A3') ? 'A3' : 'A4';
-  const pageMM = paper === 'A3' ? {w:420,h:297} : {w:297,h:210};
+  const portrait = String(orient||'').toLowerCase() === 'portrait';
+  const pageMM = paper === 'A3' ? (portrait ? {w:297,h:420} : {w:420,h:297}) : (portrait ? {w:210,h:297} : {w:297,h:210});
   const contentWmm = pageMM.w - 10;
   const contentHmm = pageMM.h - 10;
   let host = document.getElementById('print-measure-host');
@@ -12325,13 +12883,13 @@ function buildPaginatedPrintPages(tableHtmlList, n, dir, orient, paper){
   out.innerHTML = html;
 }
 
-async function exportTableListAsPdf(tableHtmlList, customKind, paper, orient){
+async function exportTableListAsPdf(tableHtmlList, customKind, paper, orient, n, dir){
   try{
     paper = (String(paper || printPaper || 'A4').toUpperCase() === 'A3') ? 'A3' : 'A4';
     orient = orient || 'landscape';
-    buildPaginatedPrintPages(tableHtmlList, 1, 'row', orient, paper);
-    try{ fitPrintPagesOnePage(paper); fitPrintPagesOnePage(paper); }catch(e){ console && console.error && console.error(e); }
-    try{ hardenPrintedPages(Array.from(document.querySelectorAll('#print-output .print-page'))); }catch(e){ console && console.error && console.error(e); }
+    buildPaginatedPrintPages(tableHtmlList, n || 1, dir || 'row', orient, paper);
+    try{ fitPrintPagesOnePage(paper, orient); fitPrintPagesOnePage(paper, orient); }catch(e){ console && console.error && console.error(e); }
+    try{ hardenPrintedPages(Array.from(document.querySelectorAll('#print-output .print-page')), 0.97, orient); }catch(e){ console && console.error && console.error(e); }
 
     const isA3 = paper === 'A3';
     const pageMM = isA3
@@ -12349,8 +12907,8 @@ function paginateAndPrintFit(tableHtmlList, n, dir, orient, paper, shrink){
   buildPaginatedPrintPages(tableHtmlList, n, dir, orient, paper);
   paper = paper || printPaper || 'A4';
   const run = ()=>{
-    try{ fitPrintPagesOnePage(paper); fitPrintPagesOnePage(paper); }catch(e){ console && console.error && console.error(e); }
-    try{ hardenPrintedPages(Array.from(document.querySelectorAll('#print-output .print-page')), shrink); }catch(e){ console && console.error && console.error(e); }
+    try{ fitPrintPagesOnePage(paper, orient); fitPrintPagesOnePage(paper, orient); }catch(e){ console && console.error && console.error(e); }
+    try{ hardenPrintedPages(Array.from(document.querySelectorAll('#print-output .print-page')), shrink, orient); }catch(e){ console && console.error && console.error(e); }
     setTimeout(()=> window.print(), 120);
   };
   if(document.fonts && document.fonts.ready){
@@ -12369,13 +12927,13 @@ const _btnPrintTeacher = document.getElementById('btnPrintTeacher');
 if(_btnPrintTeacher) _btnPrintTeacher.addEventListener('click', ()=>{
   const id = document.getElementById('selPrintTeacher').value;
   if(!id){ toast('لا يوجد معلمون','err'); return; }
-  paginateAndPrintFit([buildTeacherTableHtml(id)], 1, 'row', 'landscape', printPaper);
+  paginateAndPrintFit([buildTeacherTableHtml(id)], 2, 'col', 'portrait', printPaper);
 });
 const _btnPrintAllTeachers = document.getElementById('btnPrintAllTeachers');
 if(_btnPrintAllTeachers) _btnPrintAllTeachers.addEventListener('click', ()=>{
   if(DB.teachers.length===0){ toast('لا يوجد معلمون','err'); return; }
   const tables = DB.teachers.map(t=>buildTeacherTableHtml(t.id));
-  paginateAndPrintFit(tables, 1, 'row', 'landscape', printPaper);
+  paginateAndPrintFit(tables, 2, 'col', 'portrait', printPaper);
 });
 
 // Real full master schedule (same engine as demo)
@@ -12915,6 +13473,7 @@ function printMasterSchedule(paper, store, orient){
   if(!cls.length){ toast('لا توجد شعب للطباعة','err'); return; }
   const days = store.settings.days;
   const periods = store.settings.periodsPerDay;
+  const byClassMode = getMasterViewMode()==='byClass';
   const getS = (id)=> (store.subjects || []).find(s=>s.id===id);
   const getT = (id)=> (store.teachers || []).find(x=>x.id===id);
 
@@ -13006,7 +13565,7 @@ function printMasterSchedule(paper, store, orient){
       }
       #print-output > .print-page.master-one ~ * { display:none!important; }
     }
-  `;
+  ` + (byClassMode ? byClassPrintCss() : '');
 
   function teacherPrintName(n){
     return formatTeacherTwoPartName(n);
@@ -13045,7 +13604,9 @@ function printMasterSchedule(paper, store, orient){
       tbody += '</tr>';
     }
   }
-  const tableHtml = `<table class="master-print${getMasterCellLayout()==='side'?' layout-side':''}" id="masterPrintTable" style="border-collapse:collapse;table-layout:fixed;border-spacing:0">
+  const tableHtml = byClassMode
+    ? buildByClassTableHtml(store, {tableId:'masterPrintTable'})
+    : `<table class="master-print${getMasterCellLayout()==='side'?' layout-side':''}" id="masterPrintTable" style="border-collapse:collapse;table-layout:fixed;border-spacing:0">
     <thead><tr>
       <th class="mp-day">اليوم</th>
       <th class="mp-period">ح.</th>
@@ -13179,7 +13740,210 @@ function printMasterSchedule(paper, store, orient){
   } else setTimeout(run, 120);
 }
 
+/* قص ورقتين A4 — وضع الشعب كصفوف: عمودي = تقسيم أعمدة الأيام على الورقتين، أفقي = تقسيم صفوف الشعب */
+function printMasterCutTwoByClass(store, orient){
+  if(!store) store = DB;
+  orient = (String(orient||'portrait').toLowerCase()==='landscape') ? 'landscape' : 'portrait';
+  try{ applyMasterTableTheme(); applyHideTeacherName(); }catch(e){}
+  var classes = allClassesOf(store);
+  if(!classes.length){ toast('لا توجد شعب للطباعة','err'); return; }
+  var days = (store.settings && store.settings.days && store.settings.days.length) ? store.settings.days.slice() : ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'];
+  var periods = (store.settings && store.settings.periodsPerDay) ? store.settings.periodsPerDay : 6;
+  var horiz = (orient==='landscape');
+  var pageWmm = horiz ? 287 : 200;
+  var pageHmm = horiz ? 200 : 287;
+  var stripWmm = horiz ? pageWmm : (pageWmm * 2);
+  var stripHmm = horiz ? (pageHmm * 2) : pageHmm;
+  var cs = function(k, fb){ try{ var v = getComputedStyle(document.documentElement).getPropertyValue(k).trim(); return v || fb; }catch(e){ return fb; } };
+  var hideT = (typeof getHideTeacherName==='function') && getHideTeacherName();
+  var side = (typeof getMasterCellLayout==='function') && getMasterCellLayout()==='side';
+  var fsz = Math.max(13, (typeof getMasterFontSize==='function') ? getMasterFontSize() : 13);
+  var colorSubjects = (typeof getMasterColorSubjects==='function') && getMasterColorSubjects();
+  var getS = function(id){ return (store.subjects||[]).find(function(x){ return x.id===id; }); };
+  var getT = function(id){ return (store.teachers||[]).find(function(x){ return x.id===id; }); };
+
+  var headHmm = 13, footHmm = 11, headRowHmm = 5;
+  var availHmm = Math.max(100, stripHmm - headHmm - footHmm - 3);
+  var labelWmm = 16;
+
+  var nDays1 = horiz ? days.length : Math.ceil(days.length / 2);
+  var nDays2 = horiz ? days.length : (days.length - nDays1);
+  var nCls1  = horiz ? Math.ceil(classes.length / 2) : classes.length;
+  var nCls2  = horiz ? (classes.length - nCls1) : classes.length;
+  var dayW1 = Math.max(16, (pageWmm - labelWmm) / Math.max(1, nDays1));
+  var dayW2 = Math.max(16, (pageWmm - labelWmm) / Math.max(1, nDays2));
+  var rowH1 = (availHmm - headRowHmm) / Math.max(1, nCls1);
+  var rowH2 = (availHmm - headRowHmm) / Math.max(1, nCls2);
+  var lineFszOf = function(rowHmm){ return Math.min(fsz, Math.max(8, Math.round((rowHmm / periods) * 96 / 25.4 * 0.6))); };
+  var lineF1 = lineFszOf(rowH1), lineF2 = lineFszOf(rowH2);
+  var headFsz = Math.min(10.5, Math.max(8, Math.round(Math.min(rowH1, rowH2) * 1.4)));
+  var labelFsz = Math.min(12, Math.max(8.5, Math.round(Math.min(rowH1, rowH2) * 1.15)));
+
+  function dayCellHtml(cKey, d, lfz){
+    var g = store.schedule[cKey] && store.schedule[cKey].grid;
+    var lines = '';
+    for(var p=0; p<periods; p++){
+      var cell = (g && g[d]) ? g[d][p] : null;
+      var bg = '';
+      if(cell && colorSubjects){
+        var co = getSubjectPastelColor(cell.subjectId, store);
+        if(co) bg = 'background:'+co.bg+'!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;';
+      }
+      if(cell){
+        var subj = getS(cell.subjectId), teach = getT(cell.teacherId);
+        lines += '<div class="bc-line" style="' + bg + '"><span class="bc-p">' + (p+1) + '</span><span class="bc-s" style="font-size:' + lfz + 'px">' + esc(shortName(subj?subj.name:'—',14)) + '</span>' + (hideT ? '' : '<span class="bc-t" style="font-size:' + Math.max(7, Math.round(lfz*0.85)) + 'px">' + esc(shortName(teach?getTeacherDisplayName(teach):'',14)) + '</span>') + '</div>';
+      } else {
+        lines += '<div class="bc-line bc-empty"><span class="bc-p">' + (p+1) + '</span><span class="bc-s">—</span><span class="bc-t"></span></div>';
+      }
+    }
+    return '<td class="bc-day-cell"><div class="bc-lines">' + lines + '</div></td>';
+  }
+
+  function buildTbl(dStart, dCount, cStart, cCount, rowHmm, dW, lfz){
+    var thead = '<th class="bc-class-col" style="width:' + labelWmm + 'mm;min-width:' + labelWmm + 'mm;max-width:' + labelWmm + 'mm;">الشعبة</th>';
+    for(var j=0;j<dCount;j++){
+      thead += '<th style="width:' + dW.toFixed(3) + 'mm;min-width:' + dW.toFixed(3) + 'mm;max-width:' + dW.toFixed(3) + 'mm;" title="' + esc(days[dStart+j]) + '">' + esc(days[dStart+j]) + '</th>';
+    }
+    var body = '';
+    for(var i=0;i<cCount;i++){
+      var c = classes[cStart+i];
+      body += '<tr class="bc-row ' + (((cStart+i)%2)?'bc-row-b':'bc-row-a') + '" style="height:' + rowHmm.toFixed(3) + 'mm;max-height:' + rowHmm.toFixed(3) + 'mm;">';
+      body += '<td class="bc-class-cell" style="width:' + labelWmm + 'mm;min-width:' + labelWmm + 'mm;max-width:' + labelWmm + 'mm;" title="' + esc(c.label) + '">' + stackLabel(c.label) + '</td>';
+      for(var j=0;j<dCount;j++){
+        body += dayCellHtml(c.key, dStart+j, lfz);
+      }
+      body += '</tr>';
+    }
+    var colgroup = '<colgroup><col style="width:' + labelWmm + 'mm;min-width:' + labelWmm + 'mm;max-width:' + labelWmm + 'mm;">';
+    for(var j=0;j<dCount;j++){
+      colgroup += '<col style="width:' + dW.toFixed(3) + 'mm;min-width:' + dW.toFixed(3) + 'mm;max-width:' + dW.toFixed(3) + 'mm;">';
+    }
+    colgroup += '</colgroup>';
+    return '<table class="cut2-tbl bc-print'+(side?' layout-side':'')+'" style="width:100%;height:' + headRowHmm.toFixed(3) + 'mm;border-collapse:collapse;table-layout:fixed;">' + colgroup
+      + '<thead><tr style="height:' + headRowHmm.toFixed(3) + 'mm;max-height:' + headRowHmm.toFixed(3) + 'mm;">' + thead + '</tr></thead>'
+      + '<tbody>' + body + '</tbody></table>';
+  }
+
+  var styleEl = document.getElementById('dynamic-print-style');
+  if(!styleEl){ styleEl = document.createElement('style'); styleEl.id = 'dynamic-print-style'; document.head.appendChild(styleEl); }
+  styleEl.textContent = [
+    '@media print{',
+    '  @page{ size: A4 ' + (orient==='landscape' ? 'landscape' : 'portrait') + '; margin: 5mm; }',
+    '  html, body{ margin:0!important; padding:0!important; background:#fff!important; }',
+    '  .no-print, .topbar, main, #toast, #modal-root, #print-measure-host{ display:none!important; }',
+    '  body *{ visibility:hidden!important; }',
+    '  #print-output{ display:block!important; position:absolute!important; top:0!important; left:0!important; width:100%!important; visibility:visible!important; background:#fff!important; z-index:99999!important; }',
+    '  #print-output, #print-output *{ visibility:visible!important; }',
+    '  #print-output .cut2-page{ width:' + pageWmm + 'mm!important; height:' + pageHmm + 'mm!important; max-height:' + pageHmm + 'mm!important; min-height:' + pageHmm + 'mm!important; overflow:hidden!important; position:relative!important; box-sizing:border-box!important; background:#fff!important; page-break-after:always!important; break-after:page!important; -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }',
+    '  #print-output .cut2-page:last-child{ page-break-after:auto!important; break-after:auto!important; }',
+    '  #print-output .cut2-page *{ -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; box-sizing:border-box!important; }',
+    '  #print-output .cut2-clip{ position:absolute!important; inset:0!important; overflow:hidden!important; width:100%!important; height:100%!important; }',
+    '  #print-output .cut2-strip{ position:absolute!important; top:0!important; left:0!important; width:' + stripWmm + 'mm!important; height:' + stripHmm + 'mm!important; max-height:' + stripHmm + 'mm!important; display:flex!important; flex-direction:column!important; justify-content:space-between!important; overflow:hidden!important; background:#fff!important; box-sizing:border-box!important; }',
+    horiz
+      ? '  #print-output .cut2-page[data-side="top"] .cut2-strip{ top:0!important; left:0!important; }\n  #print-output .cut2-page[data-side="bottom"] .cut2-strip{ top:-' + pageHmm + 'mm!important; left:0!important; }'
+      : '  #print-output .cut2-page[data-side="right"] .cut2-strip{ left:0!important; top:0!important; }\n  #print-output .cut2-page[data-side="left"] .cut2-strip{ left:-' + pageWmm + 'mm!important; top:0!important; }',
+    '  #print-output .cut2-head{ flex:0 0 auto!important; height:' + headHmm + 'mm!important; max-height:' + headHmm + 'mm!important; width:100%!important; overflow:hidden!important; margin:0 0 1mm 0!important; box-sizing:border-box!important; }',
+    '  #print-output .cut2-foot{ flex:0 0 auto!important; height:' + footHmm + 'mm!important; max-height:' + footHmm + 'mm!important; width:100%!important; overflow:hidden!important; margin-top:auto!important; box-sizing:border-box!important; }',
+    '  #print-output .cut2-body{ flex:1 1 auto!important; min-height:0!important; max-height:' + availHmm + 'mm!important; width:100%!important; overflow:hidden!important; margin:0!important; box-sizing:border-box!important; position:relative!important; }',
+    '  #print-output .cut2-tbl-wrap{ width:100%!important; height:100%!important; max-height:100%!important; overflow:hidden!important; position:relative!important; }',
+    '  #print-output .cut2-tbl{ width:100%!important; border-collapse:collapse!important; table-layout:fixed!important; box-sizing:border-box!important; }',
+    '  #print-output .cut2-tbl th, #print-output .cut2-tbl td{ border:1.2px solid ' + cs('--m-grid','#2f2c28') + '!important; text-align:center!important; vertical-align:middle!important; padding:0!important; overflow:hidden!important; box-sizing:border-box!important; }',
+    '  #print-output .cut2-tbl thead th{ background:linear-gradient(180deg,' + cs('--m-head2','#2d4373') + ',' + cs('--m-head','#1b2a4a') + ')!important; color:' + cs('--m-head-fg','#fff') + '!important; font-weight:900!important; font-size:' + headFsz + 'px!important; padding:1px 1px!important; line-height:1.1!important; }',
+    '  #print-output .cut2-tbl thead th.bc-class-col{ border-top:2px solid ' + cs('--m-accent','#c9a227') + '!important; }',
+    '  #print-output .bc-row-a{ background:' + cs('--m-row-a','#fff') + '!important; }',
+    '  #print-output .bc-row-b{ background:' + cs('--m-row-b','#efe9d8') + '!important; }',
+    '  #print-output .bc-class-cell{ background:' + cs('--m-day','#1b2a4a') + '!important; color:' + cs('--m-day-fg','#f0d78c') + '!important; }',
+    '  #print-output .bc-class-cell .vword{ font-size:' + labelFsz + 'px!important; font-weight:900!important; letter-spacing:2px!important; }',
+    '  #print-output .bc-lines{ height:100%!important; display:flex!important; flex-direction:column!important; justify-content:space-evenly!important; }',
+    '  #print-output .bc-line{ display:flex!important; flex-wrap:'+(side?'nowrap':'wrap')+'!important; align-items:center!important; justify-content:center!important; gap:'+(side?'3px':'1px 4px')+'!important; padding:0 2px!important; line-height:1.15!important; }',
+    '  #print-output .bc-line .bc-p{ flex:0 0 auto!important; font-weight:900!important; color:' + cs('--m-per-fg','#2d4373') + '!important; background:' + cs('--m-per','#f3efe4') + '!important; border-radius:3px!important; padding:0 3px!important; min-width:14px!important; text-align:center!important; }',
+    '  #print-output .bc-line .bc-s{ flex:1 1 auto!important; min-width:0!important; font-weight:900!important; color:#000000!important; white-space:nowrap!important; overflow:hidden!important; text-overflow:ellipsis!important; text-align:center!important; }',
+    '  #print-output .bc-line .bc-t{ flex:'+(side?'1 1 auto':'1 1 100%')+'!important; min-width:0!important; font-weight:800!important; color:#000000!important; white-space:nowrap!important; overflow:hidden!important; text-overflow:ellipsis!important; text-align:center!important; '+(side?'border-inline-start:1px dashed #8a8a8a!important;':'')+' }',
+    '  #print-output .bc-line.bc-empty{ opacity:.45!important; }',
+    '  #print-output .cut2-foot .print-foot{ padding:2px 6px!important; margin:0!important; gap:4px!important; font-size:8px!important; height:100%!important; box-sizing:border-box!important; }',
+    '  #print-output .cut2-foot .stamp-box{ width:36px!important; height:24px!important; margin:1px auto 0!important; }',
+    '  #print-output .cut2-foot .foot-line{ height:8px!important; min-width:50px!important; }',
+    '  #print-output .cut2-head .print-head{ padding:2px 8px!important; margin:0!important; gap:6px!important; height:100%!important; box-sizing:border-box!important; }',
+    '  #print-output .cut2-page:nth-of-type(n+3){ display:none!important; }',
+    '}'
+  ].join('\n');
+
+  var bak = DB; DB = store;
+  var headHtml='', footHtml='';
+  try{ headHtml = printHeaderHtml(); footHtml = printFooterHtml(); }
+  finally{ DB = bak; }
+
+  function makePage(side, tbl){
+    var pos = horiz
+      ? (side==='bottom' ? ('top:-' + pageHmm + 'mm;left:0') : 'top:0;left:0')
+      : (side==='left' ? ('left:-' + pageWmm + 'mm;top:0') : 'left:0;top:0');
+    return '<div class="cut2-page" data-side="' + side + '" style="width:' + pageWmm + 'mm;height:' + pageHmm + 'mm;max-height:' + pageHmm + 'mm;min-height:' + pageHmm + 'mm;overflow:hidden;position:relative;box-sizing:border-box;background:#fff;">'
+      + '<div class="cut2-clip" style="position:absolute;inset:0;overflow:hidden;width:100%;height:100%;">'
+      +   '<div class="cut2-strip" style="' + pos + ';width:' + stripWmm + 'mm;height:' + stripHmm + 'mm;max-height:' + stripHmm + 'mm;position:absolute;display:flex;flex-direction:column;justify-content:space-between;align-items:stretch;overflow:hidden;background:#fff;box-sizing:border-box;">'
+      +     '<div class="cut2-head" style="flex:0 0 auto;height:' + headHmm + 'mm;max-height:' + headHmm + 'mm;width:100%;overflow:hidden;margin-bottom:1mm;box-sizing:border-box;">' + headHtml + '</div>'
+      +     '<div class="cut2-body" style="flex:1 1 auto;height:' + availHmm + 'mm;max-height:' + availHmm + 'mm;min-height:0;width:100%;overflow:hidden;position:relative;margin:0;box-sizing:border-box;">'
+      +       '<div class="cut2-tbl-wrap" style="width:100%;height:100%;max-height:100%;overflow:hidden;position:relative;">'
+      +         tbl
+      +       '</div>'
+      +     '</div>'
+      +     '<div class="cut2-foot" style="flex:0 0 auto;height:' + footHmm + 'mm;max-height:' + footHmm + 'mm;width:100%;overflow:hidden;margin-top:auto;box-sizing:border-box;">' + footHtml + '</div>'
+      +   '</div>'
+      + '</div></div>';
+  }
+
+  var tbl1 = buildTbl(0, nDays1, 0, nCls1, rowH1, dayW1, lineF1);
+  var tbl2 = horiz ? buildTbl(0, nDays2, nCls1, nCls2, rowH2, dayW2, lineF2) : buildTbl(nDays1, nDays2, 0, nCls2, rowH2, dayW2, lineF2);
+
+  var out = document.getElementById('print-output');
+  if(!out){ toast('تعذّر تجهيز الطباعة','err'); return; }
+  out.innerHTML = horiz ? (makePage('top', tbl1) + makePage('bottom', tbl2)) : (makePage('right', tbl1) + makePage('left', tbl2));
+  out.classList.add('printing');
+  Array.prototype.slice.call(out.children).forEach(function(ch){
+    if(!ch.classList || !ch.classList.contains('cut2-page')) ch.parentNode.removeChild(ch);
+  });
+  while(out.querySelectorAll('.cut2-page').length > 2){
+    var extra2 = out.querySelector('.cut2-page:last-child');
+    if(extra2) extra2.parentNode.removeChild(extra2); else break;
+  }
+  var cleanup = function(){ out.classList.remove('printing'); };
+  try{ window.addEventListener('afterprint', cleanup, {once:true}); }catch(e){}
+  setTimeout(cleanup, 120000);
+  toast('قص ورقتين A4 ' + (horiz?'أفقي (قص أفقي)':'عمودي (قص عمودي)') + ' — وضع الشعب كصفوف — هامش 0.5سم', 'ok');
+
+  var fitTables = function(){
+    var strips = out.querySelectorAll('.cut2-strip');
+    strips.forEach(function(strip){
+      var body = strip.querySelector('.cut2-body');
+      var wrap = strip.querySelector('.cut2-tbl-wrap') || body;
+      var tbl = strip.querySelector('table.cut2-tbl');
+      if(!body || !tbl || !wrap) return;
+      var availH = body.clientHeight || Math.round(availHmm * 96 / 25.4);
+      var th = tbl.scrollHeight || tbl.offsetHeight;
+      if(th > availH && availH > 50){
+        var sc = Math.min(1, (availH - 2) / th);
+        sc = Math.min(Math.max(sc, 0.1), 1);
+        wrap.style.transformOrigin = 'top center';
+        wrap.style.transform = 'scaleY(' + sc + ')';
+      } else {
+        wrap.style.transform = 'none';
+      }
+    });
+  };
+
+  var go = function(){
+    try{ fitTables(); }catch(e){}
+    setTimeout(function(){ window.print(); }, 180);
+  };
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(function(){ try{ fitTables(); }catch(e){} go(); }).catch(function(){ try{ fitTables(); }catch(e){} go(); });
+  } else {
+    try{ fitTables(); }catch(e){}
+    go();
+  }
+}
+
 function printMasterCutTwo(store, orient){
+  if((typeof getMasterViewMode==="function") && getMasterViewMode()==="byClass"){ printMasterCutTwoByClass(store, orient); return; }
   if(!store) store = DB;
   orient = (String(orient||"portrait").toLowerCase()==="landscape") ? "landscape" : "portrait";
   try{ applyMasterTableTheme(); applyHideTeacherName(); }catch(e){}
@@ -14103,7 +14867,7 @@ function printDemoTeachers(){
   ensureDemoReady();
   if(!DEMO.teachers.length){ toast('لا يوجد معلمون','err'); return; }
   const tables = DEMO.teachers.map(t=>buildDemoTeacherTableHtml(t.id));
-  withDemoPrintContext(()=> paginateAndPrintFit(tables, 1, 'row', 'landscape', printPaper));
+  withDemoPrintContext(()=> paginateAndPrintFit(tables, 2, 'col', 'portrait', printPaper));
 }
 
 const _btnDemoModeAll = document.getElementById('btnDemoModeAll');
@@ -14281,6 +15045,186 @@ function teachersForPeriod(dayIdx, periodIdx){
   const free = (DB.teachers||[]).filter(t=> !seen.has(t.id) && !off.has(t.id));
   return {busy:busy, free:free};
 }
+function dashRingHtml(pct, label, urgent){
+  const R = 38, C = (2*Math.PI*R).toFixed(2);
+  const p = Math.min(100, Math.max(0, pct||0));
+  const off = (C * (1 - p/100)).toFixed(2);
+  return '<div class="dash-ring-wrap" title="نسبة الزمن المنقضي في هذه الفترة">'+
+    '<svg viewBox="0 0 96 96" aria-hidden="true">'+
+      '<defs>'+
+        '<linearGradient id="dashRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">'+
+          '<stop offset="0%" stop-color="#2f80ed"/><stop offset="55%" stop-color="#00c9a7"/><stop offset="100%" stop-color="#f2c94c"/>'+
+        '</linearGradient>'+
+        '<linearGradient id="dashRingGradU" x1="0%" y1="0%" x2="100%" y2="100%">'+
+          '<stop offset="0%" stop-color="#e74c3c"/><stop offset="60%" stop-color="#f39c12"/><stop offset="100%" stop-color="#e74c3c"/>'+
+        '</linearGradient>'+
+      '</defs>'+
+      '<circle class="dash-ring-track" cx="48" cy="48" r="'+R+'"/>'+
+      '<circle class="dash-ring-fg" cx="48" cy="48" r="'+R+'" stroke="url(#'+(urgent?'dashRingGradU':'dashRingGrad')+')" stroke-dasharray="'+C+'" stroke-dashoffset="'+off+'"/>'+
+    '</svg>'+
+    '<div class="dash-ring-center"><div class="dash-ring-pct">'+Math.round(p)+'%</div><div class="dash-ring-lbl">'+esc(label||'')+'</div></div>'+
+  '</div>';
+}
+/* جدول الحصص المسندة لكل معلم — يقرأ الجدول الفعلي (كل الشعب × الأيام × الحصص) */
+function dashTeachersPeriodsHtml(){
+  const tpCounts = {};
+  try{
+    allClasses().forEach(c=>{
+      const g = DB.schedule[c.key] && DB.schedule[c.key].grid;
+      if(!g) return;
+      for(let d=0; d<g.length; d++){
+        const row = g[d] || [];
+        for(let p=0; p<row.length; p++){
+          const cell = row[p];
+          if(cell && cell.teacherId) tpCounts[cell.teacherId] = (tpCounts[cell.teacherId]||0)+1;
+        }
+      }
+    });
+  }catch(e){}
+  let rows = (DB.teachers||[]).map(t=>({id:t.id, name:t.name, n:tpCounts[t.id]||0}));
+  const theOne = (function(){ try{ return schoolTerms().theOne; }catch(e){ return 'المعلم'; } })();
+  if(!rows.length) return '<div class="card"><h2>👥 الحصص المسندة إلى كل '+esc(theOne)+'</h2><div class="dash-empty">لم يتم إدخال معلمين بعد.</div></div>';
+  rows.sort((a,b)=> (b.n-a.n) || String(a.name).localeCompare(String(b.name),'ar'));
+  let body='';
+  for(let i=0;i<rows.length;i+=2){
+    const A = rows[i], B = rows[i+1]||null;
+    body += '<tr data-tid="'+A.id+'" title="اضغط لعرض تفاصيل حصص '+esc(A.name)+'">'+
+      '<td class="name">'+esc(A.name)+'</td>'+
+      '<td class="cnt"><span class="cnt-pill">'+A.n+'</span></td>'+
+      (B ? '<td class="name">'+esc(B.name)+'</td><td class="cnt"><span class="cnt-pill">'+B.n+'</span></td>'
+         : '<td class="name empty">—</td><td class="cnt empty"><span class="cnt-pill" style="opacity:.4">—</span></td>')+
+    '</tr>';
+  }
+  return '<div class="card"><h2>👥 الحصص المسندة إلى كل '+esc(theOne)+'</h2>'+
+    '<div class="ta-hint">💡 اضغط على اسم أي '+esc(theOne)+' في الجدول لعرض بطاقة تفاصيل حصصه المسندة (اليوم والحصة والمادة والشعبة)</div>'+
+    '<div class="dash-tp-wrap"><table class="dash-tp"><thead><tr>'+
+      '<th>اسم '+esc(theOne)+'</th><th>عدد الحصص</th>'+
+      '<th class="g2">اسم '+esc(theOne)+'</th><th class="g2">عدد الحصص</th>'+
+    '</tr></thead><tbody>'+body+'</tbody></table></div></div>';
+}
+/* بطاقة تفاصيل حصص المعلم — تنبثق عند الضغط على اسمه في جدول الحصص المسندة */
+function openTeacherAssignedModal(teacherId){
+  const t = getTeacher(teacherId);
+  if(!t) return;
+  const root = document.getElementById('modal-root');
+  if(!root) return;
+  const days = (DB.settings && DB.settings.days) || [];
+  const groups = new Map();
+  let total = 0;
+  try{
+    allClasses().forEach(c=>{
+      const g = DB.schedule[c.key] && DB.schedule[c.key].grid;
+      if(!g) return;
+      for(let d=0; d<g.length; d++){
+        const row = g[d] || [];
+        for(let p=0; p<row.length; p++){
+          const cell = row[p];
+          if(cell && cell.teacherId===teacherId){
+            total++;
+            if(!groups.has(c.key)) groups.set(c.key, {c:c, items:[]});
+            groups.get(c.key).items.push({d:d, p:p, subject:getSubject(cell.subjectId)});
+          }
+        }
+      }
+    });
+  }catch(e){ if(console) console.error(e); }
+  const ch = (String(t.name||'م').trim().charAt(0)) || 'م';
+  let body='';
+  if(total===0){
+    body = '<div class="dash-empty">لا توجد حصص مسندة إلى هذا الاسم في الجدول الحالي بعد.</div>';
+  } else {
+    const gArr = Array.from(groups.values()).sort((a,b)=> String(a.c.label).localeCompare(String(b.c.label),'ar'));
+    gArr.forEach(g=>{
+      g.items.sort((a,b)=> a.d-b.d || a.p-b.p);
+      const chips = g.items.map(it=>{
+        const subj = it.subject;
+        const style = (subj && subj.color) ? ' style="background:'+subj.color+'22;border-color:'+subj.color+'66"' : '';
+        return '<span class="ta-chip"'+style+'><b>'+esc(days[it.d]||'')+'</b> · حصة '+(it.p+1)+' · '+esc(subj?subj.name:'—')+'</span>';
+      }).join('');
+      body += '<div class="ta-group">'+
+        '<div class="ta-ghead">'+
+          '<span class="ta-gcode">'+esc(storeClassCode(DB, g.c))+'</span>'+
+          '<span class="ta-gname" title="'+esc(g.c.label)+'">'+esc(g.c.label)+'</span>'+
+          '<span class="ta-gcount">'+g.items.length+' '+(g.items.length===1?'حصة':'حصص')+'</span>'+
+        '</div>'+
+        '<div class="ta-chips">'+chips+'</div>'+
+      '</div>';
+    });
+  }
+  root.innerHTML = '<div class="modal-bg center" id="taModalBg">'+
+    '<div class="modal-card ta-card">'+
+      '<div class="ta-head">'+
+        '<div class="ta-av">'+esc(ch)+'</div>'+
+        '<div class="ta-id">'+
+          '<div class="ta-name">'+esc(t.name)+'</div>'+
+          '<div class="ta-sub">الحصص المسندة — الجدول الأسبوعي</div>'+
+        '</div>'+
+        '<div class="ta-total"><b>'+total+'</b><span>حصة / أسبوع</span></div>'+
+      '</div>'+
+      body+
+      '<div class="modal-actions"><button type="button" class="btn btn-outline" id="taClose">إغلاق</button></div>'+
+    '</div>'+
+  '</div>';
+  const close = function(){ try{ root.innerHTML=''; }catch(e){} };
+  const cb = root.querySelector('#taClose');
+  if(cb) cb.addEventListener('click', close);
+  const bg = root.querySelector('#taModalBg');
+  if(bg) bg.addEventListener('click', function(e){ if(e.target===bg) close(); });
+}
+
+/* جدول تواقيت الدروس في لوحة التحكم — احترافي، والدوامين (صباحي/مسائي) جنباً إلى جنب */
+function dashTimingsTableHtml(){
+  let T = null;
+  try{ T = getTimings(); }catch(e){ return ''; }
+  if(!T || typeof T!=='object') return '';
+  try{ ensureTimings(DB); }catch(e){}
+  const mode = (T.shiftMode==='both'||T.shiftMode==='evening') ? T.shiftMode : 'morning';
+  const showM = (mode!=='evening') && !!T.morning;
+  const showE = (mode!=='morning') && !!T.evening;
+  if(!showM && !showE) return '';
+  let nowM = null;
+  try{ nowM = timingNowMinutes(); }catch(e){ nowM = null; }
+  function durTxt(mins){
+    const h = Math.floor(mins/60), m = mins%60;
+    if(h && m) return h+' س '+m+' د';
+    if(h) return h+' س';
+    return m+' د';
+  }
+  function panelFor(cfg, key){
+    let slots = [];
+    try{ slots = buildShiftSlots(cfg).filter(function(s){ return s.kind==='lesson'; }); }catch(e){ slots = []; }
+    if(!slots.length) return '';
+    const isM = (key==='morning');
+    let daysNote = '';
+    if(mode==='both'){
+      const names = daysForShift(key);
+      if(names && names.length) daysNote = '<span class="dt-days" title="أيام هذا الدوام">'+esc(names.join('، '))+'</span>';
+    }
+    const rows = slots.map(s=>{
+      const on = (nowM!=null && nowM>=s.start && nowM<s.end);
+      return '<tr class="'+(on?'dt-now':'')+'">'+
+        '<td><span class="p-badge">'+s.n+'</span></td>'+
+        '<td class="p-time">'+fmtHM(s.start)+(on?'<span class="now-tag">الآن</span>':'')+'</td>'+
+        '<td class="p-time">'+fmtHM(s.end)+'</td>'+
+      '</tr>';
+    }).join('');
+    const total = slots.reduce(function(acc,s){ return acc + (s.end - s.start); }, 0);
+    return '<div class="dt-panel '+(isM?'dt-m':'dt-e')+'">'+
+      '<div class="dt-head">'+
+        '<span class="dt-ico">'+(isM?'\u2600\uFE0F':'\uD83C\uDF06')+'</span>'+
+        '<span class="dt-title">'+(isM?'الدوام الصباحي':'الدوام المسائي')+'</span>'+
+        daysNote+
+      '</div>'+
+      '<div class="dt-wrap"><table class="dt-table"><thead><tr><th>الحصة</th><th>بداية الحصة</th><th>نهاية الحصة</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+      '<div class="dt-foot">⏱️ إجمالي زمن الدروس: '+total+' دقيقة ('+durTxt(total)+') — من '+fmtHM(slots[0].start)+' إلى '+fmtHM(slots[slots.length-1].end)+'</div>'+
+    '</div>';
+  }
+  const panels = (showM ? panelFor(T.morning,'morning') : '') + (showE ? panelFor(T.evening,'evening') : '');
+  if(!panels) return '';
+  const inner = (showM && showE) ? '<div class="dt-2col">'+panels+'</div>' : '<div class="dt-single">'+panels+'</div>';
+  return '<div class="card"><h2>⏰ تواقيت الدروس</h2>'+inner+'</div>';
+}
+
 function renderDashboard(){
   const root = document.getElementById('dashRoot');
   if(!root) return;
@@ -14298,6 +15242,28 @@ function renderDashboard(){
     else if(st.status==='wait'){ mode='break'; title='بانتظار '+st.slot.label; meta='تبدأ الساعة '+fmtHM(st.slot.start)+' · '+shiftLabel; }
     else { title='انتهى الدوام'; meta=shiftLabel; count='00:00'; }
     if(st.remainSec>0 && st.remainSec<=60) mode += ' urgent';
+    let chipCls='idle', chipTxt='—';
+    if(st.status==='now'){ chipCls='live'; chipTxt='مباشر الآن'; }
+    else if(st.status==='break'){ chipCls='rest'; chipTxt='استراحة'; }
+    else if(st.status==='wait'){ chipCls='soon'; chipTxt='الحصة القادمة قريبًا'; }
+    else if(st.status==='offday'){ chipCls='idle'; chipTxt='يوم راحة'; }
+    else { chipCls='idle'; chipTxt='انتهى الدوام'; }
+
+    /* نسبة الزمن المنقضي — تُعرض في الدائرة الملونة داخل بطاقة الحصة */
+    const nowTot = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+    let ringPct = 0, ringLbl = 'لا حصة', ringUrgent = (st.remainSec>0 && st.remainSec<=60);
+    if(st.status==='now' || st.status==='break'){
+      const rs0 = st.slot.start*60, rs1 = st.slot.end*60;
+      ringPct = Math.max(0, Math.min(100, (nowTot-rs0)/Math.max(1, rs1-rs0)*100));
+      ringLbl = (st.status==='break') ? 'من زمن الاستراحة' : 'من زمن الحصة';
+    } else if(st.status==='wait' && st.slot){
+      const prevSl = (st.slots||[]).filter(x=> x.end <= st.slot.start);
+      if(prevSl.length){
+        const rs0 = prevSl[prevSl.length-1].end*60, rs1 = st.slot.start*60;
+        ringPct = Math.max(0, Math.min(100, (nowTot-rs0)/Math.max(1, rs1-rs0)*100));
+        ringLbl = 'حتى بدء الحصة';
+      } else { ringPct = 0; ringLbl = 'بانتظار الحصة'; }
+    }
 
     let periodIdx = st.periodIdx;
     const live = root.querySelector('.dash-count');
@@ -14310,6 +15276,14 @@ function renderDashboard(){
       if(tm) tm.textContent = pad2(now.getHours())+':'+pad2(now.getMinutes())+':'+pad2(now.getSeconds());
       live.textContent = count;
       live.parentElement.className = 'dash-card dash-now '+mode;
+      const rfg = root.querySelector('.dash-ring-fg');
+      const rpct = root.querySelector('.dash-ring-pct');
+      if(rfg && rpct){
+        const rp = Math.min(100, Math.max(0, ringPct));
+        rfg.style.strokeDashoffset = (2*Math.PI*38*(1-rp/100)).toFixed(2);
+        rpct.textContent = Math.round(rp)+'%';
+        rfg.setAttribute('stroke', ringUrgent ? 'url(#dashRingGradU)' : 'url(#dashRingGrad)');
+      }
       return;
     }
     root.dataset.sig = sig;
@@ -14365,16 +15339,20 @@ function renderDashboard(){
           '<div class="d-shift">'+esc(shiftLabel)+'</div>'+
         '</div>'+
         '<div class="dash-card dash-now '+mode+'">'+
-          '<div class="lbl">الحصة الجارية الآن</div>'+
-          '<div class="name">'+esc(title)+'</div>'+
-          '<div class="dash-count">'+count+'</div>'+
-          '<div class="meta">'+esc(meta)+'</div>'+
+          '<div class="dash-now-txt">'+
+            '<div class="dash-status-chip '+chipCls+'"><span class="dot"></span>'+chipTxt+'</div>'+
+            '<div class="lbl">الحصة الجارية الآن</div>'+
+            '<div class="name">'+esc(title)+'</div>'+
+            '<div class="dash-count">'+count+'</div>'+
+            '<div class="meta">🕘 '+esc(meta)+'</div>'+
+          '</div>'+
+          dashRingHtml(ringPct, ringLbl, ringUrgent)+
         '</div>'+
       '</div>'+
       '<div class="dash-stats">'+
-        '<div class="dash-card dash-stat"><div class="num">'+((DB.teachers||[]).length)+'</div><div class="lbl">عدد '+(function(){ try{ return schoolTerms().thePluralGen; }catch(e){ return 'المعلمين'; } })()+' (الكلي)</div></div>'+
-        '<div class="dash-card dash-stat"><div class="num">'+weeklyTotalSig+'</div><div class="lbl">حصص الأسبوع — كل المدرسة</div></div>'+
-        '<div class="dash-card dash-stat"><div class="num">'+((DB.subjects||[]).length)+'</div><div class="lbl">المواد المدخلة</div></div>'+
+        '<div class="dash-card dash-stat"><div class="dash-stat-ico">🧑</div><div class="num">'+((DB.teachers||[]).length)+'</div><div class="lbl">عدد '+(function(){ try{ return schoolTerms().thePluralGen; }catch(e){ return 'المعلمين'; } })()+' (الكلي)</div></div>'+
+        '<div class="dash-card dash-stat"><div class="dash-stat-ico">📚</div><div class="num">'+weeklyTotalSig+'</div><div class="lbl">حصص الأسبوع — كل المدرسة</div></div>'+
+        '<div class="dash-card dash-stat"><div class="dash-stat-ico">📘</div><div class="num">'+((DB.subjects||[]).length)+'</div><div class="lbl">المواد المدخلة</div></div>'+
       '</div>'+
       '<div class="card"><h2>📅 جدول اليوم — '+esc(dayName)+'</h2>'+grid+'</div>'+
       dashSupervisorsHtml(dayName, st.dayIdx)+dashOffTeachersHtml(dayName, st.dayIdx)+
@@ -14385,7 +15363,12 @@ function renderDashboard(){
         '<div class="card" style="margin:0"><h2>☕ المعلمون الشواغر ('+lists.free.length+')</h2>'+
           (periodIdx<0?'<div class="dash-empty">ستظهر الشواغر عند بدء حصة</div>':freeHtml)+
         '</div>'+
-      '</div>';
+      '</div>'+
+      dashTeachersPeriodsHtml()+
+      dashTimingsTableHtml();
+  root.querySelectorAll('table.dash-tp tr[data-tid]').forEach(tr=>{
+    tr.addEventListener('click', ()=>{ try{ openTeacherAssignedModal(tr.dataset.tid); }catch(e){} });
+  });
   }catch(err){
     root.innerHTML = '<div class="card"><div class="dash-empty">تعذّر تحميل لوحة التحكم.</div></div>';
     try{ console && console.error && console.error(err); }catch(e){}
@@ -15990,7 +16973,7 @@ document.addEventListener('input', function(e){
     try{
       const tid = currentTeacherSchedId || (DB.teachers[0] && DB.teachers[0].id);
       if(!tid){ toast('لا يوجد معلمون','err'); return; }
-      paginateAndPrintFit([buildTeacherTableHtml(tid)], 1, 'row', 'landscape', printPaper||'A4');
+      paginateAndPrintFit([buildTeacherTableHtml(tid)], 2, 'col', 'portrait', printPaper||'A4');
     }catch(err){ toast('تعذّرت الطباعة','err'); }
   });
 
@@ -16001,7 +16984,7 @@ document.addEventListener('input', function(e){
       if(!tid){ toast('لا يوجد معلمون','err'); return; }
       const teacher = getTeacher(tid);
       const safeName = 'جدول_معلم_' + (teacher ? getTeacherDisplayName(teacher).replace(/\s+/g,'_') : 'المعلم');
-      await exportTableListAsPdf([buildTeacherTableHtml(tid)], safeName, printPaper||'A4', 'landscape');
+      await exportTableListAsPdf([buildTeacherTableHtml(tid)], safeName, printPaper||'A4', 'portrait', 2, 'col');
     }catch(err){ toast('تعذّر تنزيل ملف PDF لجدول المعلم','err'); }
   });
 
@@ -16009,7 +16992,7 @@ document.addEventListener('input', function(e){
   if(bPrintAll) bPrintAll.addEventListener('click', function(){
     try{
       if(!DB.teachers || !DB.teachers.length){ toast('لا يوجد معلمون','err'); return; }
-      paginateAndPrintFit(DB.teachers.map(t=>buildTeacherTableHtml(t.id)), 1, 'row', 'landscape', printPaper||'A4');
+      paginateAndPrintFit(DB.teachers.map(t=>buildTeacherTableHtml(t.id)), 2, 'col', 'portrait', printPaper||'A4');
     }catch(err){ toast('تعذّرت الطباعة','err'); }
   });
 
@@ -16017,7 +17000,7 @@ document.addEventListener('input', function(e){
   if(bPdfAll) bPdfAll.addEventListener('click', async function(){
     try{
       if(!DB.teachers || !DB.teachers.length){ toast('لا يوجد معلمون','err'); return; }
-      await exportTableListAsPdf(DB.teachers.map(t=>buildTeacherTableHtml(t.id)), 'جداول_المعلمين_والمدرسين', printPaper||'A4', 'landscape');
+      await exportTableListAsPdf(DB.teachers.map(t=>buildTeacherTableHtml(t.id)), 'جداول_المعلمين_والمدرسين', printPaper||'A4', 'portrait', 2, 'col');
     }catch(err){ toast('تعذّر تنزيل ملف PDF لجداول المعلمين','err'); }
   });
 })();
