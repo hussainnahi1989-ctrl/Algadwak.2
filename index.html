@@ -3517,6 +3517,33 @@ html[data-theme="night"] #generateProgress{
 </style>
 <style id="nibras-about-style">
 /* ===== نمط تبويب حول التطبيق والدعم الفني والروابط ===== */
+/* ===== تبويب تطبيقات أخرى ===== */
+.apps-card{padding:18px}
+.apps-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.apps-hero-icon{font-size:30px;width:56px;height:56px;flex:none;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--topbar-1),var(--topbar-2));border-radius:16px;box-shadow:0 4px 14px rgba(4,39,45,.25)}
+.apps-title{font-size:20px;font-weight:900;color:var(--ink);margin:0}
+.apps-sub{font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:4px 0 0;line-height:1.55}
+.apps-table-wrap{overflow-x:auto}
+.apps-table{width:100%;border-collapse:collapse;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;min-width:540px;background:var(--paper-2)}
+.apps-table th{background:linear-gradient(180deg,var(--topbar-2),var(--topbar-1));color:#fff;font-size:13px;font-weight:900;padding:10px 12px;text-align:center}
+.apps-table td{padding:13px 10px;border-top:1px solid var(--line);text-align:center;vertical-align:middle;background:var(--paper-2)}
+.apps-row:nth-child(even) td{background:#eef6f7}
+.apps-name{display:flex;align-items:center;justify-content:center;gap:8px;font-size:14.5px;font-weight:900;color:var(--ink)}
+.apps-name-ico{font-size:20px}
+.apps-link a{display:inline-block;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#04272d;font-size:12.5px;font-weight:900;padding:8px 16px;border-radius:9px;text-decoration:none;box-shadow:0 3px 8px rgba(196,160,74,.35);white-space:nowrap}
+.apps-link a:active{transform:translateY(1px)}
+.apps-req-btn{background:linear-gradient(135deg,#1fa855,#37c877);color:#fff;border:none;font-size:12.5px;font-weight:900;padding:9px 16px;border-radius:10px;cursor:pointer;box-shadow:0 3px 10px rgba(31,168,85,.35);font-family:inherit;white-space:nowrap}
+.apps-req-btn:active{transform:translateY(1px)}
+.apps-note{font-size:11.5px;font-weight:700;color:var(--ink-soft);margin:12px 2px 0;line-height:1.55}
+@media (max-width:600px){
+  .apps-table{min-width:0}
+  .apps-table thead{display:none}
+  .apps-table, .apps-table tbody, .apps-table tr, .apps-table td{display:block;width:100%}
+  .apps-row{border:1.5px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden}
+  .apps-row td{border-top:1px solid var(--line)}
+  .apps-row td:first-child{border-top:none}
+  .apps-name{justify-content:flex-start;padding-left:14px}
+}
 #view-about {
   padding-bottom: 50px;
 }
@@ -3948,6 +3975,14 @@ html[data-theme="night"] .about-badge {
           <div style="font-size:11px;color:var(--ink-soft);font-weight:700;margin-top:7px;line-height:1.4;">
             📐 يملأ ورقة A3 كاملة مع رأس وتذييل رسمي وهوامش 0.5 سم والتوقيع
           </div>
+          <button type="button" class="btn btn-gold btn-block" id="btnPopDirectA4Pdf" style="font-weight:900;font-size:15px;padding:11px 14px;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border-radius:10px;box-shadow:0 4px 14px rgba(196,160,74,0.35);">
+            <span style="font-size:20px;">📄</span>
+            <span>تنزيل pdf</span>
+            <span class="direct-pdf-badge-a4" style="font-size:11px;font-weight:800;opacity:0.9;background:rgba(0,0,0,0.18);padding:2px 8px;border-radius:6px;">(A4 أفقي بملء الورقة)</span>
+          </button>
+          <div style="font-size:11px;color:var(--ink-soft);font-weight:700;margin-top:7px;line-height:1.4;">
+            📐 يملأ ورقة A4 كاملة — نفس التصميم والتخطيط والترويسة والتذييل تمامًا
+          </div>
         </div>
         <button type="button" class="btn btn-outline btn-block" id="btnTopPrintCut2" style="margin-top:8px">✂️ قص عمودي — ورقتان A4</button>
         <button type="button" class="btn btn-outline btn-block" id="btnTopPrintCut2L" style="margin-top:8px">✂️ قص أفقي — ورقتان A4</button>
@@ -3972,6 +4007,7 @@ html[data-theme="night"] .about-badge {
     <button class="tab-btn" data-view="full">📋 الجدول الكامل</button>
     <button class="tab-btn" data-view="schedule">📅 الجداول</button>
     <button class="tab-btn" data-view="timings">⏰ تواقيت الدروس</button>
+    <button class="tab-btn" data-view="apps">🚀 تطبيقات أخرى</button>
     <button class="tab-btn" data-view="about">ℹ️ حول التطبيق</button>
   </div>
 </div>
@@ -4587,6 +4623,39 @@ html[data-theme="night"] .about-badge {
 
 
   <!-- ABOUT VIEW (تبويب حول التطبيق) -->
+  <!-- OTHER APPS -->
+  <section class="view" id="view-apps">
+    <div class="card apps-card">
+      <div class="apps-header">
+        <div class="apps-hero-icon">🚀</div>
+        <div class="apps-header-text">
+          <h1 class="apps-title">تطبيقات أخرى</h1>
+          <p class="apps-sub">تطبيقاتي التعليمية المتكاملة — جرّب أي تطبيق من رابطه، وإن أعجبك اضغط «طلب التطبيق» وسيصل الطلب إليّ عبر واتساب</p>
+        </div>
+      </div>
+      <div class="apps-table-wrap">
+        <table class="apps-table">
+          <thead>
+            <tr><th>التطبيق</th><th>الرابط</th><th>طلب</th></tr>
+          </thead>
+          <tbody>
+            <tr class="apps-row">
+              <td class="apps-name"><span class="apps-name-ico">🏫</span><span class="apps-name-txt">إدارة المدرسة والامتحانات</span></td>
+              <td class="apps-link"><a href="https://hussainnahi1989-ctrl.github.io/Daragat/" target="_blank" rel="noopener noreferrer">فتح التطبيق ↗</a></td>
+              <td class="apps-req-cell"><button type="button" class="apps-req-btn" data-app="إدارة المدرسة والامتحانات">📲 طلب التطبيق</button></td>
+            </tr>
+            <tr class="apps-row">
+              <td class="apps-name"><span class="apps-name-ico">📊</span><span class="apps-name-txt">الجدول المهني</span></td>
+              <td class="apps-link"><a href="https://hussainnahi1989-ctrl.github.io/Mahani/" target="_blank" rel="noopener noreferrer">فتح التطبيق ↗</a></td>
+              <td class="apps-req-cell"><button type="button" class="apps-req-btn" data-app="الجدول المهني">📲 طلب التطبيق</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="apps-note">💬 زر «طلب التطبيق» يفتح واتساب برسالة جاهزة باسم التطبيق — اضغط إرسال ليصلك الطلب.</p>
+    </div>
+  </section>
+
   <section class="view" id="view-about">
     <div class="card about-hero-card">
       <div class="about-hero-topline">
@@ -5869,10 +5938,18 @@ function nibrasRestoreDaysForPdf(reverts){
 }
 
 
+
 /* دالة التنزيل المباشر لملف PDF للجدول الكامل / التجريبي بقياس A3 أفقي
    مستقلة تمامًا عن نافذة الطباعة وقواعد الطباعة، وتملأ الورقة بالكامل بهوامش 0.5 سم ورأس وتذييل */
 window.downloadDirectFullSchedulePdfA3 = downloadDirectFullSchedulePdfA3;
-async function downloadDirectFullSchedulePdfA3(isDemo){
+window.downloadDirectFullSchedulePdfA4 = downloadDirectFullSchedulePdfA4;
+async function downloadDirectFullSchedulePdfA3(isDemo){ return downloadDirectFullSchedulePdfCore(isDemo, 'A3'); }
+async function downloadDirectFullSchedulePdfA4(isDemo){ return downloadDirectFullSchedulePdfCore(isDemo, 'A4'); }
+async function downloadDirectFullSchedulePdfCore(isDemo, paper){
+  paper = (paper === 'A4') ? 'A4' : 'A3';
+  const fullWmm = (paper === 'A3') ? 420 : 297;
+  const contWmm = fullWmm - 10;
+  const contHmm = (paper === 'A3') ? 287 : 200;
   let host = null;
   let loaderOverlay = null;
   try{
@@ -5899,15 +5976,15 @@ async function downloadDirectFullSchedulePdfA3(isDemo){
 
     /* وضع الشعب كصفوف: نفس مسار صفحة الطباعة المعتمدة (A3 أفقي) ثم تصدير PDF بهامش 5مم */
     if(typeof getMasterViewMode === 'function' && getMasterViewMode()==='byClass'){
-      if(typeof toast === 'function') toast('جارٍ إنشاء ملف PDF (A3 أفقي) — وضع الشعب كصفوف…', 'ok');
+      if(typeof toast === 'function') toast('جارٍ إنشاء ملف PDF ('+paper+' أفقي) — وضع الشعب كصفوف…', 'ok');
       clearTimeout(window.__nibrasPdfExportOnceTimer);
-      window.__nibrasPdfExportOnce = { on:true, wmm:410, hmm:287 };
+      window.__nibrasPdfExportOnce = { on:true, wmm:contWmm, hmm:contHmm };
       window.__nibrasPdfExportOnceTimer = setTimeout(function(){ window.__nibrasPdfExportOnce = null; }, 10000);
-      printMasterSchedule('A3', store, 'landscape');
+      printMasterSchedule(paper, store, 'landscape');
       return;
     }
 
-    if(typeof toast === 'function') toast('جارٍ إنشاء وتجهيز ملف PDF للجدول (A3 أفقي)…', 'ok');
+    if(typeof toast === 'function') toast('جارٍ إنشاء وتجهيز ملف PDF للجدول ('+paper+' أفقي)…', 'ok');
 
     // Ensure jsPDF and html2canvas exist
     if(!window.html2canvas || !(window.jspdf && window.jspdf.jsPDF)){
@@ -6131,14 +6208,14 @@ async function downloadDirectFullSchedulePdfA3(isDemo){
       <div style="background:#fff;border-radius:18px;padding:26px 36px;text-align:center;box-shadow:0 12px 36px rgba(0,0,0,0.3);max-width:440px;display:flex;flex-direction:column;align-items:center;gap:14px;">
         <div style="font-size:42px;">📄</div>
         <div style="font-size:19px;font-weight:900;color:#04272d;">جارٍ إنشاء وتجهيز ملف PDF للجدول</div>
-        <div style="font-size:13.5px;font-weight:700;color:#555;">قياس A3 أفقي بملء الورقة مع رأس وتذييل متدرج وهوامش 0.5 سم</div>
+        <div style="font-size:13.5px;font-weight:700;color:#555;">قياس ${paper} أفقي بملء الورقة مع رأس وتذييل متدرج وهوامش 0.5 سم</div>
       </div>
     `;
     document.body.appendChild(loaderOverlay);
 
     // Host for rendering positioned at top:0 left:0 under loader to avoid offscreen bounding-box clipping
     host = document.createElement('div');
-    host.id = 'direct-a3-pdf-host';
+    host.id = 'direct-' + paper.toLowerCase() + '-pdf-host';
     host.style.cssText = 'display:block!important;position:fixed!important;left:0!important;top:0!important;width:1550px!important;height:1085px!important;overflow:hidden!important;background:#ffffff!important;z-index:99998!important;opacity:1!important;pointer-events:none!important;';
 
     const pageEl = document.createElement('div');
@@ -6193,19 +6270,19 @@ async function downloadDirectFullSchedulePdfA3(isDemo){
     const pdf = new jsPDFCtor({
       orientation: 'landscape',
       unit: 'mm',
-      format: 'a3',
+      format: paper.toLowerCase(),
       compress: true
     });
 
     const imgData = canvas.toDataURL('image/jpeg', 0.98);
-    // Margins: exactly 5mm (0.5 cm) on all 4 sides! Content: 410mm x 287mm inside 420mm x 297mm sheet
-    pdf.addImage(imgData, 'JPEG', 5, 5, 410, 287, undefined, 'FAST');
+    // Margins: exactly 5mm (0.5 cm) on all 4 sides! Content fills the sheet: A3 = 410x287 / A4 = 287x200
+    pdf.addImage(imgData, 'JPEG', 5, 5, contWmm, contHmm, undefined, 'FAST');
 
     const baseName = schoolName || 'مدرستي';
     const d = new Date();
     const pad = n => (n < 10 ? '0' : '') + n;
     const dateStamp = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
-    const fileName = String(baseName).replace(/[\/:*?"<>|]/g, '').trim() + '_A3_كامل_' + dateStamp + '.pdf';
+    const fileName = String(baseName).replace(/[\/:*?"<>|]/g, '').trim() + '_' + paper + '_كامل_' + dateStamp + '.pdf';
 
     const blob = pdf.output('blob');
     const pdfFile = new File([blob], fileName, { type: 'application/pdf' });
@@ -6223,9 +6300,9 @@ async function downloadDirectFullSchedulePdfA3(isDemo){
         await navigator.share({
           files: [pdfFile],
           title: fileName,
-          text: 'جدول الحصص الأسبوعي قياس A3'
+          text: 'جدول الحصص الأسبوعي قياس ' + paper
         });
-        if(typeof toast === 'function') toast('تم حفظ / مشاركة ملف PDF للجدول (A3) بنجاح!', 'ok');
+        if(typeof toast === 'function') toast('تم حفظ / مشاركة ملف PDF للجدول (' + paper + ') بنجاح!', 'ok');
         return;
       }catch(e_share){
         if(e_share && e_share.name === 'AbortError'){
@@ -6264,9 +6341,9 @@ async function downloadDirectFullSchedulePdfA3(isDemo){
     // 3. في بيئة تطبيقات الهواتف أو أندرويد WebView حيث قد يفشل DownloadManager في روابط الذاكرة:
     // نظهر للمستخدم فوراً نافذة خيارات الحفظ والفتح المباشرة في WPS Office أو درايف
     if(isMobile || isWebView){
-      showAndroidPdfSuccessModal(blob, blobUrl, pdfFile, fileName);
+      showAndroidPdfSuccessModal(blob, blobUrl, pdfFile, fileName, paper + ' أفقي بملء الورقة');
     } else {
-      if(typeof toast === 'function') toast('تم تنزيل ملف PDF للجدول (A3) بنجاح!', 'ok');
+      if(typeof toast === 'function') toast('تم تنزيل ملف PDF للجدول (' + paper + ') بنجاح!', 'ok');
     }
   } catch(err){
     try{ if(host) host.remove(); }catch(e){}
@@ -6276,7 +6353,380 @@ async function downloadDirectFullSchedulePdfA3(isDemo){
   }
 }
 
-function showAndroidPdfSuccessModal(blob, blobUrl, pdfFile, fileName){
+/* تنزيل PDF مباشر: قص الجدول الكامل في المنتصف على ورقتي A4
+   (قص عمودي = ورقتان عاموديتان | قص أفقي = ورقتان أفقيتان) — نفس طريقة تنزيل A3/A4 المباشر:
+   الرأس والجدول والتذييل يُقصّون معًا في المنتصف، ومargins 5مم (0.5سم) من كل الجهات */
+window.downloadDirectCutTwoPdf = downloadDirectCutTwoPdf;
+async function downloadDirectCutTwoPdf(isDemo, orient){
+  orient = (String(orient || 'portrait').toLowerCase() === 'landscape') ? 'landscape' : 'portrait';
+  const horiz = (orient === 'landscape');
+  const contWmm = horiz ? 287 : 200;
+  const contHmm = horiz ? 200 : 287;
+  const stripWmm = horiz ? 287 : 400;
+  const stripHmm = horiz ? 400 : 287;
+  const pagesLabel = horiz ? 'ورقتان A4 أفقيتان (قص أفقي)' : 'ورقتان A4 عاموديتان (قص عمودي)';
+  let host = null;
+  let loaderOverlay = null;
+  let styleEl = null;
+  let dayFixes = null;
+  try{
+    if(isDemo){
+      if(typeof ensureDemoReady === 'function') ensureDemoReady();
+    } else {
+      if(typeof ensureScheduleShape === 'function') ensureScheduleShape();
+    }
+    const store = isDemo ? DEMO : DB;
+    if(!store){
+      if(typeof toast === 'function') toast('لا توجد بيانات متاحة', 'err');
+      return;
+    }
+    const cls = allClassesOf(store);
+    if(!cls || !cls.length){
+      if(typeof toast === 'function') toast(isDemo ? 'لا توجد شعب تجريبية متاحة حالياً' : 'الجدول الكامل فارغ حالياً! يرجى إنشاء الجدول وتوزيعه أولاً، أو تجربة تنزيل "الجدول التجريبي".', 'err');
+      return;
+    }
+    /* وضع الشعب كصفوف: المسار المطبعي المعتمد يبقى كما هو */
+    if(typeof getMasterViewMode === 'function' && getMasterViewMode() === 'byClass'){
+      if(typeof toast === 'function') toast('جارٍ قص الجدول لورقتين A4 — وضع الشعب كصفوف…', 'ok');
+      clearTimeout(window.__nibrasPdfExportOnceTimer);
+      window.__nibrasPdfExportOnce = { on:true, wmm:contWmm, hmm:contHmm };
+      window.__nibrasPdfExportOnceTimer = setTimeout(function(){ window.__nibrasPdfExportOnce = null; }, 8000);
+      printMasterCutTwo(store, orient);
+      return;
+    }
+
+    if(typeof toast === 'function') toast('جارٍ إنشاء وتجهيز ملف PDF للقص — ' + pagesLabel + '…', 'ok');
+
+    if(!window.html2canvas || !(window.jspdf && window.jspdf.jsPDF)){
+      if(typeof nibrasEnsurePdfLibs === 'function'){
+        await nibrasEnsurePdfLibs();
+      }
+    }
+    const jsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+    if(!jsPDFCtor || !window.html2canvas){
+      throw new Error('تعذّر تحميل مكوّنات إنشاء PDF. يرجى التحقق من اتصال الإنترنت.');
+    }
+
+    const days = (store.settings && store.settings.days && store.settings.days.length) ? store.settings.days.slice() : ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'];
+    const periods = (store.settings && store.settings.periodsPerDay) ? store.settings.periodsPerDay : 6;
+    const schoolName = ((store.settings && store.settings.schoolName) || 'مدرستي').trim();
+
+    try{ applyMasterTableTheme(); applyHideTeacherName(); }catch(e){}
+    const cs = function(k, fb){
+      try{ const v = getComputedStyle(document.documentElement).getPropertyValue(k).trim(); return v || fb; }catch(e){ return fb; }
+    };
+    const hideT = (typeof getHideTeacherName === 'function') && getHideTeacherName();
+    const side = (typeof getMasterCellLayout === 'function') && getMasterCellLayout() === 'side';
+    const colorSubjects = (typeof getMasterColorSubjects === 'function') && getMasterColorSubjects();
+    const fsz = Math.max(13, (typeof getMasterFontSize === 'function') ? getMasterFontSize() : 13);
+    const tsz = Math.max(11, Math.round(fsz * 0.88));
+    const getS = function(id){ return (store.subjects || []).find(function(x){ return x.id === id; }); };
+    const getT = function(id){ return (store.teachers || []).find(function(x){ return x.id === id; }); };
+
+    // نفس الهندسة المطابقة لمسار الطباعة المعتمد (قص ورقتين A4)
+    const totalDays = days.length;
+    const totalPeriods = totalDays * periods;
+    const headHmm = 13;
+    const footHmm = 11;
+    const availHmm = Math.max(100, stripHmm - headHmm - footHmm - 3);
+    const headRowHmm = Math.min(5.2, Math.floor((availHmm * 0.11 / totalDays) * 10) / 10);
+    const periodRowHmm = Math.floor(((availHmm - (headRowHmm * totalDays)) / totalPeriods) * 100) / 100;
+    const dayColWmm = 13;
+    const perColWmm = 7;
+    let n1, n2, colW1, colW2;
+    if(horiz){
+      n1 = cls.length;
+      n2 = 0;
+      colW1 = (287 - dayColWmm - perColWmm) / cls.length;
+      colW2 = colW1;
+    } else {
+      n1 = Math.ceil(cls.length / 2);
+      n2 = cls.length - n1;
+      colW1 = (200 - dayColWmm - perColWmm) / n1;
+      colW2 = (n2 > 0) ? (200 / n2) : colW1;
+    }
+    const cellFsz = hideT ? Math.min(fsz, Math.max(10, Math.round(periodRowHmm * 1.5))) : (side ? Math.min(fsz, Math.max(9, Math.round(periodRowHmm * 1.3))) : Math.min(fsz, Math.max(8.5, Math.round(periodRowHmm * 1.35))));
+    const cellTsz = hideT ? 0 : (side ? Math.min(tsz, Math.max(8, Math.round(periodRowHmm * 1.15))) : Math.min(tsz, Math.max(7.5, Math.round(cellFsz * 0.84))));
+    const headFsz = Math.min(10, Math.max(8, Math.round(headRowHmm * 1.6)));
+    const dayFsz = Math.min(11, Math.max(8.5, Math.round(periodRowHmm * 1.3)));
+    const perFsz = Math.min(9, Math.max(7.5, Math.round(periodRowHmm * 1.1)));
+
+    // ارتفاعات صفية معلّقة بالـ px على كل خلية (نفس نمط دالة A3/A4 العاملة) — تمنع أي تمدد أو بتر
+    const PX_PER_MM = 96 / 25.4;
+    const rowHpx = Math.round(periodRowHmm * PX_PER_MM * 100) / 100;
+    const headRowHpx = Math.round(headRowHmm * PX_PER_MM * 100) / 100;
+    const dayCellHpx = Math.round(rowHpx * periods * 100) / 100;
+
+    // أنماط شاشة لفئات القص (للرسم عبر html2canvas) — مطابقة تمامًا لأنماط الطباعة
+    styleEl = document.createElement('style');
+    styleEl.id = 'direct-cut2-pdf-style';
+    styleEl.textContent = [
+      '#direct-cut2-pdf-host{ direction:rtl; font-family:"Tajawal",Cairo,Arial,sans-serif; color:#000000; background:#ffffff; }',
+      '#direct-cut2-pdf-host .cut2-tbl{ border-collapse:collapse; table-layout:fixed; }',
+      '#direct-cut2-pdf-host .cut2-tbl th, #direct-cut2-pdf-host .cut2-tbl td{ border:1.2px solid ' + cs('--m-grid', '#2f2c28') + '; text-align:center; vertical-align:middle; padding:0; overflow:hidden; box-sizing:border-box; }',
+      '#direct-cut2-pdf-host .cut2-tbl thead th, #direct-cut2-pdf-host .cut2-tbl tr.cut2-h th{ background:linear-gradient(180deg,' + cs('--m-head2', '#2d4373') + ',' + cs('--m-head', '#1b2a4a') + '); color:' + cs('--m-head-fg', '#fff') + '; font-weight:900; font-size:' + headFsz + 'px; padding:1px 1px; line-height:1.1; }',
+      '#direct-cut2-pdf-host .cut2-tbl tr.cut2-h th{ border-top:2px solid ' + cs('--m-accent', '#c9a227') + '; }',
+      '#direct-cut2-pdf-host .cut2-tbl td.cut2-day{ background:' + cs('--m-day', '#1b2a4a') + '; color:' + cs('--m-day-fg', '#f0d78c') + '; font-weight:900; font-size:' + dayFsz + 'px; line-height:1.1; }',
+      '#direct-cut2-pdf-host .cut2-tbl td.cut2-per{ background:' + cs('--m-per', '#f3efe4') + '; color:' + cs('--m-per-fg', '#2d4373') + '; font-weight:900; font-size:' + perFsz + 'px; line-height:1.1; }',
+      '#direct-cut2-pdf-host .cut2-tbl tbody tr.row-a td.cut2-slot{ background:' + cs('--m-row-a', '#fff') + '; }',
+      '#direct-cut2-pdf-host .cut2-tbl tbody tr.row-b td.cut2-slot{ background:' + cs('--m-row-b', '#efe9d8') + '; }',
+      '#direct-cut2-pdf-host .cut2-cell{ height:100%; max-height:100%; min-height:0; display:flex; flex-direction:' + (side ? 'row' : 'column') + '; align-items:center; justify-content:center; padding:0 1px; margin:0; overflow:hidden; box-sizing:border-box; }',
+      '#direct-cut2-pdf-host .cut2-cell b{ font-size:' + cellFsz + 'px; font-weight:900; color:#000000; line-height:1.15; padding:0; margin:0; text-indent:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; width:' + (side ? 'auto' : '100%') + '; }',
+      '#direct-cut2-pdf-host .cut2-cell span{ font-size:' + cellTsz + 'px; font-weight:900; color:#000000; line-height:1.15; padding:0; margin:0; text-indent:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; width:' + (side ? 'auto' : '100%') + '; ' + (hideT ? 'display:none;' : '') + (side ? 'border-inline-start:1px dashed #8a8a8a;' : '') + ' }',
+      (side ? '#direct-cut2-pdf-host .cut2-cell b, #direct-cut2-pdf-host .cut2-cell span{ flex:1 1 0; min-width:0; }' : ''),
+      '#direct-cut2-pdf-host .cut2-cell.e{ color:' + cs('--m-empty', '#c3bfae') + '; font-size:8px; }',
+      '#direct-cut2-pdf-host .cut2-foot .print-foot{ padding:2px 6px; margin:0; gap:4px; font-size:8px; height:100%; box-sizing:border-box; }',
+      '#direct-cut2-pdf-host .cut2-foot .stamp-box{ width:36px; height:24px; margin:1px auto 0; }',
+      '#direct-cut2-pdf-host .cut2-foot .foot-line{ height:8px; min-width:50px; }',
+      '#direct-cut2-pdf-host .cut2-head .print-head{ padding:2px 8px; margin:0; gap:6px; height:100%; box-sizing:border-box; }'
+    ].join('\n');
+    document.head.appendChild(styleEl);
+
+    function cellHtml(cell, cIdx){
+      const cw = (!horiz && cIdx >= n1) ? colW2 : colW1;
+      const colorObj = (colorSubjects && cell) ? getSubjectPastelColor(cell.subjectId, store) : null;
+      const cStyle = colorObj ? ('background:' + colorObj.bg + '!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;border-bottom:2.5px solid ' + colorObj.border + '!important;') : '';
+      const wStyle = 'style="width:' + cw.toFixed(3) + 'mm;min-width:' + cw.toFixed(3) + 'mm;max-width:' + cw.toFixed(3) + 'mm;height:' + rowHpx + 'px;max-height:' + rowHpx + 'px;box-sizing:border-box;' + cStyle + '"';
+      if(!cell) return '<td class="cut2-slot" ' + wStyle + '><div class="cut2-cell e">—</div></td>';
+      const subj = getS(cell.subjectId), teach = getT(cell.teacherId);
+      const tname = hideT ? '' : ('<span>' + esc(getTeacherDisplayName(teach)) + '</span>');
+      return '<td class="cut2-slot" ' + wStyle + '><div class="cut2-cell"><b>' + esc(subj ? subj.name : '') + '</b>' + tname + '</div></td>';
+    }
+    let headCols = '';
+    for(let i = 0; i < cls.length; i++){
+      const cw = (!horiz && i >= n1) ? colW2 : colW1;
+      headCols += '<th style="width:' + cw.toFixed(3) + 'mm;min-width:' + cw.toFixed(3) + 'mm;max-width:' + cw.toFixed(3) + 'mm;height:' + headRowHpx + 'px;max-height:' + headRowHpx + 'px;box-sizing:border-box;" title="' + esc(cls[i].label) + '">' + esc(storeClassCode(store, cls[i])) + '</th>';
+    }
+    const dayHead = '<tr class="cut2-h" style="height:' + headRowHpx + 'px;"><th class="cut2-col-day" style="width:' + dayColWmm + 'mm;min-width:' + dayColWmm + 'mm;max-width:' + dayColWmm + 'mm;height:' + headRowHpx + 'px;max-height:' + headRowHpx + 'px;">اليوم</th><th class="cut2-col-per" style="width:' + perColWmm + 'mm;min-width:' + perColWmm + 'mm;max-width:' + perColWmm + 'mm;height:' + headRowHpx + 'px;max-height:' + headRowHpx + 'px;">ح.</th>' + headCols + '</tr>';
+    let body = '';
+    for(let d = 0; d < days.length; d++){
+      if(d > 0) body += dayHead;
+      for(let p = 0; p < periods; p++){
+        body += '<tr class="cut2-period-row ' + (p % 2 === 0 ? 'row-a' : 'row-b') + '" style="height:' + rowHpx + 'px;">';
+        if(p === 0) body += '<td class="cut2-day" rowspan="' + periods + '" style="width:' + dayColWmm + 'mm;min-width:' + dayColWmm + 'mm;max-width:' + dayColWmm + 'mm;height:' + dayCellHpx + 'px;max-height:' + dayCellHpx + 'px;">' + stackLabel(days[d]) + '</td>';
+        body += '<td class="cut2-per" style="width:' + perColWmm + 'mm;min-width:' + perColWmm + 'mm;max-width:' + perColWmm + 'mm;height:' + rowHpx + 'px;max-height:' + rowHpx + 'px;">' + (p + 1) + '</td>';
+        for(let c = 0; c < cls.length; c++){
+          const g = store.schedule[cls[c].key] && store.schedule[cls[c].key].grid;
+          body += cellHtml((g && g[d]) ? g[d][p] : null, c);
+        }
+        body += '</tr>';
+      }
+    }
+    let colsHtml = '';
+    for(let i = 0; i < cls.length; i++){
+      const cw = (!horiz && i >= n1) ? colW2 : colW1;
+      colsHtml += '<col style="width:' + cw.toFixed(3) + 'mm;min-width:' + cw.toFixed(3) + 'mm;max-width:' + cw.toFixed(3) + 'mm;">';
+    }
+    const colGroup = '<colgroup><col style="width:' + dayColWmm + 'mm;min-width:' + dayColWmm + 'mm;max-width:' + dayColWmm + 'mm;"><col style="width:' + perColWmm + 'mm;min-width:' + perColWmm + 'mm;max-width:' + perColWmm + 'mm;">' + colsHtml + '</colgroup>';
+    const tableHtml = '<table class="cut2-tbl" style="width:100%;height:' + availHmm + 'mm;max-height:' + availHmm + 'mm;border-collapse:collapse;table-layout:fixed;">' + colGroup +
+      '<thead>' + dayHead + '</thead><tbody>' + body + '</tbody></table>';
+
+    const bak = DB; DB = store;
+    let headHtml = '', footHtml = '';
+    try{ headHtml = printHeaderHtml(); footHtml = printFooterHtml(); }
+    finally{ DB = bak; }
+
+    // شريط واحد متصل (رأس + جدول + تذييل) — سيُقصّ في المنتصف تمامًا كورقة
+    const hostWpx = Math.round(stripWmm * PX_PER_MM);
+    const hostHpx = Math.round(stripHmm * PX_PER_MM);
+
+    loaderOverlay = document.createElement('div');
+    loaderOverlay.id = 'direct-cut2-pdf-loader-overlay';
+    loaderOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(4,39,45,0.85);backdrop-filter:blur(3px);z-index:999999;display:flex;align-items:center;justify-content:center;direction:rtl;font-family:"Tajawal",sans-serif;';
+    loaderOverlay.innerHTML =
+      '<div style="background:#fff;border-radius:18px;padding:26px 36px;text-align:center;box-shadow:0 12px 36px rgba(0,0,0,0.3);max-width:440px;display:flex;flex-direction:column;align-items:center;gap:14px;">' +
+      '<div style="font-size:42px;">✂️</div>' +
+      '<div style="font-size:19px;font-weight:900;color:#04272d;">جارٍ قص الجدول إلى ' + pagesLabel + '</div>' +
+      '<div style="font-size:13.5px;font-weight:700;color:#555;">الرأس والتذييل يُقصّان مع الجدول في المنتصف — هوامش 0.5 سم</div>' +
+      '</div>';
+    document.body.appendChild(loaderOverlay);
+
+    host = document.createElement('div');
+    host.id = 'direct-cut2-pdf-host';
+    host.style.cssText = 'display:block!important;position:fixed!important;left:0!important;top:0!important;width:' + hostWpx + 'px!important;height:' + hostHpx + 'px!important;overflow:hidden!important;background:#ffffff!important;z-index:99998!important;opacity:1!important;pointer-events:none!important;';
+
+    const stripEl = document.createElement('div');
+    stripEl.className = 'cut2-strip';
+    stripEl.style.cssText = 'width:' + hostWpx + 'px!important;height:' + hostHpx + 'px!important;max-height:' + hostHpx + 'px!important;min-height:' + hostHpx + 'px!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important;align-items:stretch!important;overflow:hidden!important;background:#ffffff!important;box-sizing:border-box!important;position:relative!important;margin:0!important;padding:0!important;';
+    stripEl.innerHTML =
+      '<div class="cut2-head" style="flex:0 0 auto;height:' + headHmm + 'mm;max-height:' + headHmm + 'mm;width:100%;overflow:hidden;margin:0 0 1mm 0;box-sizing:border-box;">' + headHtml + '</div>' +
+      '<div class="cut2-body" style="flex:1 1 auto;height:' + availHmm + 'mm;max-height:' + availHmm + 'mm;min-height:0;width:100%;overflow:hidden;position:relative;margin:0;box-sizing:border-box;">' +
+        '<div class="cut2-tbl-wrap" style="width:100%;height:100%;max-height:100%;position:relative;">' + tableHtml + '</div>' +
+      '</div>' +
+      '<div class="cut2-foot" style="flex:0 0 auto;height:' + footHmm + 'mm;max-height:' + footHmm + 'mm;width:100%;overflow:hidden;margin-top:auto;box-sizing:border-box;">' + footHtml + '</div>';
+    host.appendChild(stripEl);
+    document.body.appendChild(host);
+
+    if(document.fonts && document.fonts.ready){
+      try{ await document.fonts.ready; }catch(e){}
+    }
+    await new Promise(r => setTimeout(r, 180));
+
+    // منع انبتر النصوص (خاصة أسماء المعلمين): تصغير تلقائي لحجم الخط فقط عندما لا يتسع الاسم
+    // — دون أي تغيير في القياسات أو التخطيط أو الوضعيات
+    try{
+      const fitCtx = document.createElement('canvas').getContext('2d');
+      const fitEls = stripEl.querySelectorAll('.cut2-cell b, .cut2-cell span');
+      fitEls.forEach(function(el){
+        const txt = (el.textContent || '').trim();
+        if(!txt) return;
+        const csEl = getComputedStyle(el);
+        if(csEl.display === 'none') return;
+        const boxW = el.clientWidth || el.offsetWidth || 0;
+        if(boxW <= 14) return;
+        const avail = boxW - 6;
+        const fam = csEl.fontFamily || 'Tajawal, Cairo, Arial, sans-serif';
+        const wt = csEl.fontWeight || '900';
+        const meas = function(size){ fitCtx.font = wt + ' ' + size + 'px ' + fam; return fitCtx.measureText(txt).width; };
+        let fs = parseFloat(csEl.fontSize) || 10;
+        const w0 = meas(fs);
+        if(w0 > avail){
+          let size = Math.max(6, Math.floor(fs * (avail / w0) * 0.97 * 100) / 100);
+          if(meas(size) > avail) size = 6;
+          el.style.fontSize = size + 'px';
+        }
+      });
+    }catch(e_fit2){}
+
+    // عمود اليوم: رسم أسماء الأيام (الأحد...الخميس) على كانفس بدوران 90° — اتصال حروف صحيح وحجم يتسع للخلية
+    if(typeof nibrasPrepareDaysForPdf === 'function'){
+      dayFixes = nibrasPrepareDaysForPdf(stripEl);
+    }
+
+    // الملاءمة الرأسية النهائية (بعد كل التعديلات): إذا تجاوز الجدول مساحته لأي سبب — يُضغط حتى ينتهي
+    // بالضبط عند التذييل؛ لا بتر ولا اختفاء وراء الذيل ولا تداخل معه
+    try{
+      const bodyEl = stripEl.querySelector('.cut2-body');
+      const wrapEl = stripEl.querySelector('.cut2-tbl-wrap');
+      const tblEl = stripEl.querySelector('table.cut2-tbl');
+      if(bodyEl && wrapEl && tblEl){
+        void stripEl.offsetHeight;
+        void tblEl.offsetHeight;
+        const availH = bodyEl.clientHeight || Math.round(availHmm * PX_PER_MM);
+        const th = Math.max(tblEl.scrollHeight, tblEl.offsetHeight, 1);
+        if(th > availH && availH > 50){
+          const s = Math.min(1, (availH - 2) / th);
+          wrapEl.style.transformOrigin = 'top center';
+          wrapEl.style.transform = 'scaleY(' + Math.min(Math.max(s, 0.1), 1) + ')';
+        } else {
+          wrapEl.style.transform = 'none';
+        }
+      }
+    }catch(e_fit){}
+
+    const canvas = await window.html2canvas(stripEl, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      windowWidth: Math.max(1600, hostWpx + 100),
+      windowHeight: Math.max(1200, hostHpx + 100)
+    });
+
+    try{ host.remove(); host = null; }catch(e){}
+    try{ loaderOverlay.remove(); loaderOverlay = null; }catch(e){}
+    if(styleEl){ try{ styleEl.remove(); }catch(e){} styleEl = null; }
+    if(dayFixes){ try{ nibrasRestoreDaysForPdf(dayFixes); }catch(e){} dayFixes = null; }
+
+    // القص في المنتصف: عمودي → نصفا يسار/يمين | أفقي → نصفا علوي/سفلي
+    const W = canvas.width, H = canvas.height;
+    const halfW = Math.floor(W / 2), halfH = Math.floor(H / 2);
+    const makeHalf = function(sx, sy, sw, sh){
+      const c = document.createElement('canvas');
+      c.width = sw; c.height = sh;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, sw, sh);
+      ctx.drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
+      return c.toDataURL('image/jpeg', 0.98);
+    };
+    const imgA = horiz ? makeHalf(0, 0, W, halfH) : makeHalf(0, 0, halfW, H);
+    const imgB = horiz ? makeHalf(0, H - halfH, W, halfH) : makeHalf(W - halfW, 0, halfW, H);
+
+    const pdf = new jsPDFCtor({
+      orientation: horiz ? 'landscape' : 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true
+    });
+    // Margins: exactly 5mm (0.5 cm) on all 4 sides! Content: portrait = 200x287 / landscape = 287x200
+    pdf.addImage(imgA, 'JPEG', 5, 5, contWmm, contHmm, undefined, 'FAST');
+    pdf.addPage('a4', horiz ? 'landscape' : 'portrait');
+    pdf.addImage(imgB, 'JPEG', 5, 5, contWmm, contHmm, undefined, 'FAST');
+
+    const baseName = schoolName || 'مدرستي';
+    const d = new Date();
+    const pad = n => (n < 10 ? '0' : '') + n;
+    const dateStamp = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    const fileName = String(baseName).replace(/[\\/:*?"<>|]/g, '').trim() + '_' + (horiz ? 'قص_أفقي' : 'قص_عمودي') + '_ورقتان_A4_' + dateStamp + '.pdf';
+
+    const blob = pdf.output('blob');
+    const pdfFile = new File([blob], fileName, { type: 'application/pdf' });
+    const ua = navigator.userAgent || '';
+    const isAndroid = /Android/i.test(ua);
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    const isMobile = isAndroid || isIOS;
+    const isWebView = isAndroid && (/wv/i.test(ua) || /Version\/[\d.]+/i.test(ua) || !window.chrome || typeof window.Android !== 'undefined');
+    const modalLabel = horiz ? 'قص أفقي — ورقتان A4' : 'قص عمودي — ورقتان A4';
+
+    // 1. المشاركة النظامية المباشرة (هواتف أندرويد / آيفون / WebView)
+    if(isMobile && navigator.canShare && navigator.canShare({ files: [pdfFile] })){
+      try{
+        await navigator.share({
+          files: [pdfFile],
+          title: fileName,
+          text: 'جدول الحصص الأسبوعي — ' + modalLabel
+        });
+        if(typeof toast === 'function') toast('تم حفظ / مشاركة ملف PDF للقص (' + pagesLabel + ') بنجاح!', 'ok');
+        return;
+      }catch(e_share){
+        if(e_share && e_share.name === 'AbortError'){
+          return;
+        }
+      }
+    }
+
+    // 2. التنزيل المباشر القياسي (ويندوز / متصفح عادي)
+    const blobUrl = URL.createObjectURL(blob);
+    let downloaded = false;
+    if(window.navigator && window.navigator.msSaveOrOpenBlob){
+      try{
+        window.navigator.msSaveOrOpenBlob(blob, fileName);
+        downloaded = true;
+      }catch(e_ms){}
+    }
+    if(!downloaded){
+      try{
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = fileName;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function(){ try{ a.remove(); }catch(e){} }, 3000);
+        downloaded = true;
+      }catch(e_dl){
+        try{ pdf.save(fileName); downloaded = true; }catch(e_save){}
+      }
+    }
+
+    // 3. بيئة تطبيقات الهاتف / أندرويد WebView: نافذة حفظ وفتح مباشر
+    if(isMobile || isWebView){
+      showAndroidPdfSuccessModal(blob, blobUrl, pdfFile, fileName, modalLabel);
+    } else {
+      if(typeof toast === 'function') toast('تم تنزيل ملف PDF للقص (' + pagesLabel + ') بنجاح!', 'ok');
+    }
+  } catch(err){
+    try{ if(host) host.remove(); }catch(e){}
+    try{ if(loaderOverlay) loaderOverlay.remove(); }catch(e){}
+    try{ if(styleEl) styleEl.remove(); }catch(e){}
+    try{ if(dayFixes) nibrasRestoreDaysForPdf(dayFixes); }catch(e){}
+    console && console.error && console.error(err);
+    if(typeof toast === 'function') toast('تعذّر إنشاء ملف PDF للقص: ' + ((err && err.message) || err), 'err');
+  }
+}
+
+function showAndroidPdfSuccessModal(blob, blobUrl, pdfFile, fileName, paper){
   let old = document.getElementById('android-pdf-success-modal');
   if(old) old.remove();
 
@@ -6289,7 +6739,7 @@ function showAndroidPdfSuccessModal(blob, blobUrl, pdfFile, fileName){
       <div style="width:58px;height:58px;background:#e8f4f6;color:#083e47;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px;box-shadow:0 4px 12px rgba(8,62,71,0.15);">📄</div>
       <div style="font-size:18px;font-weight:900;color:#04272d;margin-bottom:6px;">تم تجهيز ملف الـ PDF بنجاح!</div>
       <div style="font-size:13px;font-weight:700;color:#555;line-height:1.5;margin-bottom:18px;">
-        الجدول الأسبوعي الكامل (A3 أفقي)<br>
+        الجدول الأسبوعي الكامل (${paper || 'A3 أفقي بملء الورقة'})<br>
         <span style="font-size:11.5px;color:#777;">إذا ظهر تنبيه "فشل التنزيل" من تطبيق الهاتف، اضغط على زر <b>«فتح / حفظ في الهاتف»</b> لحفظه في التنزيلات أو فتحه مباشرة في WPS Office.</span>
       </div>
 
@@ -6322,7 +6772,7 @@ function showAndroidPdfSuccessModal(blob, blobUrl, pdfFile, fileName){
           await navigator.share({
             files: [pdfFile],
             title: fileName,
-            text: 'جدول الحصص الأسبوعي قياس A3'
+            text: 'جدول الحصص الأسبوعي — ' + (paper || 'A3 أفقي بملء الورقة')
           });
           modal.remove();
           return;
@@ -7562,7 +8012,7 @@ function makeGrid(days, periods, fill){
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ============================= NAV ============================= */
-const views = ['dash','demo','settings','teachers','subjects','build','full','schedule','saved','timings','about'];
+const views = ['dash','demo','settings','teachers','subjects','build','full','schedule','saved','timings','apps','about'];
 let currentViewName = 'dash';
 let viewStack = [];
 function isMobilePortrait(){
@@ -7660,6 +8110,22 @@ document.getElementById('tabs').addEventListener('click', e=>{
   const btn = e.target.closest('.tab-btn');
   if(btn) showView(btn.dataset.view);
 });
+
+/* ===== زر «طلب التطبيق» — يفتح واتساب برسالة باسم التطبيق ===== */
+(function bindAppRequests(){
+  const WA_ADMIN = '9647712080871';
+  document.querySelectorAll('.apps-req-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const name = btn.getAttribute('data-app') || 'التطبيق';
+      const msg = 'طلب تطبيق: ' + name;
+      try{
+        window.open('https://wa.me/' + WA_ADMIN + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+      }catch(e){
+        if(typeof toast === 'function') toast('تعذّر فتح واتساب', 'err');
+      }
+    });
+  });
+})();
 
 /* ===== دليل العمل لكل تبويبة (زر المساعدة العائم) ===== */
 const HELP_GUIDES = {
@@ -7773,6 +8239,16 @@ const HELP_GUIDES = {
       "استخدم زر الطباعة <b>🖨️</b> أعلى الشاشة لطباعة أو تنزيل جدول التواقيت."
     ],
     tips:"تأكد أولًا من ضبط «نوع الدوام» وأوقات الأيام في تبويب الإعدادات، لأن التواقيت تُبنى عليها."
+  },
+  apps:{
+    title:"🚀 تطبيقات أخرى",
+    intro:"قائمة بتطبيقاتي التعليمية المتكاملة.",
+    steps:[
+      "كل صف يعرض: <b>اسم التطبيق</b> و<b>رابطه</b> وزر الطلب.",
+      "اضغط <b>فتح التطبيق ↗</b> لتجربة التطبيق مباشرة في نافذة جديدة.",
+      "اضغط <b>📲 طلب التطبيق</b> ليتم فتح واتساب برسالة جاهزة باسم التطبيق — فقط اضغط إرسال."
+    ],
+    tips:"طلبات التطبيقات تصل مباشرة إلى المطور عبر واتساب."
   },
   about:{
     title:"ℹ️ حول التطبيق",
@@ -8138,6 +8614,10 @@ function renderFullMasterTab(){
     if(pdfBadge){
       pdfBadge.textContent = (currentViewName==='demo') ? '(A3 أفقي تجريبي بملء الورقة)' : '(A3 أفقي بملء الورقة)';
     }
+    const pdfBadgeA4 = pop.querySelector('.direct-pdf-badge-a4');
+    if(pdfBadgeA4){
+      pdfBadgeA4.textContent = (currentViewName==='demo') ? '(A4 أفقي تجريبي بملء الورقة)' : '(A4 أفقي بملء الورقة)';
+    }
   }
   function closePop(){ pop.hidden = true; }
   function openPop(){ syncPop(); pop.hidden = false; }
@@ -8204,14 +8684,44 @@ function renderFullMasterTab(){
       }
     });
   }
+  const popDirectPdfA4 = document.getElementById('btnPopDirectA4Pdf');
+  if(popDirectPdfA4){
+    popDirectPdfA4.addEventListener('click', async function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      closePop();
+      const isDemo = (currentViewName === 'demo');
+      if(typeof downloadDirectFullSchedulePdfA4 === 'function'){
+        await downloadDirectFullSchedulePdfA4(isDemo);
+      } else if(typeof window.downloadDirectFullSchedulePdfA4 === 'function'){
+        await window.downloadDirectFullSchedulePdfA4(isDemo);
+      }
+    });
+  }
 
   const cut2 = document.getElementById('btnTopPrintCut2');
-  if(cut2) cut2.addEventListener('click', function(e){
-    e.preventDefault(); e.stopPropagation(); closePop(); runCutTwo('portrait');
+  if(cut2) cut2.addEventListener('click', async function(e){
+    e.preventDefault(); e.stopPropagation(); closePop();
+    const isDemo = (currentViewName === 'demo');
+    if(typeof downloadDirectCutTwoPdf === 'function'){
+      await downloadDirectCutTwoPdf(isDemo, 'portrait');
+    } else if(typeof window.downloadDirectCutTwoPdf === 'function'){
+      await window.downloadDirectCutTwoPdf(isDemo, 'portrait');
+    } else {
+      runCutTwo('portrait');
+    }
   });
   const cut2L = document.getElementById('btnTopPrintCut2L');
-  if(cut2L) cut2L.addEventListener('click', function(e){
-    e.preventDefault(); e.stopPropagation(); closePop(); runCutTwo('landscape');
+  if(cut2L) cut2L.addEventListener('click', async function(e){
+    e.preventDefault(); e.stopPropagation(); closePop();
+    const isDemo = (currentViewName === 'demo');
+    if(typeof downloadDirectCutTwoPdf === 'function'){
+      await downloadDirectCutTwoPdf(isDemo, 'landscape');
+    } else if(typeof window.downloadDirectCutTwoPdf === 'function'){
+      await window.downloadDirectCutTwoPdf(isDemo, 'landscape');
+    } else {
+      runCutTwo('landscape');
+    }
   });
   const eachCls = document.getElementById('btnTopPrintEachClass');
   if(eachCls) eachCls.addEventListener('click', function(e){
@@ -13483,6 +13993,15 @@ function printMasterSchedule(paper, store, orient){
   const contentWmm = pageMM.w - 10;
   const contentHmm = pageMM.h - 10;
 
+  /* وضع «المعلم مقابل المادة» في الطباعة: نحسب حجم الخط الذي يتسع لكل نصف عمود شعبة
+     (لكي لا تُقصّ الأسماء عند كثرة الشعب) — لا يغير هذا أي قياس من قياسات الجدول */
+  const sideUserSubj = Math.max(13, getMasterFontSize());
+  const sideUserTeach = Math.max(11, Math.round(sideUserSubj * 0.88));
+  const sideN = Math.max(1, cls.length);
+  const sideHalfPx = Math.max(24, (contentWmm * 96 / 25.4 - 58) / sideN / 2);
+  const sideSubjPx = Math.max(9.5, Math.min(sideUserSubj, Math.floor(sideHalfPx / 5.5)));
+  const sideTeachPx = Math.max(8.5, Math.min(sideUserTeach, Math.floor(sideHalfPx / 5.5) - 1));
+
   let styleEl = document.getElementById('dynamic-print-style');
   if(!styleEl){
     styleEl = document.createElement('style');
@@ -13530,7 +14049,7 @@ function printMasterSchedule(paper, store, orient){
         align-items: center !important; justify-content: center !important;
       }
       #print-output .mp-cell b {
-        font-size: ${Math.max(13, getMasterFontSize())}px !important;
+        font-size: ${getMasterCellLayout()==='side' ? sideSubjPx : Math.max(13, getMasterFontSize())}px !important;
         font-weight: 900 !important;
         color: #000000 !important;
         line-height: 1.15 !important;
@@ -13541,13 +14060,13 @@ function printMasterSchedule(paper, store, orient){
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         text-align: center !important;
-        ${getMasterCellLayout()==='side' ? 'flex: 1 1 0 !important; min-width: 0 !important;' : 'display: block !important; width: 100% !important;'}
+        ${getMasterCellLayout()==='side' ? 'flex: 1 1 0 !important; min-width: 0 !important; max-height: 100% !important;' : 'display: block !important; width: 100% !important;'}
         text-rendering: geometricPrecision !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
       #print-output .mp-cell span {
-        font-size: ${Math.max(11, Math.round(Math.max(13, getMasterFontSize()) * 0.88))}px !important;
+        font-size: ${getMasterCellLayout()==='side' ? sideTeachPx : Math.max(11, Math.round(Math.max(13, getMasterFontSize()) * 0.88))}px !important;
         font-weight: 900 !important;
         color: #000000 !important;
         line-height: 1.15 !important;
@@ -13558,7 +14077,7 @@ function printMasterSchedule(paper, store, orient){
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         text-align: center !important;
-        ${(typeof getHideTeacherName==='function' && getHideTeacherName()) ? 'display: none !important;' : (getMasterCellLayout()==='side' ? 'flex: 1 1 0 !important; min-width: 0 !important; border-inline-start: 1px dashed #8a8a8a !important;' : 'display: block !important; width: 100% !important;')}
+        ${(typeof getHideTeacherName==='function' && getHideTeacherName()) ? 'display: none !important;' : (getMasterCellLayout()==='side' ? 'flex: 1 1 0 !important; min-width: 0 !important; max-height: 100% !important; white-space: normal !important; line-height: 1.08 !important; border-inline-start: 1.2px dashed #7a7a7a !important;' : 'display: block !important; width: 100% !important;')}
         text-rendering: geometricPrecision !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
