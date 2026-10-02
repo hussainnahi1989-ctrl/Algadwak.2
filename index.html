@@ -4170,6 +4170,7 @@ html[data-theme="night"] .about-badge {
     <button class="tab-btn" data-view="build">🛠️ إنشاء الجدول</button>
     <button class="tab-btn" data-view="full">📋 الجدول الكامل</button>
     <button class="tab-btn" data-view="att">🧑‍🏫 حضور الملاك</button>
+    <button class="tab-btn" data-view="pex">🖨️ طباعة وتصدير</button>
     <button class="tab-btn" data-view="schedule">📅 الجداول</button>
     <button class="tab-btn" data-view="timings">⏰ تواقيت الدروس</button>
     <button class="tab-btn" data-view="apps">🚀 تطبيقات أخرى</button>
@@ -4853,6 +4854,46 @@ html[data-theme="night"] .about-badge {
   </section>
 
   <!-- TIMINGS -->
+  <section class="view" id="view-pex">
+  <style id="pex-css">
+    .pex-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0 10px}
+    .pex-head h2{margin:0;font-size:17px;font-weight:900;display:flex;align-items:center;gap:8px}
+    .pex-head small{color:var(--ink-soft,#5b6a8f);font-weight:700}
+    .pex-scroll{overflow:auto;border-radius:14px;box-shadow:var(--shadow,0 6px 20px rgba(0,0,0,.08));background:var(--paper-2,#fff);border:1px solid var(--line,#e3e9f5)}
+    .pex{width:100%;border-collapse:collapse;min-width:560px}
+    .pex thead th{position:sticky;top:0;background:#152549;color:#fff;font-size:12.5px;font-weight:900;padding:11px 10px;text-align:center;white-space:nowrap;z-index:2}
+    .pex thead th:first-child{text-align:right;padding-inline-start:14px}
+    .pex td{padding:9px 10px;border-top:1px solid var(--line,#e8edf7);vertical-align:middle}
+    .pex tr.pex-group td{background:linear-gradient(90deg,#152549,#1e3a75 60%,#2a4d94);color:#f0d78c;font-weight:900;font-size:13.5px;padding:9px 14px;letter-spacing:.2px;border-top:none}
+    .pex tr.pex-group td small{color:#cdeef1;font-weight:700;font-size:11px;margin-inline-start:8px}
+    .pex-item{display:flex;align-items:center;gap:10px;min-width:0}
+    .pex-ico{flex:none;width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:21px;background:linear-gradient(135deg,#eef3ff,#e0eaff);box-shadow:inset 0 0 0 1px rgba(27,42,74,.08)}
+    html[data-theme="night"] .pex-ico{background:linear-gradient(135deg,#101d36,#0d1730)}
+    .pex-name b{display:block;font-size:13.5px;font-weight:900;color:var(--ink,#1b2a4a)}
+    .pex-name small{display:block;color:var(--ink-soft,#5b6a8f);font-size:11px;font-weight:700}
+    .pex-acts{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+    .pex-btn{flex:none;border:0;cursor:pointer;font-family:inherit;font-weight:900;font-size:12px;padding:9px 13px;border-radius:10px;display:inline-flex;align-items:center;gap:6px;color:#fff;transition:transform .12s ease, filter .12s ease}
+    .pex-btn:active{transform:scale(.94)}
+    .pex-btn:hover{filter:brightness(1.08)}
+    .pex-btn.print{background:linear-gradient(135deg,#2f6fdd,#1e4fb0)}
+    .pex-btn.pdf{background:linear-gradient(135deg,#d94436,#a9271b)}
+    .pex-btn.xls{background:linear-gradient(135deg,#1f9d55,#136c3a)}
+    .pex-btn small{font-weight:800;opacity:.95}
+    .pex-note{margin-top:10px;font-size:11.5px;color:var(--ink-soft,#5b6a8f);font-weight:700;line-height:1.9}
+    @media (max-width:620px){ .pex-btn{padding:8px 9px;font-size:11px} .pex-name small{display:none} }
+  </style>
+    <div class="pex-head">
+      <h2>🖨️ طباعة وتصدير</h2>
+      <small>كل ما في البرنامج قابل للطباعة وPDF وإكسل — من مكان واحد</small>
+    </div>
+    <div class="pex-scroll">
+      <table class="pex">
+        <thead><tr><th>النوع</th><th>🖨️ طباعة</th><th>📄 تصدير PDF</th><th>📊 تصدير إكسل</th></tr></thead>
+        <tbody id="pexBody"></tbody>
+      </table>
+    </div>
+    <p class="pex-note">💡 «طباعة» تفتح نافذة الطباعة مباشرة · «PDF» يُنزّل ملفًا جاهزًا إلى ملفات جهازك · «إكسل» يُنزّل ملف <b>.xlsx ملوّن بنفس تصميم الطباعة وألوانها</b> يفتح في Microsoft Excel وGoogle Sheets وWPS وكل برامج الإكسل — جميعها تعمل ببياناتك الحالية تلقائيًا.</p>
+  </section>
   <section class="view" id="view-timings">
     <div class="card">
       <h2>📋 جداول تواقيت الدروس</h2>
@@ -7765,7 +7806,12 @@ function applySchoolTerms(){
 function needsSchoolSetup(){
   if(!DB || !DB.settings) return true;
   if(DB.settings.schoolSetupDone) return false;
-  const used = ((DB.teachers||[]).length + (DB.stages||[]).length + (DB.assignments||[]).length) > 0;
+  /* بذور النظام الافتراضية (معرفات -def-) لا تُعتبر بيانات مستخدم — والزبون الجديد
+     يجب أن يرى بطاقة الإعداد (اسم المدرسة/المدير/الصنف/النوع) في أول تشغيل */
+  const isSeedId = function(id){ return /^(t-def-|st-def-|sec-def-|da-def-)/.test(String(id||'')); };
+  const hasOwn = function(arr, key){ return (Array.isArray(arr)?arr:[]).some(function(x){ return x && !isSeedId(x[key]); }); };
+  const named = !!(DB.settings.schoolName && DB.settings.schoolName!=='مدرستي');
+  const used = hasOwn(DB.teachers,'id') || hasOwn(DB.stages,'id') || hasOwn(DB.assignments,'id') || named;
   if(used){
     DB.settings.schoolSetupDone = true;
     DB.settings.welcomeSeen = true;
@@ -8435,7 +8481,7 @@ function makeGrid(days, periods, fill){
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ============================= NAV ============================= */
-const views = ['dash','demo','settings','teachers','subjects','build','full','att','schedule','saved','timings','apps','about'];
+const views = ['dash','demo','settings','teachers','subjects','build','full','att','pex','schedule','saved','timings','apps','about'];
 let currentViewName = 'dash';
 let viewStack = [];
 function isMobilePortrait(){
@@ -8526,6 +8572,7 @@ function showView(name, fromBack){
   if(name==='schedule') setSchedSubTab(schedSubTab);
   if(name==='timings') renderTimingsTab();
   if(name==='att') renderAttendanceTab();
+  if(name==='pex') renderPexTab();
   if(name==='settings'){ setSettingsSubTab(settingsSubTab); }
   if(name==='teachers'){ renderDayExcludeChecks(); renderTeachersList(); setTeacherSubTab(teacherSubTab); }
   if(name==='subjects') renderSubjectsList();
@@ -16326,9 +16373,12 @@ function parseHM(s){
   return (parseInt(p[0],10)||0)*60 + (parseInt(p[1],10)||0);
 }
 function fmtHM(mins){
+  /* عرض ١٢ ساعة مع ص/م: يوحّد كل توقيتات البرنامج (الشاشة والطباعة وPDF) */
   mins = ((mins % 1440) + 1440) % 1440;
-  const h = Math.floor(mins/60), m = mins % 60;
-  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+  const h24 = Math.floor(mins/60), m = mins % 60;
+  const ap = (h24 < 12) ? 'ص' : 'م';
+  let h = h24 % 12; if(h===0) h = 12;
+  return h + ':' + String(m).padStart(2,'0') + ' ' + ap;
 }
 function ensureDayShifts(T){
   T = T || getTimings();
@@ -16387,23 +16437,30 @@ function currentTimingState(){
   if(dayIdx < 0){
     return {status:'offday', shift:null, slot:null, slots:[], remainSec:0, dayIdx:-1, periodIdx:-1};
   }
-  let shift = 'morning';
-  try{ shift = todayShiftKey(); }catch(e){ shift = 'morning'; }
-  if(!shift){
-    return {status:'offday', shift:null, slot:null, slots:[], remainSec:0, dayIdx:dayIdx, periodIdx:-1};
-  }
   const T = getTimings();
-  const cfg = (shift==='evening' ? T.evening : T.morning) || defaultShiftCfg(shift==='evening'?'13:00':'08:00', DB.settings.periodsPerDay||6);
-  const slots = buildShiftSlots(cfg);
+  /* الوضع الثنائي (صباحي ومسائي): تُدمج فترتا الصباح والمساء معًا فتظهر التوقيتان معًا —
+     صباحي فقط يُظهر الصباحية، ومسائي فقط يُظهر المسائية (مطلب م47) */
+  let shifts;
+  if(T.shiftMode==='both') shifts = ['morning','evening'];
+  else if(T.shiftMode==='evening') shifts = ['evening'];
+  else shifts = ['morning'];
+  const slots = [];
+  shifts.forEach(function(sh){
+    const cfg = (sh==='evening' ? T.evening : T.morning) || defaultShiftCfg(sh==='evening'?'13:00':'08:00', DB.settings.periodsPerDay||6);
+    let ss = [];
+    try{ ss = buildShiftSlots(cfg) || []; }catch(e){ ss = []; }
+    ss.forEach(function(sl){ slots.push(Object.assign({}, sl, {shift:sh})); });
+  });
+  slots.sort(function(a,b){ return (a.start - b.start); });
   const cur = slots.find(s=> nowM>=s.start && nowM<s.end);
   if(cur){
-    return {status: cur.kind==='lesson'?'now':'break', shift:shift, slot:cur, slots:slots, remainSec: Math.max(0, cur.end*60 - nowTotal), dayIdx:dayIdx, periodIdx: cur.kind==='lesson' ? (cur.n-1) : -1};
+    return {status: cur.kind==='lesson'?'now':'break', shift:cur.shift, slot:cur, slots:slots, remainSec: Math.max(0, cur.end*60 - nowTotal), dayIdx:dayIdx, periodIdx: cur.kind==='lesson' ? (cur.n-1) : -1};
   }
   const next = slots.find(s=> s.start > nowM);
   if(next){
-    return {status:'wait', shift:shift, slot:next, slots:slots, remainSec: Math.max(0, next.start*60 - nowTotal), dayIdx:dayIdx, periodIdx: next.kind==='lesson' ? (next.n-1) : -1};
+    return {status:'wait', shift:next.shift, slot:next, slots:slots, remainSec: Math.max(0, next.start*60 - nowTotal), dayIdx:dayIdx, periodIdx: next.kind==='lesson' ? (next.n-1) : -1};
   }
-  return {status:'done', shift:shift, slot:null, slots:slots, remainSec:0, dayIdx:dayIdx, periodIdx:-1};
+  return {status:'done', shift:shifts[shifts.length-1], slot:null, slots:slots, remainSec:0, dayIdx:dayIdx, periodIdx:-1};
 }
 function teachersForPeriod(dayIdx, periodIdx){
   const busy=[], seen=new Set();
@@ -16610,6 +16667,23 @@ function dashTimingsTableHtml(){
   return '<div class="card"><h2>⏰ تواقيت الدروس</h2>'+inner+'</div>';
 }
 
+/* عدادات حضور الملاك لليوم (قراءة فقط + ذاكرة تعيق التكرار) — مطلب م47 */
+let _dashAttCache = {raw:null, p:0, a:0, l:0};
+function dashAttendanceCounts(){
+  let raw = '';
+  try{ raw = JSON.stringify(((attLoad().days)||{})[attTodayKey()] || {}); }catch(e){ raw = ''; }
+  if(_dashAttCache.raw === raw) return _dashAttCache;
+  const out = {p:0, a:0, l:0};
+  try{
+    const rows = (((attLoad().days)||{})[attTodayKey()]||{}).rows || [];
+    rows.forEach(function(r){
+      const st2 = attRowStatus(r);
+      if(st2==='present') out.p++; else if(st2==='absent') out.a++; else if(st2==='leave') out.l++;
+    });
+  }catch(e){}
+  _dashAttCache.raw = raw; _dashAttCache.p = out.p; _dashAttCache.a = out.a; _dashAttCache.l = out.l;
+  return _dashAttCache;
+}
 function renderDashboard(){
   const root = document.getElementById('dashRoot');
   if(!root) return;
@@ -16620,6 +16694,8 @@ function renderDashboard(){
     const dateStr = now.toLocaleDateString('ar-IQ', {year:'numeric', month:'long', day:'numeric'});
     const st = currentTimingState();
     const shiftLabel = st.shift==='evening'?'الدوام المسائي':(st.shift==='morning'?'الدوام الصباحي':'—');
+    const Tmode = (function(){ try{ const TT0=getTimings(); return (TT0 && TT0.shiftMode==='both')?'both':((TT0 && TT0.shiftMode==='evening')?'evening':'morning'); }catch(e){ return 'morning'; } })();
+    const modeLabel = (Tmode==='both') ? 'الدوام الصباحي والمسائي' : ((Tmode==='evening') ? 'الدوام المسائي' : 'الدوام الصباحي');
     let mode='off', title='لا حصة الآن', meta='', count=fmtHMS(st.remainSec);
     if(st.status==='offday'){ title='اليوم ليس يوم دوام'; meta='لا يوجد جدول مدرسي لهذا اليوم'; count='--:--'; }
     else if(st.status==='now'){ mode='now'; title=st.slot.label; meta='تنتهي الساعة '+fmtHM(st.slot.end)+' · '+shiftLabel; }
@@ -16654,8 +16730,10 @@ function renderDashboard(){
     const live = root.querySelector('.dash-count');
     let weeklyTotalSig = 0;
     (DB.assignments||[]).forEach(function(a){ weeklyTotalSig += (+a.periodsPerWeek||0); });
-    const sig = [st.status, st.slot && st.slot.label, periodIdx, st.dayIdx, shiftLabel,
-      (DB.teachers||[]).length, weeklyTotalSig, (DB.subjects||[]).length].join('|');
+    const attCounts = dashAttendanceCounts();
+    const sig = [st.status, st.slot && st.slot.label, periodIdx, st.dayIdx, shiftLabel, Tmode,
+      (DB.teachers||[]).length, weeklyTotalSig, (DB.subjects||[]).length,
+      attCounts.p, attCounts.a, attCounts.l].join('|');
     if(live && root.dataset.sig===sig){
       const tm = root.querySelector('.d-time');
       if(tm) tm.textContent = pad2(now.getHours())+':'+pad2(now.getMinutes())+':'+pad2(now.getSeconds());
@@ -16721,7 +16799,7 @@ function renderDashboard(){
           '<div class="d-day">'+esc(dayName)+'</div>'+
           '<div class="d-date">'+esc(dateStr)+'</div>'+
           '<div class="d-time">'+pad2(now.getHours())+':'+pad2(now.getMinutes())+':'+pad2(now.getSeconds())+'</div>'+
-          '<div class="d-shift">'+esc(shiftLabel)+'</div>'+
+          '<div class="d-shift">'+esc(modeLabel)+'</div>'+
         '</div>'+
         '<div class="dash-card dash-now '+mode+'">'+
           '<div class="dash-now-txt">'+
@@ -16738,6 +16816,11 @@ function renderDashboard(){
         '<div class="dash-card dash-stat"><div class="dash-stat-ico">🧑</div><div class="num">'+((DB.teachers||[]).length)+'</div><div class="lbl">عدد '+(function(){ try{ return schoolTerms().thePluralGen; }catch(e){ return 'المعلمين'; } })()+' (الكلي)</div></div>'+
         '<div class="dash-card dash-stat"><div class="dash-stat-ico">📚</div><div class="num">'+weeklyTotalSig+'</div><div class="lbl">حصص الأسبوع — كل المدرسة</div></div>'+
         '<div class="dash-card dash-stat"><div class="dash-stat-ico">📘</div><div class="num">'+((DB.subjects||[]).length)+'</div><div class="lbl">المواد المدخلة</div></div>'+
+      '</div>'+
+      '<div class="dash-stats" style="margin:-4px 0 14px">'+
+        '<div class="dash-card dash-stat" style="border-top:3px solid #1e7d3c"><div class="dash-stat-ico" style="background:#e5f6ea;border-color:#bfe5cc">✅</div><div class="num" style="color:#1e7d3c">'+attCounts.p+'</div><div class="lbl">حضور اليوم</div></div>'+
+        '<div class="dash-card dash-stat" style="border-top:3px solid #b3261e"><div class="dash-stat-ico" style="background:#fdecec;border-color:#f3c1bd">❌</div><div class="num" style="color:#b3261e">'+attCounts.a+'</div><div class="lbl">عدد الغياب اليوم</div></div>'+
+        '<div class="dash-card dash-stat" style="border-top:3px solid #8a6d1a"><div class="dash-stat-ico" style="background:#fff4d6;border-color:#e8d9a8">🗓️</div><div class="num" style="color:#8a6d1a">'+attCounts.l+'</div><div class="lbl">عدد المجازين اليوم</div></div>'+
       '</div>'+
       '<div class="card"><h2>📅 جدول اليوم — '+esc(dayName)+'</h2>'+grid+'</div>'+
       dashSupervisorsHtml(dayName, st.dayIdx)+dashOffTeachersHtml(dayName, st.dayIdx)+
@@ -16961,16 +17044,19 @@ function renderTimingsTab(){
 
   const nowBox = document.getElementById('tmNowBox');
   if(nowBox){
-    const todayKey = todayShiftKey();
-    const todayName = todayKey==='evening'?'مسائي':(todayKey==='morning'?'صباحي':null);
-    const useSlots = todayKey==='evening' ? eSlots : mSlots;
-    const cur = todayKey ? useSlots.find(s=> nowM>=s.start && nowM<s.end) : null;
-    if(!todayKey && T.shiftMode==='both'){
+    const dIdx0 = todaySchoolDayIndex();
+    const both0 = T.shiftMode==='both', eveOnly0 = T.shiftMode==='evening';
+    if(dIdx0 < 0){
       nowBox.innerHTML = 'اليوم ليس ضمن أيام الدوام المحددة';
     } else {
-      nowBox.innerHTML = cur
-        ? ('الآن: <b>'+esc(todayName||'صباحي')+' — '+esc(cur.label)+'</b> من '+fmtHM(cur.start)+' إلى '+fmtHM(cur.end))
-        : ('الوقت الحالي '+fmtHM(nowM)+' — لا توجد حصة جارية الآن'+(todayName?' ('+todayName+')':''));
+      /* الوضع الثنائي: يُبحث في فترتي الصباح والمساء معًا — يظهر التوقيتان (مطلب م47) */
+      let hit0 = null;
+      if(!eveOnly0){ const f0 = mSlots.find(s=> nowM>=s.start && nowM<s.end); if(f0) hit0 = {sh:'morning', slot:f0}; }
+      if(!hit0 && (both0 || eveOnly0)){ const f0 = eSlots.find(s=> nowM>=s.start && nowM<s.end); if(f0) hit0 = {sh:'evening', slot:f0}; }
+      const nm0 = hit0 ? (hit0.sh==='evening'?'مسائي':'صباحي') : null;
+      nowBox.innerHTML = hit0
+        ? ('الآن: <b>'+nm0+' — '+esc(hit0.slot.label)+'</b> من '+fmtHM(hit0.slot.start)+' إلى '+fmtHM(hit0.slot.end))
+        : ('الوقت الحالي '+fmtHM(nowM)+' — لا توجد حصة جارية الآن'+((both0||eveOnly0)?'':' (صباحي)'));
     }
   }
   const dayWrap = document.getElementById('timingDayShifts');
@@ -17808,6 +17894,852 @@ function nibrasMaybeShowWhatsNew(){
 }
 if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', function(){ setTimeout(nibrasMaybeShowWhatsNew, 1200); }); }
 else { setTimeout(nibrasMaybeShowWhatsNew, 1200); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   🖨️ مركز الطباعة والتصدير — كل عناصر البرنامج القابلة للطباعة في جدول واحد:
+   طباعة مباشرة + PDF مباشر إلى الملفات + إكسل (CSV يفتح في Excel/WPS)
+   يعيد استخدام دوال الطباعة المعتمدة نفسها دون أي تغيير عليها.
+   ═══════════════════════════════════════════════════════════════════════ */
+function pexHasSchedule(){
+  try{
+    return allClasses().some(function(c){
+      const g = DB.schedule[c.key] && DB.schedule[c.key].grid;
+      return g && g.some(function(r){ return r.some(Boolean); });
+    });
+  }catch(e){ return false; }
+}
+function pexArmPdf(wmm, hmm){
+  /* نفس آلية التصدير المباشر المعتمدة: الطباعة القادمة تُنزَّل PDF بهذا المقاس */
+  window.__nibrasPdfExportOnce = { on:true, wmm:wmm, hmm:hmm };
+  clearTimeout(window.__nibrasPdfExportOnceTimer);
+  window.__nibrasPdfExportOnceTimer = setTimeout(function(){ window.__nibrasPdfExportOnce = null; }, 8000);
+}
+function pexSizeMm(paper, orient){
+  const p = (paper==='A3');
+  const w = p ? (orient==='portrait'?297:420) : (orient==='portrait'?210:297);
+  const h = p ? (orient==='portrait'?420:297) : (orient==='portrait'?297:210);
+  return { wmm:w-10, hmm:h-10 };
+}
+/* وثيقة معزولة احترافية لطباعة/تصدير عنصر مفرد (شعبة/معلم) */
+function pexDocHtml(title, innerHtml, orient){
+  const school = esc((DB.settings&&DB.settings.schoolName)||'المدرسة');
+  const sz = (orient==='portrait') ? 'A4 portrait' : 'A4 landscape';
+  return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>'+esc(title)+'</title><style>'+
+    '@page{size:'+sz+';margin:7mm}'+
+    '*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'+
+    'html,body{margin:0;padding:0;background:#fff;color:#1b2a4a;font-family:Tahoma,Arial,sans-serif}'+
+    '.pg{width:'+(orient==='portrait'?'196mm':'277mm')+';min-height:'+(orient==='portrait'?'279mm':'190mm')+';display:flex;flex-direction:column;gap:7px}'+
+    '.hd{display:flex;align-items:center;justify-content:space-between;background:#152549;color:#fff;border-radius:10px;padding:9px 13px}'+
+    '.hd b{font-size:15px}.hd span{font-size:11px;color:#f0d78c;font-weight:800}'+
+    '.inner{flex:1;display:flex;flex-direction:column}'+
+    '.ft{margin-top:auto;display:flex;justify-content:space-between;font-size:10.5px;padding-top:4px}'+
+    '.ft b{font-size:11.5px}'+
+    'table{width:100%;border-collapse:collapse}'+
+    '</style></head><body><div class="pg">'+
+    '<div class="hd"><b>'+school+'</b><span>'+esc(title)+'</span></div>'+
+    '<div class="inner">'+innerHtml+'</div>'+
+    '<div class="ft"><span>إعداد الجدول<br><b>'+esc((DB.settings&&DB.settings.preparer)||'')+'</b></span><span>مدير / مديرة المدرسة<br><b>'+esc((DB.settings&&DB.settings.principal)||'ــــ')+'</b></span></div>'+
+    '</div></body></html>';
+}
+function pexOpenPrint(title, innerHtml, orient){
+  try{
+    const w = window.open('', '_blank');
+    if(!w){ toast('اسمح بالنوافذ المنبثقة للطباعة','err'); return; }
+    w.document.open(); w.document.write(pexDocHtml(title, innerHtml, orient)); w.document.close();
+    try{ w.focus(); }catch(e){}
+    setTimeout(function(){ try{ w.print(); }catch(e){} }, 350);
+  }catch(e){ toast('تعذّرت الطباعة','err'); }
+}
+/* ── إكسل: CSV بترميز UTF-8 مع BOM يفتح مباشرة في Excel وWPS ── */
+function pexCsvCell(v){
+  const t = String(v==null?'':v);
+  return /[",\n]/.test(t) ? ('"'+t.replace(/"/g,'""')+'"') : t;
+}
+/* ═══════════════════════════════════════════════════════════════════════
+   📊 مولّد ملفات إكسل حقيقية (.xlsx) بتصميم الطباعة نفسه — ألوان وتخطيطات
+   يعمل على Microsoft Excel وGoogle Sheets وWPS وكل قارئات الإكسل
+   (حزمة OOXML قياسية: ZIP + SpreadsheetML — بلا مكتبات خارجية)
+   ═══════════════════════════════════════════════════════════════════════ */
+function pexCrc32(u8){
+  let c, table=pexCrc32.t;
+  if(!table){ table=pexCrc32.t=new Uint32Array(256); for(let n=0;n<256;n++){ c=n; for(let k=0;k<8;k++) c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1); table[n]=c>>>0; } }
+  c=0xFFFFFFFF;
+  for(let i=0;i<u8.length;i++) c=table[(c^u8[i])&255]^(c>>>8);
+  return (c^0xFFFFFFFF)>>>0;
+}
+function pexZip(files){
+  const enc=new TextEncoder(); const chunks=[], central=[]; let offset=0;
+  const dosDate=((2026-1980)<<9)|(10<<5)|2;
+  files.forEach(function(f){
+    const name=enc.encode(f.name);
+    const data=(typeof f.data==='string')?enc.encode(f.data):f.data;
+    const crc=pexCrc32(data);
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0x0800,true);
+    lh.setUint16(12,dosDate,true); lh.setUint32(14,crc,true);
+    lh.setUint32(18,data.length,true); lh.setUint32(22,data.length,true); lh.setUint16(26,name.length,true);
+    chunks.push(new Uint8Array(lh.buffer), name, data);
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true); ch.setUint16(8,0x0800,true);
+    ch.setUint16(14,dosDate,true); ch.setUint32(16,crc,true);
+    ch.setUint32(20,data.length,true); ch.setUint32(24,data.length,true); ch.setUint16(28,name.length,true);
+    ch.setUint32(42,offset,true);
+    central.push(new Uint8Array(ch.buffer), name);
+    offset+=30+name.length+data.length;
+  });
+  let cdSize=0; central.forEach(function(c){ cdSize+=c.length; });
+  const eocd=new DataView(new ArrayBuffer(22));
+  eocd.setUint32(0,0x06054b50,true); eocd.setUint16(8,files.length,true); eocd.setUint16(10,files.length,true);
+  eocd.setUint32(12,cdSize,true); eocd.setUint32(16,offset,true);
+  return new Blob(chunks.concat(central,[new Uint8Array(eocd.buffer)]), {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+/* لوحة ألوان تصميم الطباعة المعتمدة */
+const PEX_NAVY='152549', PEX_GOLD='F0D78C', PEX_GOLDBG='EFE6C8', PEX_DAY='F3EFE4',
+      PEX_LESSON='C8EAD4', PEX_LONG='F5C4C4', PEX_BREAK='FFE08A', PEX_INK='1B2A4A',
+      PEX_ZEBRA='F8FAFD', PEX_OKBG='E5F6EA', PEX_OKFG='1E7D3C', PEX_NOBG='FDECEC', PEX_NOFG='B3261E',
+      PEX_LVBG='FFF4D6', PEX_LVFG='8A6D1A';
+function pexTint(hex){
+  /* نفس تلوين الطباعة: لون المادة بشفافية على أبيض */
+  const h=String(hex||'3B82F6').replace('#','');
+  const r=parseInt(h.substr(0,2),16)||59, g=parseInt(h.substr(2,2),16)||130, b=parseInt(h.substr(4,2),16)||246;
+  const mx=function(v){ return Math.round(v+(255-v)*0.133); };
+  const hx=function(v){ return ('0'+v.toString(16)).slice(-2).toUpperCase(); };
+  return hx(mx(r))+hx(mx(g))+hx(mx(b));
+}
+function pexXlsxNew(){
+  return { sheets:[], _styles:new Map(), _fills:new Map(), _fonts:new Map() };
+}
+function pexSheetAdd(wb, name){
+  const clean=(function(n){ let x=String(n||'ورقة').replace(/[\\\/\*\?\:\[\]]/g,' ').trim().slice(0,31); return x||'ورقة'; })(name);
+  let nm=clean, k=2;
+  while(wb.sheets.some(function(s2){ return s2.name===nm; })){ nm=(clean.slice(0,27)+' '+(k++)); }
+  const sh={name:nm, rows:[], merges:[], widths:[]};
+  wb.sheets.push(sh); return sh;
+}
+function pexStyleId(wb, d){
+  d=d||{};
+  const fill=d.fill||null, fontKey=[d.color||'000000', d.bold?1:0, d.size||11].join('|');
+  if(fill && !wb._fills.has(fill)) wb._fills.set(fill, wb._fills.size);
+  if(!wb._fonts.has(fontKey)) wb._fonts.set(fontKey, wb._fonts.size);
+  const key=[fontKey, fill||'-', d.align||'-', d.wrap?1:0, d.border?1:0].join('|');
+  if(!wb._styles.has(key)){
+    wb._styles.set(key, {font:wb._fonts.get(fontKey), fill:fill?(2+wb._fills.get(fill)):0, align:d.align||null, wrap:!!d.wrap, border:!!d.border, id:wb._styles.size});
+  }
+  return wb._styles.get(key).id;
+}
+function pexCell(wb, v, d){
+  return {v:v, s:pexStyleId(wb,d)};
+}
+const _pexColL=function(n){ let s=''; n=n+1; while(n>0){ const m=(n-1)%26; s=String.fromCharCode(65+m)+s; n=Math.floor((n-1)/26); } return s; };
+function pexRowAdd(sh, cells, height){
+  const r={cells:cells||[], h:height||null, n:sh.rows.length+1};
+  sh.rows.push(r); return r;
+}
+function pexXmlEsc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function pexSheetXml(sh){
+  let rows='';
+  sh.rows.forEach(function(row){
+    let cells='';
+    row.cells.forEach(function(c, ci){
+      if(c===null||c===undefined) return;
+      const ref=_pexColL(ci)+row.n;
+      if(typeof c.v==='number' && isFinite(c.v)) cells+='<c r="'+ref+'" s="'+c.s+'"><v>'+c.v+'</v></c>';
+      else if(c.v!=='' && c.v!=null) cells+='<c r="'+ref+'" s="'+c.s+'" t="inlineStr"><is><t xml:space="preserve">'+pexXmlEsc(c.v)+'</t></is></c>';
+      else cells+='<c r="'+ref+'" s="'+c.s+'"/>';
+    });
+    rows+='<row r="'+row.n+'"'+(row.h?' ht="'+row.h+'" customHeight="1"':'')+'>'+cells+'</row>';
+  });
+  const cols=sh.widths.length ? ('<cols>'+sh.widths.map(function(w,i){ return '<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>'; }).join('')+'</cols>') : '';
+  const merges=sh.merges.length ? ('<mergeCells count="'+sh.merges.length+'">'+sh.merges.map(function(m){ return '<mergeCell ref="'+m+'"/>'; }).join('')+'</mergeCells>') : '';
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+    '<sheetViews><sheetView rightToLeft="1" workbookViewId="0"/></sheetViews>'+
+    '<sheetFormatPr defaultRowHeight="19"/>'+cols+
+    '<sheetData>'+rows+'</sheetData>'+merges+'</worksheet>';
+}
+function pexXlsxBuild(wb){
+  const n=wb.sheets.length;
+  const workbook='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'+
+    '<sheets>'+wb.sheets.map(function(sh,i){ return '<sheet name="'+pexXmlEsc(sh.name)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>'; }).join('')+'</sheets></workbook>';
+  const wbRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+    wb.sheets.map(function(sh,i){ return '<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>'; }).join('')+
+    '<Relationship Id="rId'+(n+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+  const rootRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  const types='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+    '<Default Extension="xml" ContentType="application/xml"/>'+
+    '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+
+    '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+
+    wb.sheets.map(function(sh,i){ return '<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'; }).join('')+
+    '</Types>';
+  const stylesXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+    '<fonts count="'+(1+wb._fonts.size)+'">'+
+    '<font><sz val="11"/><color rgb="FF'+PEX_INK+'"/><name val="Tahoma"/></font>'+
+    Array.from(wb._fonts).map(function(en){
+      const p=en[0].split('|');
+      return '<font>'+(p[1]==='1'?'<b/>':'')+(p[0]!=='000000'?'<color rgb="FF'+p[0]+'"/>':'')+'<sz val="'+p[2]+'"/><name val="Tahoma"/></font>';
+    }).join('')+
+    '</fonts>'+
+    '<fills count="'+(2+wb._fills.size)+'"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>'+
+    Array.from(wb._fills).map(function(en){ return '<fill><patternFill patternType="solid"><fgColor rgb="FF'+en[0]+'"/><bgColor rgb="FF'+en[0]+'"/></patternFill></fill>'; }).join('')+
+    '</fills>'+
+    '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>'+
+    '<border><left style="thin"><color rgb="FF8494B8"/></left><right style="thin"><color rgb="FF8494B8"/></right><top style="thin"><color rgb="FF8494B8"/></top><bottom style="thin"><color rgb="FF8494B8"/></bottom><diagonal/></border></borders>'+
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'+
+    '<cellXfs count="'+wb._styles.size+'">'+
+    Array.from(wb._styles).map(function(en){
+      const st=en[1];
+      return '<xf numFmtId="0" fontId="'+(1+st.font)+'" fillId="'+st.fill+'" borderId="'+(st.border?1:0)+'" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">'+
+        '<alignment horizontal="'+(st.align||'center')+'" vertical="center"'+(st.wrap?' wrapText="1"':'')+'/></xf>';
+    }).join('')+
+    '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  const files=[{name:'[Content_Types].xml', data:types},{name:'_rels/.rels', data:rootRels},
+    {name:'xl/workbook.xml', data:workbook},{name:'xl/_rels/workbook.xml.rels', data:wbRels},
+    {name:'xl/styles.xml', data:stylesXml}];
+  wb.sheets.forEach(function(sh,i){ files.push({name:'xl/worksheets/sheet'+(i+1)+'.xml', data:pexSheetXml(sh)}); });
+  return pexZip(files);
+}
+/* ── أدوات تصميم مشتركة ── */
+function pexTitleRow(wb, sh, cols, text){
+  pexRowAdd(sh, [pexCell(wb, text, {fill:PEX_NAVY, color:'FFFFFF', bold:true, size:14, align:'center'})].concat(Array(Math.max(0,cols-1)).fill(null)), 26);
+  if(cols>1) sh.merges.push('A1:'+_pexColL(cols-1)+'1');
+}
+function pexSubTitleRow(wb, sh, cols, text){
+  pexRowAdd(sh, [pexCell(wb, text, {fill:PEX_GOLDBG, color:PEX_INK, bold:true, size:12, align:'center'})].concat(Array(Math.max(0,cols-1)).fill(null)), 20);
+  if(cols>1) sh.merges.push('A2:'+_pexColL(cols-1)+'2');
+}
+function pexHeadRow(wb, sh, labels){
+  pexRowAdd(sh, labels.map(function(t){ return pexCell(wb, t, {fill:PEX_NAVY, color:'FFFFFF', bold:true, align:'center', border:true}); }), 20);
+}
+function pexSchedCellText(classKey, d, q){
+  try{
+    const g=DB.schedule[classKey]&&DB.schedule[classKey].grid;
+    const c=g&&g[d]?g[d][q]:null;
+    if(!c) return {t:'', color:null};
+    const sj=getSubject(c.subjectId), tc=getTeacher(c.teacherId);
+    return { t:((sj&&sj.name)||'')+(((tc)&&(getTeacherDisplayName(tc)||tc.name))?('\n'+getTeacherDisplayName(tc)):''), color:(sj&&sj.color)||null };
+  }catch(e){ return {t:'', color:null}; }
+}
+function pexTintedCell(wb, t, color){
+  return pexCell(wb, t, {fill:color?pexTint(color):'FFFFFF', color:PEX_INK, bold:true, align:'center', border:true, wrap:true});
+}
+/* ── منشئات الأنواع (بنفس تصميم الطباعة) ── */
+function pexXlsFull(wb, shName){
+  const sh=pexSheetAdd(wb, shName||'الجدول الكامل');
+  const days=(DB.settings&&DB.settings.days)||[], P=parseInt((DB.settings&&DB.settings.periodsPerDay)||0,10)||0;
+  const cls=allClasses();
+  pexTitleRow(wb, sh, 2+cls.length, ((DB.settings&&DB.settings.schoolName)||'المدرسة')+' — الجدول الأسبوعي الكامل');
+  pexSubTitleRow(wb, sh, 2+cls.length, 'كل الشعب في جدول واحد'+((DB.settings&&DB.settings.academicYear)?(' — '+(DB.settings.academicYear||'')):''));
+  pexHeadRow(wb, sh, ['اليوم','ح.'].concat(cls.map(function(c){ return c.label; })));
+  sh.widths=[12,5].concat(cls.map(function(){ return 17; }));
+  for(let d=0;d<days.length;d++){
+    const startRow=sh.rows.length+1;
+    for(let q=0;q<P;q++){
+      const cells=[];
+      cells.push(q===0
+        ? pexCell(wb, days[d], {fill:PEX_DAY, color:PEX_INK, bold:true, align:'center', border:true})
+        : pexCell(wb, '', {fill:PEX_DAY, border:true}));
+      cells.push(pexCell(wb, q+1, {align:'center', border:true, bold:true}));
+      cls.forEach(function(c){
+        const x=pexSchedCellText(c.key,d,q);
+        cells.push(pexTintedCell(wb, x.t, x.color));
+      });
+      pexRowAdd(sh, cells);
+    }
+    sh.merges.push('A'+startRow+':A'+(startRow+P-1));
+  }
+}
+function pexXlsTimings(wb){
+  const sh=pexSheetAdd(wb, 'التواقيت');
+  const T=getTimings();
+  const showM=T.shiftMode!=='evening', showE=(T.shiftMode==='evening'||T.shiftMode==='both');
+  const days=(DB.settings&&DB.settings.days)||[];
+  const titles=(typeof SUPERVISOR_TITLES!=='undefined')?SUPERVISOR_TITLES:['المراقب الأول','المراقب الثاني','المراقب الثالث','المراقب الرابع','المراقب الخامس'];
+  pexTitleRow(wb, sh, 9, ((DB.settings&&DB.settings.schoolName)||'المدرسة')+' — تواقيت الدروس');
+  function block(cap, cfg, col0){
+    const rCap=pexRowAdd(sh, Array(col0).fill(null).concat([pexCell(wb, cap, {fill:PEX_NAVY, color:PEX_GOLD, bold:true, size:12, align:'center', border:true})].concat(Array(3).fill(null))), 20);
+    sh.merges.push(_pexColL(col0)+(rCap.n)+':'+_pexColL(col0+3)+(rCap.n));
+    pexRowAdd(sh, Array(col0).fill(null).concat(['البند','من','إلى','المدة'].map(function(t){ return pexCell(wb, t, {fill:PEX_NAVY, color:'FFFFFF', bold:true, align:'center', border:true}); })));
+    try{
+      buildShiftSlots(cfg).forEach(function(sl){
+        const bg=sl.kind==='lesson'?PEX_LESSON:(sl.kind==='long'?PEX_LONG:PEX_BREAK);
+        pexRowAdd(sh, Array(col0).fill(null).concat([
+          pexCell(wb, sl.label, {fill:bg, color:PEX_INK, bold:true, align:'center', border:true}),
+          pexCell(wb, fmtHM(sl.start), {fill:bg, color:PEX_INK, align:'center', border:true}),
+          pexCell(wb, fmtHM(sl.end), {fill:bg, color:PEX_INK, align:'center', border:true}),
+          pexCell(wb, (sl.end-sl.start)+' د', {fill:bg, color:PEX_INK, align:'center', border:true})
+        ]));
+      });
+    }catch(e){}
+  }
+  let col=0, any=false;
+  if(showM){ block('تواقيت الصباح', T.morning||defaultShiftCfg('08:00',6), 0); col=5; any=true; }
+  if(showE){ block('تواقيت المساء', T.evening||defaultShiftCfg('13:00',6), col); any=true; }
+  if(!any){ block('تواقيت الصباح', T.morning||defaultShiftCfg('08:00',6), 0); }
+  sh.widths=[22,12,12,10,3,22,12,12,10];
+  pexRowAdd(sh, []);
+  try{ if(typeof ensureSupervisors==='function') ensureSupervisors(); }catch(e){}
+  const rSc=pexRowAdd(sh, [pexCell(wb, 'جدول المراقبين', {fill:PEX_NAVY, color:PEX_GOLD, bold:true, size:12, align:'center', border:true})].concat(Array(titles.length).fill(null)), 20);
+  sh.merges.push('A'+rSc.n+':'+_pexColL(titles.length)+rSc.n);
+  pexRowAdd(sh, ['اليوم'].concat(titles).map(function(t){ return pexCell(wb, t, {fill:PEX_NAVY, color:'FFFFFF', bold:true, align:'center', border:true}); }));
+  days.forEach(function(dn, di){
+    let ids=[]; try{ ids=(typeof supervisorsForDay==='function')?supervisorsForDay(di):[]; }catch(e){}
+    pexRowAdd(sh, [pexCell(wb, dn, {fill:PEX_DAY, color:PEX_INK, bold:true, align:'center', border:true})].concat(titles.map(function(_, i2){
+      const tch=ids[i2]?getTeacher(ids[i2]):null;
+      return pexCell(wb, tch?((getTeacherDisplayName(tch)||tch.name)||''):'', {align:'center', border:true});
+    })));
+  });
+  pexRowAdd(sh, []);
+  const rOf=pexRowAdd(sh, [pexCell(wb, 'المعلمون المفرغون', {fill:PEX_NAVY, color:PEX_GOLD, bold:true, size:12, align:'center', border:true}), null], 20);
+  sh.merges.push('A'+rOf.n+':B'+rOf.n);
+  pexRowAdd(sh, ['اليوم','المعلمون المفرغون'].map(function(t){ return pexCell(wb, t, {fill:PEX_NAVY, color:'FFFFFF', bold:true, align:'center', border:true}); }));
+  days.forEach(function(dn, di){
+    const names=(DB.teachers||[]).filter(function(t){ return (t.excludedDays||[]).indexOf(di)>=0; }).map(function(t){ return (getTeacherDisplayName(t)||t.name)||''; });
+    pexRowAdd(sh, [
+      pexCell(wb, dn, {fill:PEX_DAY, color:PEX_INK, bold:true, align:'center', border:true}),
+      pexCell(wb, names.join('، ')||'—', names.length?{fill:PEX_LONG, color:PEX_INK, bold:true, align:'center', border:true, wrap:true}:{align:'center', border:true})
+    ]);
+  });
+}
+function pexXlsAttToday(wb){
+  const sh=pexSheetAdd(wb, 'حضور اليوم');
+  const k=attTodayKey(); const day=attModelEnsure(k);
+  pexTitleRow(wb, sh, 7, ((DB.settings&&DB.settings.schoolName)||'المدرسة')+' — سجل حضور الملاك');
+  pexSubTitleRow(wb, sh, 7, attDayNameOf(k)+' — '+k);
+  pexHeadRow(wb, sh, ['ت','اسم المعلم','حضور من','توقيع','انصراف من','توقيع','الحالة']);
+  sh.widths=[5,24,12,16,12,16,12];
+  let i=0;
+  day.rows.forEach(function(r){
+    let st='لم يُسجّل', bg=null, fg=PEX_INK;
+    if(r.absent){ st='غائب'; bg=PEX_NOBG; fg=PEX_NOFG; }
+    else if(r.leave){ st='مجاز'; bg=PEX_LVBG; fg=PEX_LVFG; }
+    else if(r.inT&&r.inSig){ st='حاضر'; bg=PEX_OKBG; fg=PEX_OKFG; }
+    const base={align:'center', border:true};
+    const dash=(r.absent||r.leave);
+    i++;
+    pexRowAdd(sh, [
+      pexCell(wb, i, base),
+      pexCell(wb, r.name||'', {align:'right', border:true, bold:!r.absent, fill:bg||'FFFFFF', color:(r.absent?PEX_NOFG:PEX_INK)}),
+      pexCell(wb, dash?'—':(r.inT||''), base),
+      pexCell(wb, '', base),
+      pexCell(wb, dash?'—':(r.outT||''), base),
+      pexCell(wb, '', base),
+      pexCell(wb, st, {fill:bg||'FFFFFF', color:fg, bold:true, align:'center', border:true})
+    ]);
+  });
+}
+function pexXlsAttStats(wb){
+  const sh=pexSheetAdd(wb, 'إحصاء الحضور');
+  const list=attComputeStats();
+  pexTitleRow(wb, sh, 6, ((DB.settings&&DB.settings.schoolName)||'المدرسة')+' — إحصاء حضور الملاك');
+  pexHeadRow(wb, sh, ['ت','اسم المعلم','أيام الغياب','أيام الحضور','أيام الإجازات','مجموع الأيام']);
+  sh.widths=[5,26,13,13,13,13];
+  list.forEach(function(x, i){
+    const zebra=(i%2===1)?PEX_ZEBRA:'FFFFFF';
+    pexRowAdd(sh, [
+      pexCell(wb, i+1, {fill:zebra, align:'center', border:true}),
+      pexCell(wb, x.name, {fill:zebra, align:'right', border:true, bold:true}),
+      pexCell(wb, x.absent, {fill:x.absent?PEX_NOBG:zebra, color:x.absent?PEX_NOFG:PEX_INK, align:'center', border:true, bold:!!x.absent}),
+      pexCell(wb, x.present, {fill:x.present?PEX_OKBG:zebra, color:x.present?PEX_OKFG:PEX_INK, align:'center', border:true, bold:!!x.present}),
+      pexCell(wb, x.leave, {fill:x.leave?PEX_LVBG:zebra, color:x.leave?PEX_LVFG:PEX_INK, align:'center', border:true, bold:!!x.leave}),
+      pexCell(wb, x.total, {fill:zebra, align:'center', border:true, bold:true})
+    ]);
+  });
+}
+function pexXlsClassSheet(wb, classKey){
+  let c=null; try{ c=allClasses().find(function(x){ return x.key===classKey; }); }catch(e){}
+  const sh=pexSheetAdd(wb, 'جدول '+(c?c.label:'شعبة'));
+  const days=(DB.settings&&DB.settings.days)||[], P=parseInt((DB.settings&&DB.settings.periodsPerDay)||0,10)||0;
+  pexTitleRow(wb, sh, 1+P, ((DB.settings&&DB.settings.schoolName)||'المدرسة')+' — الجدول الأسبوعي');
+  pexSubTitleRow(wb, sh, 1+P, 'شعبة: '+(c?c.label:''));
+  pexHeadRow(wb, sh, ['اليوم'].concat(days.map(function(_,q){ return 'الحصة '+(q+1); })));
+  sh.widths=[12].concat(days.map(function(){ return 20; }));
+  for(let d=0;d<days.length;d++){
+    const cells=[pexCell(wb, days[d], {fill:PEX_DAY, color:PEX_INK, bold:true, align:'center', border:true})];
+    for(let q=0;q<P;q++){
+      const x=pexSchedCellText(classKey,d,q);
+      cells.push(pexTintedCell(wb, x.t, x.color));
+    }
+    pexRowAdd(sh, cells, 30);
+  }
+}
+function pexXlsTeacherSheet(wb, tid){
+  const t=getTeacher(tid);
+  const sh=pexSheetAdd(wb, 'جدول '+((t&&(getTeacherDisplayName(t)||t.name))||'معلم'));
+  const days=(DB.settings&&DB.settings.days)||[], P=parseInt((DB.settings&&DB.settings.periodsPerDay)||0,10)||0;
+  const cls=allClasses();
+  pexTitleRow(wb, sh, 1+P, ((DB.settings&&DB.settings.schoolName)||'المدرسة')+' — جدول المعلم');
+  pexSubTitleRow(wb, sh, 1+P, 'المعلم: '+((t&&(getTeacherDisplayName(t)||t.name))||''));
+  pexHeadRow(wb, sh, ['اليوم'].concat(days.map(function(_,q){ return 'الحصة '+(q+1); })));
+  sh.widths=[12].concat(days.map(function(){ return 20; }));
+  for(let d=0;d<days.length;d++){
+    const cells=[pexCell(wb, days[d], {fill:PEX_DAY, color:PEX_INK, bold:true, align:'center', border:true})];
+    for(let q=0;q<P;q++){
+      let hit=null;
+      for(const c of cls){
+        const g=DB.schedule[c.key]&&DB.schedule[c.key].grid;
+        const cell=g&&g[d]?g[d][q]:null;
+        if(cell&&cell.teacherId===tid){ hit={cell:cell, cls:c}; break; }
+      }
+      if(hit){
+        const sj=getSubject(hit.cell.subjectId);
+        cells.push(pexTintedCell(wb, ((sj&&sj.name)||'')+'\n'+hit.cls.label, (sj&&sj.color)||null));
+      } else {
+        cells.push(pexCell(wb, '—', {align:'center', border:true, color:'8494B8'}));
+      }
+    }
+    pexRowAdd(sh, cells, 30);
+  }
+}
+function pexXlsxSheets(it){
+  const wb=pexXlsxNew();
+  switch(it.act){
+    case 'full': pexXlsFull(wb); break;
+    case 'full_beside': pexXlsFullBeside(wb); break;
+    case 'sup_only': pexXlsSupOnly(wb); break;
+    case 'cut': pexXlsFull(wb); break;
+    case 'timings': pexXlsTimings(wb); break;
+    case 'att_today': pexXlsAttToday(wb); break;
+    case 'att_stats': pexXlsAttStats(wb); break;
+    case 'all_classes': {
+      const withSched=allClasses().filter(function(c){
+        const g=DB.schedule[c.key]&&DB.schedule[c.key].grid; return g&&g.some(function(r){ return r.some(Boolean); });
+      });
+      if(!withSched.length) return null;
+      withSched.forEach(function(c){ pexXlsClassSheet(wb, c.key); });
+      break;
+    }
+    case 'cls': pexXlsClassSheet(wb, it.key); break;
+    case 'all_teachers': {
+      if(!(DB.teachers||[]).length) return null;
+      (DB.teachers||[]).forEach(function(t){ pexXlsTeacherSheet(wb, t.id); });
+      break;
+    }
+    case 'tch': pexXlsTeacherSheet(wb, it.key); break;
+    default: return null;
+  }
+  return wb;
+}
+function pexDownloadExcel(it){
+  try{
+    if((it.act==='full'||it.act==='full_beside'||it.act==='cut'||it.act==='all_classes') && !pexHasSchedule()){ toast('لا يوجد جدول للتصدير — وزّع الحصص أولًا','err'); return; }
+    const wb=pexXlsxSheets(it);
+    if(!wb||!wb.sheets.length){ toast('لا توجد بيانات للتصدير','err'); return; }
+    const blob=pexXlsxBuild(wb);
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=it._fname+'.xlsx'; a.style.display='none';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ try{ a.remove(); }catch(e){} try{ URL.revokeObjectURL(url); }catch(e){} }, 3000);
+    toast('تم تنزيل ملف الإكسل الملوّن (.xlsx) بنجاح!','ok');
+  }catch(e){ toast('تعذّر تصدير الإكسل','err'); }
+}
+
+/* ═════════ م47: الجدول الكامل A3/A4 أفقي (المعلم بجانب المادة) + جدول المراقبين فقط ═════════ */
+function pexPrintMasterBeside(paper, forPdf){
+  /* يطبع الجدول الكامل بخلايا أفقية «المعلم بجانب المادة» على A3/A4 عرضي.
+     يُعزل الإعداد (جانبية الخلية/إظهار المعلم/وضع العرض) مؤقتًا أثناء البناء المتزامن
+     فقط ثم يُعاد كما كان — فلا يتأثر أي خيار أو إعداد سابق إطلاقًا. */
+  const oLayout = getMasterCellLayout, oHide = getHideTeacherName;
+  const oView = (typeof getMasterViewMode==='function') ? getMasterViewMode : null;
+  getMasterCellLayout = function(){ return 'side'; };
+  getHideTeacherName = function(){ return false; };
+  if(oView) getMasterViewMode = function(){ return 'normal'; };
+  try{
+    if(forPdf){ const z = pexSizeMm(paper, 'landscape'); pexArmPdf(z.wmm, z.hmm); }
+    printMasterSchedule(paper, DB, 'landscape');
+  }finally{
+    getMasterCellLayout = oLayout;
+    getHideTeacherName = oHide;
+    if(oView) getMasterViewMode = oView;
+  }
+}
+function pexSupTableHtml(){
+  /* جدول المراقبين فقط — بنفس هوية تصميم الطباعة (كحلي/ذهبي/يومي) */
+  try{ if(typeof ensureSupervisors==='function') ensureSupervisors(); }catch(e){}
+  const days = (DB.settings && DB.settings.days) || [];
+  const titles = (typeof SUPERVISOR_TITLES!=='undefined' && SUPERVISOR_TITLES && SUPERVISOR_TITLES.length)
+    ? SUPERVISOR_TITLES : ['المراقب الأول','المراقب الثاني','المراقب الثالث','المراقب الرابع','المراقب الخامس'];
+  let head = '<tr><th class="ps-day">اليوم</th>';
+  titles.forEach(function(t){ head += '<th>'+esc(t)+'</th>'; });
+  head += '</tr>';
+  let body = '';
+  if(!days.length){
+    body = '<tr><td class="ps-empty" colspan="'+(1+titles.length)+'">لا توجد أيام دوام</td></tr>';
+  } else {
+    days.forEach(function(dn, di){
+      let ids = [];
+      try{ ids = (typeof supervisorsForDay==='function') ? (supervisorsForDay(di)||[]) : []; }catch(e){ ids = []; }
+      body += '<tr><td class="ps-day">'+esc(dn)+'</td>';
+      titles.forEach(function(_, i){
+        const tc = ids[i] ? getTeacher(ids[i]) : null;
+        body += '<td>'+(tc ? esc(getTeacherDisplayName(tc)||tc.name) : '—')+'</td>';
+      });
+      body += '</tr>';
+    });
+  }
+  const year = esc((DB.settings && DB.settings.academicYear) || '');
+  return '<style>.ps-t{width:100%;border-collapse:collapse;table-layout:fixed}'+
+    '.ps-t th{background:#152549;color:#fff;font-weight:900;padding:9px 6px;border:1px solid #8494b8;font-size:13px}'+
+    '.ps-t td{border:1px solid #8494b8;padding:10px 6px;text-align:center;font-size:13px;font-weight:700;color:#1b2a4a}'+
+    '.ps-t td.ps-day{background:#f3efe4;font-weight:900;width:95px}'+
+    '.ps-t tbody tr:nth-child(even) td:not(.ps-day){background:#f8fafd}'+
+    '.ps-cap{background:#efe6c8;border:1px solid #cfc6ac;border-bottom:none;border-radius:8px 8px 0 0;padding:8px;text-align:center;font-weight:900;color:#1b2a4a;font-size:14px}'+
+    '.ps-empty{text-align:center;color:#8494b8;padding:24px;font-weight:800}</style>'+
+    '<div class="ps-cap">جدول المراقبين'+(year?' — '+year:'')+'</div>'+
+    '<table class="ps-t"><thead>'+head+'</thead><tbody>'+body+'</tbody></table>';
+}
+function pexXlsFullBeside(wb){
+  /* الجدول الكامل بالإكسل: كل شعبة عمودان — عمود المادة (بتدرج لونها) وبجانبه عمود المعلم */
+  const sh = pexSheetAdd(wb, 'الكامل — المعلم بجانب المادة');
+  const days = (DB.settings && DB.settings.days) || [], P = parseInt((DB.settings && DB.settings.periodsPerDay)||0,10)||0;
+  const cls = allClasses();
+  const nCols = 2 + cls.length*2;
+  pexTitleRow(wb, sh, nCols, ((DB.settings && DB.settings.schoolName)||'المدرسة')+' — الجدول الأسبوعي الكامل');
+  pexSubTitleRow(wb, sh, nCols, 'المعلم بجانب المادة'+((DB.settings && DB.settings.academicYear)?(' — '+(DB.settings.academicYear||'')):''));
+  pexRowAdd(sh, [
+    pexCell(wb, 'اليوم', {fill:PEX_NAVY, color:'FFFFFF', bold:true, align:'center', border:true}),
+    pexCell(wb, 'ح.', {fill:PEX_NAVY, color:'FFFFFF', bold:true, align:'center', border:true})
+  ].concat(Array(Math.max(0, nCols-2)).fill(null)), 20);
+  const rH1 = sh.rows[sh.rows.length-1];
+  sh.merges.push('A'+rH1.n+':A'+(rH1.n+1));
+  sh.merges.push('B'+rH1.n+':B'+(rH1.n+1));
+  cls.forEach(function(c, ci){
+    const c1 = _pexColL(2+ci*2), c2 = _pexColL(3+ci*2);
+    rH1.cells[2+ci*2] = pexCell(wb, c.label, {fill:PEX_GOLDBG, color:PEX_INK, bold:true, align:'center', border:true});
+    sh.merges.push(c1+rH1.n+':'+c2+rH1.n);
+  });
+  const rH2cells = [];
+  for(let i=0;i<nCols;i++){
+    if(i<2) rH2cells.push(null);
+    else if(i%2===0) rH2cells.push(pexCell(wb, 'المادة', {fill:PEX_NAVY, color:PEX_GOLD, bold:true, align:'center', border:true}));
+    else rH2cells.push(pexCell(wb, 'المعلم', {fill:PEX_NAVY, color:PEX_GOLD, bold:true, align:'center', border:true}));
+  }
+  pexRowAdd(sh, rH2cells, 18);
+  sh.widths = [12,5].concat((function(){ const w=[]; cls.forEach(function(){ w.push(13,16); }); return w; })());
+  for(let d=0; d<days.length; d++){
+    const startRow = sh.rows.length+1;
+    for(let q=0; q<P; q++){
+      const cells = [];
+      cells.push(q===0
+        ? pexCell(wb, days[d], {fill:PEX_DAY, color:PEX_INK, bold:true, align:'center', border:true})
+        : pexCell(wb, '', {fill:PEX_DAY, border:true}));
+      cells.push(pexCell(wb, q+1, {align:'center', border:true, bold:true}));
+      cls.forEach(function(c){
+        try{
+          const g = DB.schedule[c.key] && DB.schedule[c.key].grid;
+          const cell = g && g[d] ? g[d][q] : null;
+          if(cell){
+            const sj = getSubject(cell.subjectId), tc = getTeacher(cell.teacherId);
+            const tname = tc ? ((getTeacherDisplayName(tc)||tc.name)||'') : '';
+            cells.push(pexCell(wb, (sj&&sj.name)||'—', {fill:sj?pexTint(sj.color):'FFFFFF', color:PEX_INK, bold:true, align:'center', border:true, wrap:true}));
+            cells.push(pexCell(wb, tname||'—', {fill:'FFFFFF', color:PEX_INK, align:'center', border:true, wrap:true}));
+          } else {
+            cells.push(pexCell(wb, '—', {align:'center', border:true, color:'8494B8'}));
+            cells.push(pexCell(wb, '', {align:'center', border:true}));
+          }
+        }catch(e){
+          cells.push(pexCell(wb, '', {border:true}));
+          cells.push(pexCell(wb, '', {border:true}));
+        }
+      });
+      pexRowAdd(sh, cells, 26);
+    }
+    sh.merges.push('A'+startRow+':A'+(startRow+P-1));
+  }
+}
+function pexXlsSupOnly(wb){
+  const sh = pexSheetAdd(wb, 'جدول المراقبين');
+  try{ if(typeof ensureSupervisors==='function') ensureSupervisors(); }catch(e){}
+  const days = (DB.settings && DB.settings.days) || [];
+  const titles = (typeof SUPERVISOR_TITLES!=='undefined' && SUPERVISOR_TITLES && SUPERVISOR_TITLES.length)
+    ? SUPERVISOR_TITLES : ['المراقب الأول','المراقب الثاني','المراقب الثالث','المراقب الرابع','المراقب الخامس'];
+  pexTitleRow(wb, sh, 1+titles.length, ((DB.settings && DB.settings.schoolName)||'المدرسة')+' — جدول المراقبين');
+  pexSubTitleRow(wb, sh, 1+titles.length, 'مراقبو الحصص لكل يوم'+((DB.settings && DB.settings.academicYear)?(' — '+(DB.settings.academicYear||'')):''));
+  pexHeadRow(wb, sh, ['اليوم'].concat(titles));
+  sh.widths = [12].concat(titles.map(function(){ return 22; }));
+  days.forEach(function(dn, di){
+    let ids = [];
+    try{ ids = (typeof supervisorsForDay==='function') ? (supervisorsForDay(di)||[]) : []; }catch(e){ ids = []; }
+    pexRowAdd(sh, [pexCell(wb, dn, {fill:PEX_DAY, color:PEX_INK, bold:true, align:'center', border:true})].concat(titles.map(function(_, i){
+      const tch = ids[i] ? getTeacher(ids[i]) : null;
+      return pexCell(wb, tch ? ((getTeacherDisplayName(tch)||tch.name)||'') : '—', {align:'center', border:true, bold:!!tch});
+    })));
+  });
+}
+
+
+function pexDownloadCsv(fname, rows){
+  try{
+    const csv = '\uFEFF' + rows.map(function(r){ return r.map(pexCsvCell).join(','); }).join('\r\n');
+    const blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fname + '.csv'; a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ try{ a.remove(); }catch(e){} try{ URL.revokeObjectURL(url); }catch(e){} }, 3000);
+    toast('تم تنزيل ملف الإكسل بنجاح!','ok');
+  }catch(e){ toast('تعذّر تصدير الإكسل','err'); }
+}
+function pexCellText(classKey, d, pp){
+  try{
+    const g = DB.schedule[classKey] && DB.schedule[classKey].grid;
+    const c = g && g[d] ? g[d][pp] : null;
+    if(!c) return '';
+    const sj = getSubject(c.subjectId), tc = getTeacher(c.teacherId);
+    return ((sj&&sj.name)||'') + (((tc)&&(getTeacherDisplayName(tc)||tc.name)) ? (' / '+getTeacherDisplayName(tc)) : '');
+  }catch(e){ return ''; }
+}
+/* بيانات الإكسل لكل نوع */
+function pexCsvRows(it){
+  const days=(DB.settings&&DB.settings.days)||[], P=parseInt((DB.settings&&DB.settings.periodsPerDay)||0,10)||0;
+  if(it.act==='full'||it.act==='cut'){
+    const cls=allClasses();
+    const rows=[hd_full()];
+    const hd=['اليوم','الحصة']; cls.forEach(function(c){ hd.push(c.label); });
+    rows.push(hd);
+    for(let d=0;d<days.length;d++) for(let q=0;q<P;q++){
+      const r=[days[d], 'الحصة '+(q+1)];
+      cls.forEach(function(c){ r.push(pexCellText(c.key,d,q)); });
+      rows.push(r);
+    }
+    return rows;
+  }
+  if(it.act==='timings'){
+    const T=getTimings();
+    const rows=[];
+    const one=function(cap,cfg){
+      rows.push([cap]);
+      rows.push(['البند','من','إلى','المدة (دقيقة)']);
+      try{ buildShiftSlots(cfg).forEach(function(sl){ rows.push([sl.label, fmtHM(sl.start), fmtHM(sl.end), sl.end-sl.start]); }); }catch(e){}
+      rows.push([]);
+    };
+    if(T.shiftMode!=='evening') one('تواقيت الصباح', T.morning||defaultShiftCfg('08:00',6));
+    if(T.shiftMode==='evening'||T.shiftMode==='both') one('تواقيت المساء', T.evening||defaultShiftCfg('13:00',6));
+    return rows;
+  }
+  if(it.act==='att_today'){
+    const k=attTodayKey(); const d=attModelEnsure(k);
+    const rows=[[((DB.settings&&DB.settings.schoolName)||'المدرسة')+' — سجل حضور الملاك — '+attDayNameOf(k)+' '+k]];
+    rows.push(['ت','اسم المعلم','وقت الحضور','وقت الانصراف','الحالة']);
+    let i=0;
+    d.rows.forEach(function(r){
+      let st='لم يُسجّل';
+      if(r.absent) st='غائب'; else if(r.leave) st='مجاز'; else if(r.inT&&r.inSig) st='حاضر';
+      i++;
+      rows.push([i, r.name||'', (r.absent||r.leave)?'—':(r.inT||''), (r.absent||r.leave)?'—':(r.outT||''), st]);
+    });
+    return rows;
+  }
+  if(it.act==='att_stats'){
+    const list=attComputeStats();
+    const rows=[[((DB.settings&&DB.settings.schoolName)||'المدرسة')+' — إحصاء حضور الملاك']];
+    rows.push(['ت','اسم المعلم','أيام الغياب','أيام الحضور','أيام الإجازات','مجموع الأيام']);
+    list.forEach(function(x,i){ rows.push([i+1, x.name, x.absent, x.present, x.leave, x.total]); });
+    return rows;
+  }
+  if(it.act==='all_classes'||it.act==='cls'){
+    const keys = (it.act==='cls') ? [it.key] : allClasses().filter(function(c){
+      const g=DB.schedule[c.key]&&DB.schedule[c.key].grid; return g && g.some(function(r){ return r.some(Boolean); });
+    }).map(function(c){ return c.key; });
+    const rows=[];
+    keys.forEach(function(key, ix){
+      let c=null; try{ c=allClasses().find(function(x){ return x.key===key; }); }catch(e){}
+      rows.push([ (ix+1)+') '+(c?c.label:key) ]);
+      rows.push(['اليوم','الحصة','الجدول']);
+      for(let d=0;d<days.length;d++) for(let q=0;q<P;q++){
+        rows.push([days[d], 'الحصة '+(q+1), pexCellText(key,d,q)]);
+      }
+      rows.push([]);
+    });
+    return rows;
+  }
+  if(it.act==='all_teachers'||it.act==='tch'){
+    const tids = (it.act==='tch') ? [it.key] : (DB.teachers||[]).map(function(t){ return t.id; });
+    const cls=allClasses();
+    const rows=[];
+    tids.forEach(function(tid, ix){
+      const t=getTeacher(tid);
+      rows.push([ (ix+1)+') جدول المعلم: '+((t&&(getTeacherDisplayName(t)||t.name))||'') ]);
+      rows.push(['اليوم','الحصة','المادة','الشعبة']);
+      for(let d=0;d<days.length;d++) for(let q=0;q<P;q++){
+        for(const c of cls){
+          const g=DB.schedule[c.key]&&DB.schedule[c.key].grid;
+          const cell=g&&g[d]?g[d][q]:null;
+          if(cell&&cell.teacherId===tid){
+            const sj=getSubject(cell.subjectId);
+            rows.push([days[d], 'الحصة '+(q+1), (sj&&sj.name)||'', c.label]);
+          }
+        }
+      }
+      rows.push([]);
+    });
+    return rows;
+  }
+  return [['لا توجد بيانات']];
+}
+function hd_full(){ return ['الجدول الكامل']; }
+/* ── تنفيذ الأفعال ── */
+function pexDoPrint(it){
+  try{
+    if((it.act==='full'||it.act==='full_beside'||it.act==='cut'||it.act==='all_classes') && !pexHasSchedule()){ toast('لا يوجد جدول للطباعة — وزّع الحصص أولًا','err'); return; }
+    switch(it.act){
+      case 'full': printMasterSchedule(it.paper, DB, it.orient); break;
+      case 'full_beside': pexPrintMasterBeside(it.paper, false); break;
+      case 'cut': printMasterCutTwo(DB, it.orient); break;
+      case 'timings': printTimings(); break;
+      case 'sup_only': pexOpenPrint('جدول المراقبين', pexSupTableHtml(), 'landscape'); break;
+      case 'att_today': {
+        const k=attTodayKey(); const d=attModelEnsure(k);
+        attPrintDoc(d.rows, attDayNameOf(k), k); break;
+      }
+      case 'att_stats': attPrintStats(); break;
+      case 'all_classes': {
+        const ts=allClasses().filter(function(c){
+          const g=DB.schedule[c.key]&&DB.schedule[c.key].grid; return g&&g.some(function(r){ return r.some(Boolean); });
+        }).map(function(c){ return buildClassTableHtml(c.key); });
+        paginateAndPrintFit(ts, 1, 'row', 'landscape', 'A4'); break;
+      }
+      case 'all_teachers': {
+        const ts=(DB.teachers||[]).map(function(t){ return buildTeacherTableHtml(t.id); });
+        paginateAndPrintFit(ts, 1, 'row', 'portrait', 'A4'); break;
+      }
+      case 'cls': {
+        let c=null; try{ c=allClasses().find(function(x){ return x.key===it.key; }); }catch(e){}
+        pexOpenPrint('جدول شعبة: '+(c?c.label:''), buildClassTableHtml(it.key), 'landscape'); break;
+      }
+      case 'tch': {
+        const t=getTeacher(it.key);
+        pexOpenPrint('جدول المعلم: '+(t?(getTeacherDisplayName(t)||t.name):''), buildTeacherTableHtml(it.key), 'portrait'); break;
+      }
+      default: toast('غير متاح','err');
+    }
+  }catch(e){ toast('تعذّرت الطباعة','err'); }
+}
+function pexDoPdf(it){
+  try{
+    if((it.act==='full'||it.act==='full_beside'||it.act==='cut'||it.act==='all_classes') && !pexHasSchedule()){ toast('لا يوجد جدول للتصدير — وزّع الحصص أولًا','err'); return; }
+    switch(it.act){
+      case 'full': { const z=pexSizeMm(it.paper, it.orient); pexArmPdf(z.wmm, z.hmm); printMasterSchedule(it.paper, DB, it.orient); break; }
+      case 'full_beside': pexPrintMasterBeside(it.paper, true); break;
+      case 'cut': {
+        const horiz=(it.orient==='landscape');
+        pexArmPdf(horiz?287:200, horiz?200:287);
+        printMasterCutTwo(DB, it.orient); break;
+      }
+      case 'timings': exportTimingsPdf(); break;
+      case 'sup_only': attDocToPdf(pexDocHtml('جدول المراقبين', pexSupTableHtml(), 'landscape'), 'جدول_المراقبين.pdf'); break;
+      case 'att_today': {
+        const k=attTodayKey(); const d=attModelEnsure(k);
+        attExportPdf(d.rows, attDayNameOf(k), k); break;
+      }
+      case 'att_stats': attExportStatsPdf(); break;
+      case 'all_classes': {
+        const ts=allClasses().filter(function(c){
+          const g=DB.schedule[c.key]&&DB.schedule[c.key].grid; return g&&g.some(function(r){ return r.some(Boolean); });
+        }).map(function(c){ return buildClassTableHtml(c.key); });
+        exportTableListAsPdf(ts, 'جداول_الشعب_المدرسية', 'A4', 'landscape'); break;
+      }
+      case 'all_teachers': {
+        const ts=(DB.teachers||[]).map(function(t){ return buildTeacherTableHtml(t.id); });
+        exportTableListAsPdf(ts, 'جداول_المعلمين', 'A4', 'portrait'); break;
+      }
+      case 'cls': {
+        let c=null; try{ c=allClasses().find(function(x){ return x.key===it.key; }); }catch(e){}
+        const nm='جدول_'+(c?c.label:'شعبة');
+        attDocToPdf(pexDocHtml('جدول شعبة: '+(c?c.label:''), buildClassTableHtml(it.key), 'landscape'), nm.replace(/[\\/:*?"<>|]/g,'').trim()+'.pdf');
+        break;
+      }
+      case 'tch': {
+        const t=getTeacher(it.key);
+        const nm='جدول_معلم_'+((t&&(getTeacherDisplayName(t)||t.name))||'');
+        attDocToPdf(pexDocHtml('جدول المعلم: '+(t?(getTeacherDisplayName(t)||t.name):''), buildTeacherTableHtml(it.key), 'portrait'), nm.replace(/[\\/:*?"<>|]/g,'').trim()+'.pdf');
+        break;
+      }
+      default: toast('غير متاح','err');
+    }
+  }catch(e){ toast('تعذّر إنشاء ملف PDF','err'); }
+}
+/* ── بناء القائمة ── */
+function pexItems(){
+  const items=[];
+  items.push({group:'الجدول الكامل', sub:'كل الشعب في جدول واحد'});
+  items.push({icon:'📄', name:'الجدول الكامل — A4 عمودي', sub:'ورقة A4 رأسية', act:'full', paper:'A4', orient:'portrait'});
+  items.push({icon:'📃', name:'الجدول الكامل — A4 أفقي', sub:'ورقة A4 عرضية', act:'full', paper:'A4', orient:'landscape'});
+  items.push({icon:'🧾', name:'الجدول الكامل — A3 عمودي', sub:'ورقة A3 رأسية كبيرة', act:'full', paper:'A3', orient:'portrait'});
+  items.push({icon:'🗂️', name:'الجدول الكامل — A3 أفقي', sub:'ورقة A3 عرضية كبيرة', act:'full', paper:'A3', orient:'landscape'});
+  items.push({icon:'🔄', name:'الجدول الكامل A3 أفقي — المعلم بجانب المادة', sub:'خلايا أفقية: المادة وبجانبها المعلم', act:'full_beside', paper:'A3', orient:'landscape'});
+  items.push({icon:'🔄', name:'الجدول الكامل A4 أفقي — المعلم بجانب المادة', sub:'خلايا أفقية: المادة وبجانبها المعلم', act:'full_beside', paper:'A4', orient:'landscape'});
+  items.push({icon:'✂️', name:'الجدول الكامل — انقسام طولي', sub:'ورقتان بعد القص الطولي', act:'cut', orient:'portrait'});
+  items.push({icon:'✂️', name:'الجدول الكامل — انقسام أفقي', sub:'ورقتان بعد القص الأفقي', act:'cut', orient:'landscape'});
+  items.push({group:'التواقيت', sub:'حصص واستراحات ومراقبين ومفرغين'});
+  items.push({icon:'⏰', name:'جدول التواقيت', sub:'صباحي/مسائي + المراقبون + المفرغون', act:'timings'});
+  items.push({group:'جدول المراقبة', sub:'جدول المراقبين فقط'});
+  items.push({icon:'👁️', name:'جدول المراقبين فقط', sub:'المراقبون لكل يوم — طباعة وPDF وإكسل', act:'sup_only'});
+  items.push({group:'حضور الملاك', sub:'سجلات الحضور والغياب'});
+  items.push({icon:'🗓️', name:'سجل غيابات اليوم', sub:'حضور اليوم بالتوقيعات والحالة', act:'att_today'});
+  items.push({icon:'📊', name:'إحصاء حضور الملاك', sub:'غياب/حضور/إجازات لكل معلم', act:'att_stats'});
+  items.push({group:'الشعب', sub:'جدول لكل شعبة أنشأتها'});
+  items.push({icon:'🏫', name:'جداول كل الشعب', sub:'كل شعبة في صفحة مستقلة', act:'all_classes'});
+  try{
+    allClasses().forEach(function(c){
+      items.push({icon:'📗', name:'جدول شعبة: '+c.label, sub:'طباعة وتصدير فردي', act:'cls', key:c.key});
+    });
+  }catch(e){}
+  items.push({group:'المعلمون والمدرسون', sub:'جدول لكل معلم أضفته'});
+  items.push({icon:'👨‍🏫', name:'جداول كل المعلمين', sub:'كل معلم في صفحة مستقلة', act:'all_teachers'});
+  try{
+    (DB.teachers||[]).forEach(function(t){
+      items.push({icon:'🧑‍🏫', name:'جدول المعلم: '+(getTeacherDisplayName(t)||t.name||''), sub:'طباعة وتصدير فردي', act:'tch', key:t.id});
+    });
+  }catch(e){}
+  return items;
+}
+function renderPexTab(){
+  const body=document.getElementById('pexBody');
+  if(!body) return;
+  let html='';
+  pexItems().forEach(function(it){
+    if(it.group){
+      html+='<tr class="pex-group"><td colspan="4">📌 '+esc(it.group)+'<small>'+esc(it.sub||'')+'</small></td></tr>';
+      return;
+    }
+    const data=' data-act="'+esc(it.act)+'" data-paper="'+esc(it.paper||'')+'" data-orient="'+esc(it.orient||'')+'" data-key="'+esc(it.key||'')+'"';
+    html+='<tr'+data+'>'+
+      '<td><div class="pex-item"><span class="pex-ico">'+it.icon+'</span><span class="pex-name"><b>'+esc(it.name)+'</b><small>'+esc(it.sub||'')+'</small></span></div></td>'+
+      '<td><div class="pex-acts"><button type="button" class="pex-btn print" data-do="print">🖨️ طباعة</button></div></td>'+
+      '<td><div class="pex-acts"><button type="button" class="pex-btn pdf" data-do="pdf">📄 PDF</button></div></td>'+
+      '<td><div class="pex-acts"><button type="button" class="pex-btn xls" data-do="csv">📊 إكسل</button></div></td>'+
+    '</tr>';
+  });
+  body.innerHTML=html;
+  body.querySelectorAll('tr[data-act]').forEach(function(tr){
+    const it={ act:tr.dataset.act, paper:tr.dataset.paper||'A4', orient:tr.dataset.orient||'portrait', key:tr.dataset.key||null };
+    tr.querySelectorAll('[data-do]').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        const what=btn.dataset.do;
+        if(what==='print'){ pexDoPrint(it); return; }
+        if(what==='pdf'){ pexDoPdf(it); return; }
+        let nm='';
+        if(it.act==='tch'){ const t=getTeacher(it.key); nm='جدول_معلم_'+((t&&(getTeacherDisplayName(t)||t.name))||''); }
+        else if(it.act==='cls'){ let c=null; try{ c=allClasses().find(function(x){ return x.key===it.key; }); }catch(e){} nm='جدول_'+(c?c.label:'شعبة'); }
+        else{
+          const names={ full:'الجدول_الكامل', full_beside:'الجدول_الكامل_المعلم_بجانب_المادة', cut:'الجدول_الكامل', timings:'جدول_التواقيت', sup_only:'جدول_المراقبين', att_today:'سجل_حضور_اليوم', att_stats:'إحصاء_الحضور', all_classes:'جداول_كل_الشعب', all_teachers:'جداول_كل_المعلمين' };
+          nm=String(names[it.act]||'تصدير');
+        }
+        it._fname=nm.replace(/[\\/:*?"<>|]/g,'').trim();
+        pexDownloadExcel(it);
+      });
+    });
+  });
+}
 
 let _printTimingsBusy = false;
 function printTimings(){
