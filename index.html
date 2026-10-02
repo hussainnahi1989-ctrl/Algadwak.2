@@ -280,6 +280,23 @@ input,select,textarea{font-family:inherit}
 }
 .tab-btn.active{background:var(--gold-light);border-color:var(--gold-light);color:#241a02}
 .tab-btn:active{transform:scale(.97)}
+/* لمعان متحرك على التبويب المختار فقط: شعاع يعبر + توهج ذهبي نابض — دون تغيير تصميم أي تبويب آخر */
+.tabs .tab-btn.active{position:relative;overflow:hidden;animation:tpTabGlow 2.8s ease-in-out infinite}
+.tabs .tab-btn.active::before{
+  content:"";position:absolute;top:-45%;bottom:-45%;left:0;width:30px;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.75) 45%,rgba(255,255,255,.95) 50%,rgba(255,255,255,.75) 55%,transparent);
+  transform:translateX(-130px) rotate(12deg);
+  animation:tpShine 2.8s cubic-bezier(.4,0,.2,1) infinite;
+  pointer-events:none;
+}
+@keyframes tpTabGlow{
+  0%,100%{box-shadow:0 2px 8px rgba(196,160,74,.28)}
+  50%{box-shadow:0 2px 15px rgba(196,160,74,.55),0 0 0 5px rgba(196,160,74,.12)}
+}
+@media (prefers-reduced-motion:reduce){
+  .tabs .tab-btn.active,.tabs .tab-btn.active::before{animation:none}
+  .tabs .tab-btn.active::before{display:none}
+}
 
 
 /* ===== Theme toggle ===== */
@@ -299,6 +316,44 @@ input,select,textarea{font-family:inherit}
   user-select:none;
 }
 .topbar-print-wrap{position:relative;flex:none;z-index:70}
+/* زر طباعة الجدول — ذهبي لامع متحرك (شعاع يمرّ + هالة نابضة) — لا يؤثر على أي عنصر آخر */
+.top-print-btn{
+  width:auto;min-width:52px;height:38px;padding:0 9px;border-radius:12px;
+  flex-direction:column;gap:1px;overflow:hidden;
+  background:linear-gradient(135deg,#f9e7a0 0%,#eec95e 45%,#d9a93f 100%);
+  border:1.5px solid #c9962e;color:#3a2c07;
+  box-shadow:0 4px 14px rgba(217,169,63,.35), inset 0 0 0 1px rgba(255,255,255,.35);
+  animation:tpGlow 2.8s ease-in-out infinite;
+}
+.top-print-btn .tp-ico{font-size:14px;line-height:1;filter:drop-shadow(0 1px 1px rgba(255,255,255,.5))}
+.top-print-btn .tp-label{font-size:9px;font-weight:900;line-height:1;letter-spacing:.3px}
+.top-print-btn::before{
+  content:"";position:absolute;top:-45%;bottom:-45%;left:0;width:34px;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.8) 45%,rgba(255,255,255,.95) 50%,rgba(255,255,255,.8) 55%,transparent);
+  transform:translateX(-130px) rotate(12deg);
+  animation:tpShine 2.8s cubic-bezier(.4,0,.2,1) infinite;
+  pointer-events:none;
+}
+.top-print-btn:hover{filter:brightness(1.06)}
+.top-print-btn:active{transform:scale(.94)}
+@keyframes tpShine{
+  0%{transform:translateX(-130px) rotate(12deg);opacity:0}
+  10%{opacity:1}
+  48%{transform:translateX(175px) rotate(12deg);opacity:0}
+  100%{transform:translateX(175px) rotate(12deg);opacity:0}
+}
+@keyframes tpGlow{
+  0%,100%{box-shadow:0 4px 14px rgba(217,169,63,.35),0 0 0 0 rgba(238,201,94,.5)}
+  50%{box-shadow:0 4px 20px rgba(217,169,63,.6),0 0 0 7px rgba(238,201,94,0)}
+}
+html.mode-full-master .top-print-btn{height:32px;min-width:44px;padding:0 7px;border-radius:10px}
+html.mode-full-master .top-print-btn .tp-ico{font-size:12px}
+html.mode-full-master .top-print-btn .tp-label{font-size:8px}
+html[data-theme="night"] .top-print-btn{border-color:#b8860b}
+@media (prefers-reduced-motion:reduce){
+  .top-print-btn,.top-print-btn::before{animation:none}
+  .top-print-btn::before{display:none}
+}
 .print-pop{
   position:absolute;top:calc(100% + 8px);left:0;min-width:228px;
   background:var(--paper-2);color:var(--ink);border:1px solid var(--line);
@@ -2694,9 +2749,9 @@ html.activate-open #activateGate{display:flex}
   align-items:center; justify-content:center;
   overflow:hidden; padding:22px;
   background:
-    radial-gradient(900px 500px at 50% 0%, rgba(168,50,96,.35), transparent 55%),
+    radial-gradient(900px 500px at 50% 0%, rgba(13,110,127,.38), transparent 55%),
     radial-gradient(700px 400px at 110% 90%, rgba(201,162,39,.18), transparent 50%),
-    linear-gradient(165deg, #140814 0%, #2a0f24 38%, #1b2a4a 100%);
+    linear-gradient(165deg, #081415 0%, #0b2e33 38%, #1b2a4a 100%);
 }
 html.splash-open #splashGate{display:flex}
 html.splash-open .topbar, html.splash-open main{visibility:hidden}
@@ -4052,7 +4107,7 @@ html[data-theme="night"] .about-badge {
     <span class="design-pill" title="تصميم الأستاذ حسين ناهي المسعودي">تصميم الأستاذ حسين ناهي المسعودي</span>
     <a class="apps-mini" href="https://t.me/hu_sain123" target="_blank" rel="noopener" title="تطبيقاتي">تطبيقاتي</a>
     <div class="topbar-print-wrap" id="topPrintWrap">
-      <button type="button" class="theme-toggle top-print-btn" id="btnTopPrint" title="طباعة الجدول الكامل" aria-label="طباعة الجدول الكامل">🖨️</button>
+      <button type="button" class="theme-toggle top-print-btn" id="btnTopPrint" title="طباعة الجدول الكامل" aria-label="طباعة الجدول الكامل"><span class="tp-ico">🖨️</span><span class="tp-label">طباعة</span></button>
       <div class="print-pop" id="printPop" hidden>
         <div class="print-pop-title">طباعة الجدول الكامل</div>
         <div class="print-pop-label">حجم الورق</div>
@@ -5165,6 +5220,10 @@ html[data-theme="night"] .about-badge {
     <div class="field">
       <label>🏷️ اسم المدرسة</label>
       <input type="text" id="setupSchoolName" required placeholder="مثال: مدرستي" autocomplete="organization">
+    </div>
+    <div class="field">
+      <label>👤 اسم المدير / المديرة</label>
+      <input type="text" id="setupPrincipal" placeholder="مثال: الأستاذ محمد علي (يظهر في تذييل الجداول المطبوعة)" autocomplete="off">
     </div>
     <div class="field">
       <label>🎓 صنف المدرسة</label>
@@ -7769,6 +7828,8 @@ function bindSchoolWizard(){
     DB.settings.schoolName = name;
     DB.settings.schoolLevel = setupLevel;
     DB.settings.schoolGender = setupGender;
+    const prInp = document.getElementById('setupPrincipal');
+    DB.settings.principal = String((prInp&&prInp.value)||'').trim();
     DB.settings.schoolSetupDone = true;
     DB.settings.welcomeSeen = false;
     try{ saveDB(); }catch(err){}
@@ -8100,6 +8161,35 @@ function classAssignedWeekly(store, stageId, sectionId){
   store = store || DB;
   return (store.assignments||[]).filter(function(a){ return a.stageId===stageId && a.sectionId===sectionId; })
     .reduce(function(n,a){ return n + (parseInt(a.periodsPerWeek,10)||0); }, 0);
+}
+function remapAssignmentTeacherInSchedule(store, assignmentId, newTeacherId){
+  /* عند تغيير معلم إسناد: المادة والمعلم كتلة واحدة — تُحدَّث كل حصص هذا الإسناد
+     في الجدول إلى المعلم الجديد، وأي خانة يتعارض فيها المعلم الجديد (مشغول له أو
+     يوم مفرَّغ) تُفرَّغ بدل إنشاء تعارض. تُعيد: عدد المحدَّث وعدد المُفرَّغ */
+  try{
+    const nt=((store.teachers||[]).find(function(t){ return t.id===newTeacherId; }))||null;
+    const busy=new Set();
+    Object.keys(store.schedule||{}).forEach(function(k){
+      const sc=store.schedule[k]; if(!sc||!sc.grid) return;
+      sc.grid.forEach(function(row,di){ row.forEach(function(cell,pidx){
+        if(cell&&cell.teacherId===newTeacherId&&cell.assignmentId!==assignmentId) busy.add(di+'|'+pidx);
+      }); });
+    });
+    let moved=0, dropped=0;
+    Object.keys(store.schedule||{}).forEach(function(k){
+      const sc=store.schedule[k]; if(!sc||!sc.grid) return;
+      sc.grid.forEach(function(row,di){
+        for(let i=0;i<row.length;i++){
+          const cell=row[i];
+          if(!cell||cell.assignmentId!==assignmentId) continue;
+          const exDay = nt && Array.isArray(nt.excludedDays) && nt.excludedDays.indexOf(di)>=0;
+          if(exDay || busy.has(di+'|'+i)){ row[i]=null; dropped++; }
+          else { row[i]=Object.assign({},cell,{teacherId:newTeacherId}); busy.add(di+'|'+i); moved++; }
+        }
+      });
+    });
+    return {moved:moved, dropped:dropped};
+  }catch(e){ return {moved:0, dropped:0}; }
 }
 function listClassLoadGaps(store){
   store = store || DB;
@@ -8849,8 +8939,10 @@ function renderFullMasterTab(){
     td.addEventListener('click', (e)=>{
       const classKey = td.dataset.key;
       const d = +td.dataset.d, p = +td.dataset.p;
+      const selSame = !!(selectedCell && selectedCell.classKey===classKey && selectedCell.day===d && selectedCell.period===p);
+      /* المادة والمعلم كتلة واحدة: أول لمسة على أي جزء من الحصة تحددها كاملة للنقل/التبديل */
       const subjEl = e.target.closest('.subj-hit');
-      if(subjEl && !selectedCell){
+      if(subjEl && selSame){
         e.stopPropagation();
         const sid = subjEl.dataset.subj;
         highlightSubjectId = (highlightSubjectId===sid) ? null : sid;
@@ -8864,7 +8956,7 @@ function renderFullMasterTab(){
         return;
       }
       const teachEl = e.target.closest('.teach-hit');
-      if(teachEl && !selectedCell){
+      if(teachEl && selSame){
         e.stopPropagation();
         const tid = teachEl.dataset.teach;
         highlightTeacherId = (highlightTeacherId===tid) ? null : tid;
@@ -10672,22 +10764,14 @@ function renderAssignTab(){
       const newTeacherId = sel.value;
       if(!newTeacherId){ toast('اختر معلمًا','err'); renderAssignTab(); return; }
       a.teacherId = newTeacherId;
-      // حدّث حصص الجدول المرتبطة بهذا التعيين
-      Object.keys(DB.schedule||{}).forEach(k=>{
-        const sc = DB.schedule[k];
-        if(!sc || !sc.grid) return;
-        sc.grid.forEach(row=>{
-          for(let i=0;i<row.length;i++){
-            if(row[i] && row[i].assignmentId===a.id){
-              row[i] = Object.assign({}, row[i], {teacherId:newTeacherId});
-            }
-          }
-        });
-      });
+      // المادة والمعلم كتلة واحدة: تحديث حصص الجدول لهذا التعيين مع فحص التعارض
+      const rr = remapAssignmentTeacherInSchedule(DB, a.id, newTeacherId);
+      try{ refreshConflictCache(DB); }catch(e){}
       saveDB();
       renderAssignTab();
       const tname = (getTeacher(newTeacherId)||{}).name || '';
-      toast('تم تعيين المعلم: '+tname, 'ok');
+      if(rr.dropped>0) toast('تم تعيين المعلم: '+tname+' — أُفرغت '+rr.dropped+' حصة كانت ستصطدم بجدوله', 'err');
+      else toast('تم تعيين المعلم: '+tname+' على '+rr.moved+' حصة في الجدول', 'ok');
     });
   });
 
@@ -10910,7 +10994,7 @@ function isOncePerDayKind(kind){
      إضافة إلى: إنكليزي، حاسوب، كردي */
   return kind==='science' || kind==='art' || kind==='pe'
     || kind==='islamic' || kind==='ethics' || kind==='social'
-    || kind==='biology' || kind==='physics' || kind==='crimes'
+    || kind==='biology' || kind==='physics' || kind==='chemistry' || kind==='crimes'
     || kind==='english' || kind==='computer' || kind==='kurdish';
 }
 
@@ -11327,14 +11411,18 @@ function generateScheduleFor(store, attempts){
     for(let d=0;d<D;d++){
       const base=d*P;
       dayCount[ci][d].forEach(function(cnt,sid){
-        if(cnt<=1) return;
         const W=wcnt.get(sid)||0;
+        if(W<=1) return;
         const k=kindFast(sid);
         const pr=prioFast(sid);
-        let per=240+pr*80;
+        /* السقف اليومي المتوازن: مرة واحدة إن سمح النصاب بالتوزيع على الأيام، وإلا توزيع متوازن */
+        const cap=(W<=D)?1:Math.ceil(W/D);
+        if(cnt<=cap) return;
+        let per;
         if(onceFast(sid)||W<=D) per=900+pr*60;
-        else if(k==='arabic'||k==='math') per=200+pr*60;
-        cost+=(cnt-1)*per;
+        else if(k==='arabic'||k==='math') per=600+pr*60;
+        else per=320+pr*40;
+        cost+=(cnt-cap)*per;
       });
       let lastFill=-1;
       for(let p=0;p<P;p++){
@@ -11353,7 +11441,10 @@ function generateScheduleFor(store, attempts){
   const hardTotal=function(){ return busyV+offV+peV+firstV+banV; };
   const softOfAll=function(){ let s=0; for(let ci=0;ci<nC;ci++) s+=classSoft(ci); return s+GAPW*gapTotal; };
 
-  /* عدد حالات تكرار مادة \"مرة واحدة في اليوم\" لنفس الشعبة */
+  /* السقف اليومي المتوازن: مادة نصابها ≤ عدد الأيام = مرة واحدة يوميًا (توزع على طول الأسبوع)،
+     وإلا سقفًا متوازنًا لا يزيد يوم عن آخر بأكثر من حصة */
+  const dayCapOfW=function(W){ return (W<=D)?1:Math.ceil(W/D); };
+  /* مخالفات الصارم: مرة-واحدة-يوميًا + سقف الرياضيات والعربي (لا تكدس في يوم واحد أبدًا) */
   function strictDupOf(ci){
     const wcnt=subCnt[ci];
     let v=0;
@@ -11361,12 +11452,32 @@ function generateScheduleFor(store, attempts){
       dayCount[ci][d].forEach(function(cnt,sid){
         if(cnt<=1) return;
         const W=wcnt.get(sid)||0;
-        if(W<=D && onceFast(sid)) v += (cnt-1);
+        if(W<=D && onceFast(sid)){ v += (cnt-1); return; }
+        const k=kindFast(sid);
+        if(k==='arabic'||k==='math'){
+          const cap=dayCapOfW(W);
+          if(cnt>cap) v += (cnt-cap);
+        }
       });
     }
     return v;
   }
   function strictDupV(){ let v=0; for(let ci=0;ci<nC;ci++) v+=strictDupOf(ci); return v; }
+  /* تجاوز سقف التوزيع المتوازن لأي مادة (يشمل الصارم وبقية المواد) */
+  function overCapOf(ci){
+    const wcnt=subCnt[ci];
+    let v=0;
+    for(let d=0;d<D;d++){
+      dayCount[ci][d].forEach(function(cnt,sid){
+        const W=wcnt.get(sid)||0;
+        if(W<=1) return;
+        const cap=dayCapOfW(W);
+        if(cnt>cap) v += (cnt-cap);
+      });
+    }
+    return v;
+  }
+  function overCapV(){ let v=0; for(let ci=0;ci<nC;ci++) v+=overCapOf(ci); return v; }
 
   /* هل هذه الخانة مخالفة لقيد صارم؟ (تُستعمل في تمريرة الإصلاح الموجّهة) */
   function badAt(ci,col){
@@ -11509,41 +11620,44 @@ function generateScheduleFor(store, attempts){
     return firstV===0;
   }
 
-  /* تمريرة تصحيح مخصّصة: تُخرج أي حصة مكرّرة في اليوم إلى يوم آخر مع صفر تعارض */
+  /* تمريرة تصحيح مخصّصة: أي مادة تتجاوز سقفها اليومي تُخرَج فائضُها إلى أيام عددُها فيها
+     تحت السقف (تفضيلًا) — بلا أي تعارض. تحقق: لا تكدس في يوم وأيام أخرى خالية منها */
   function fixDuplicates(){
     let guard=0;
-    while(guard++<30){
-      if(strictDupV()===0) return true;
+    while(guard++<40){
+      if(overCapV()===0) return true;
       let moved=false;
-      for(let ci=0;ci<nC;ci++){
-        if(moved) break;
-        if(strictDupOf(ci)===0) continue;
+      for(let ci=0;ci<nC&&!moved;ci++){
         const wcnt=subCnt[ci];
         for(let d=0;d<D&&!moved;d++){
-          let dupSid=null, dupPrio=-1;
+          let dupSid=null, dupScore=-1;
           dayCount[ci][d].forEach(function(cnt,sid){
-            if(cnt<=1) return;
             const W=wcnt.get(sid)||0;
-            if(!(W<=D&&onceFast(sid))) return;
-            const pr=prioFast(sid);
-            if(pr>dupPrio){ dupPrio=pr; dupSid=sid; }
+            if(W<=1) return;
+            const cap=dayCapOfW(W);
+            if(cnt<=cap) return;
+            const sc=(onceFast(sid)?10:0)+prioFast(sid);
+            if(sc>dupScore){ dupScore=sc; dupSid=sid; }
           });
           if(!dupSid) continue;
+          const cap=dayCapOfW(wcnt.get(dupSid)||0);
           const occ=[]; for(let p=0;p<P;p++){ const col=d*P+p; if(grid[ci][col]&&grid[ci][col].sub===dupSid) occ.push(col); }
-          const v0=strictDupV();
+          const v0=overCapV();
           for(let oi=0;oi<occ.length&&!moved;oi++){
             const a=occ[oi];
+            const targets=[];
             for(let col=0;col<CAP;col++){
-              if(DAY(col)===d||grid[ci][col]||isTail(ci,col)) continue;
-              doMove(ci,a,col);
-              if(hardTotal()===0&&strictDupV()<v0){ moved=true; break; }
-              doMove(ci,col,a);
+              if(DAY(col)===d||isTail(ci,col)) continue;
+              const u2=grid[ci][col];
+              if(u2&&u2.sub===dupSid) continue;
+              const under=(dayCount[ci][DAY(col)].get(dupSid)||0)<cap;
+              targets.push({col:col, sc: under ? (u2?2:3) : 0});
             }
-            if(moved) break;
-            for(let col=0;col<CAP;col++){
-              if(DAY(col)===d||!grid[ci][col]||isTail(ci,col)) continue;
+            targets.sort(function(x,y){ return y.sc-x.sc; });
+            for(let qi=0;qi<targets.length&&!moved;qi++){
+              const col=targets[qi].col;
               doMove(ci,a,col);
-              if(hardTotal()===0&&strictDupV()<v0){ moved=true; break; }
+              if(hardTotal()===0&&overCapV()<v0){ moved=true; break; }
               doMove(ci,col,a);
             }
           }
@@ -11551,7 +11665,7 @@ function generateScheduleFor(store, attempts){
       }
       if(!moved) break;
     }
-    return strictDupV()===0;
+    return overCapV()===0;
   }
 
   /* كلفة تقديرية لوضع حصة في خانة معيّنة (تُستعمل في البناء الأولي) */
@@ -11818,7 +11932,7 @@ function generateScheduleFor(store, attempts){
         for(let k=0;k<blocks.length&&!failed;k++){
           const B=blocks[k], ci=B.ci, g=B.g;
           let placed=false;
-          for(let pass=0;pass<2&&!placed;pass++){
+          for(let pass=0;pass<(strictAdj?1:2)&&!placed;pass++){
             const cands=[];
             for(let dd=0;dd<D;dd++){
               const d=(dd+k+rot)%D;
@@ -11845,10 +11959,13 @@ function generateScheduleFor(store, attempts){
           const holes=[];
           for(let d=0;d<D;d++) for(let pp=0;pp<pMax[ci][d];pp++) if(!occ[ci][d*P+pp]) holes.push({d:d,pp:pp});
           /* ملاءمة بتتبع رجعي كامل: تضمن الوضع الصارم إن وُجد أي ترتيب ممكن */
+          const daySubN=function(d,sub){ let n=0; for(let pp=0;pp<pMax[ci][d];pp++){ const c2=newg[ci][d*P+pp]; if(c2&&c2.sub===sub) n++; } return n; };
           const canAt=function(h,k){
             const u=grp[ci][k];
             if(u.ti>=0&&tBusy[u.ti*CAP+h.d*P+h.pp]) return false;
             if(u.kind==='pe'&&peUse[h.d*P+h.pp]>=COURTS) return false;
+            /* صرامة التوزيع: مفردة المادة لا تجاور يومًا فيه حصة من مادتها نفسها */
+            if(strictAdj&&daySubN(h.d,u.sub)>0) return false;
             return slotOk(u,h.d,h.pp);
           };
           const adjAt=function(h,k){
@@ -12411,7 +12528,7 @@ function generateScheduleFor(store, attempts){
       if(a===b) continue;
       const g0=totalGaps(), s0=classSoft(c1), d0=strictDupV();
       doMove(c1,a,b);
-      const ok = hardTotal()===0 && strictDupV()===0 && totalGaps()<g0 && classSoft(c1)<=s0+150;
+      const ok = hardTotal()===0 && strictDupV()<=d0 && totalGaps()<g0 && classSoft(c1)<=s0+150;
       if(!ok) doMove(c1,b,a);
     }
     return it;
@@ -12448,15 +12565,20 @@ function generateScheduleFor(store, attempts){
       }
       return mx-mn;
     }
-    /* صرامة الموضوع: مرة-واحدة-يوميًا ووحداته الأسبوعية ≤ عدد الأيام */
+    /* صرامة الموضوع: مرة-واحدة-يوميًا + سقف الرياضيات/العربي المتوازن */
     function strictAt(ci,sid){
       const W=subCnt[ci].get(sid)||0;
-      return W<=D && onceFast(sid);
+      if(W<=D && onceFast(sid)) return true;
+      const k=kindFast(sid);
+      return k==='arabic'||k==='math';
     }
     /* هل استقبال sid في اليوم dTo داخل الشعبة ci يبقي بلا تكرار صارم؟ */
     function dupOK(ci,sid,dTo){
-      if(!strictAt(ci,sid)) return true;
-      return (dayCount[ci][dTo].get(sid)||0)===0;
+      const W=subCnt[ci].get(sid)||0;
+      if(W<=D && onceFast(sid)) return (dayCount[ci][dTo].get(sid)||0)===0;
+      const k=kindFast(sid);
+      if(k==='arabic'||k==='math') return (dayCount[ci][dTo].get(sid)||0)<dayCapOfW(W);
+      return true;
     }
     let steps=0;
     while(Date.now()<end && steps<4000){
@@ -12596,6 +12718,7 @@ function generateScheduleFor(store, attempts){
       const preB=snapshot();
       let __bs=0, bp=0;
       while(bp++<5){ const s=balanceTeachers(240); __bs+=s; if(!s) break; }
+      fixDuplicates();
       if(!(hardTotal()===0&&audit())) loadGrid(preB);
       var __pair={applied:false,pairs:0,classes:0};
       if(store.settings&&store.settings.genPairMode&&(typeof DEMO==='undefined'||store!==DEMO)){ __pair=pairBlocksTransform(); }
@@ -12609,6 +12732,7 @@ function generateScheduleFor(store, attempts){
     const preB=snapshot();
     let __bs2=0, bp2=0;
     while(bp2++<4){ const s2=balanceTeachers(200); __bs2+=s2; if(!s2) break; }
+    fixDuplicates();
     if(!(hardTotal()===0&&audit())) loadGrid(preB);
     var __pair={applied:false,pairs:0,classes:0};
     if(store.settings&&store.settings.genPairMode&&(typeof DEMO==='undefined'||store!==DEMO)){ __pair=pairBlocksTransform(); }
@@ -13227,8 +13351,12 @@ function renderGridFor(classKey){
   wrap.innerHTML = html;
   wrap.querySelectorAll('td.slot').forEach(td=>{
     td.addEventListener('click', (e)=>{
+      const dN=+td.dataset.d, pN=+td.dataset.p;
+      const selSame = !!(selectedCell && selectedCell.day===dN && selectedCell.period===pN);
+      /* المادة والمعلم كتلة واحدة: أول لمسة على أي جزء من الحصة تحددها كاملة للنقل/التبديل،
+         والتمييز (أخضر للمادة/أزرق للمعلم) باللمس على الاسم داخل الحصة المحددة نفسها */
       const subjEl = e.target.closest('.subj-hit');
-      if(subjEl && !selectedCell){
+      if(subjEl && selSame){
         e.stopPropagation();
         const sid = subjEl.dataset.subj;
         highlightSubjectId = (highlightSubjectId===sid) ? null : sid;
@@ -13239,7 +13367,7 @@ function renderGridFor(classKey){
         return;
       }
       const teachEl = e.target.closest('.teach-hit');
-      if(teachEl && !selectedCell){
+      if(teachEl && selSame){
         e.stopPropagation();
         const tid = teachEl.dataset.teach;
         highlightTeacherId = (highlightTeacherId===tid) ? null : tid;
@@ -13249,7 +13377,7 @@ function renderGridFor(classKey){
         if(highlightTeacherId){ const t=getTeacher(tid); showInfoBanner('🔵 تم تمييز المعلم «'+(t?t.name:'')+'» في كل الجدول'); }
         return;
       }
-      onCellClick(classKey, +td.dataset.d, +td.dataset.p);
+      onCellClick(classKey, dN, pN);
     });
   });
   const clearBtn = document.getElementById('btnClearSelected');
@@ -14633,9 +14761,10 @@ function renderDemoAllOverview(){
     td.addEventListener('click', (e)=>{
       const classKey = td.dataset.key;
       const d = +td.dataset.d, p = +td.dataset.p;
-      // subject hit — highlight same subject inside THIS section/column only
+      const selSame = !!(demoSelectedCell && demoSelectedCell.classKey===classKey && demoSelectedCell.day===d && demoSelectedCell.period===p);
+      // المادة والمعلم كتلة واحدة: أول لمسة تحدد الحصة كاملة، والتمييز من داخل الحصة المحددة
       const subjEl = e.target.closest('.subj-hit');
-      if(subjEl && !demoSelectedCell){
+      if(subjEl && selSame){
         e.stopPropagation();
         const sid = subjEl.dataset.subj;
         if(demoHighlightSubjectId === sid && demoHighlightSubjectClassKey===classKey){
@@ -14654,9 +14783,8 @@ function renderDemoAllOverview(){
         }
         return;
       }
-      // teacher hit
       const teachEl = e.target.closest('.teach-hit');
-      if(teachEl && !demoSelectedCell){
+      if(teachEl && selSame){
         e.stopPropagation();
         const tid = teachEl.dataset.teach;
         if(demoHighlightTeacherId === tid) demoHighlightTeacherId = null;
@@ -14671,7 +14799,6 @@ function renderDemoAllOverview(){
         }
         return;
       }
-      // move/select inside master table (same section/column only)
       onDemoCellClick(classKey, d, p);
     });
   });
@@ -15829,9 +15956,11 @@ function renderDemoGrid(classKey){
 
   wrap.querySelectorAll('td.slot').forEach(td=>{
     td.addEventListener('click', (e)=>{
-      // subject name click → highlight same subject in this section
+      const dN=+td.dataset.d, pN=+td.dataset.p;
+      const selSame = !!(demoSelectedCell && demoSelectedCell.day===dN && demoSelectedCell.period===pN);
+      // المادة والمعلم كتلة واحدة: أول لمسة تحدد الحصة كاملة، والتمييز من داخل الحصة المحددة
       const subjEl = e.target.closest('.subj-hit');
-      if(subjEl && !demoSelectedCell){
+      if(subjEl && selSame){
         e.stopPropagation();
         const sid = subjEl.dataset.subj;
         if(demoHighlightSubjectId === sid && demoHighlightSubjectClassKey===classKey){ demoHighlightSubjectId = null; demoHighlightSubjectClassKey=null; }
@@ -15845,9 +15974,8 @@ function renderDemoGrid(classKey){
         }
         return;
       }
-      // teacher name click → highlight teacher across ALL sections
       const teachEl = e.target.closest('.teach-hit');
-      if(teachEl && !demoSelectedCell){
+      if(teachEl && selSame){
         e.stopPropagation();
         const tid = teachEl.dataset.teach;
         if(demoHighlightTeacherId === tid){ demoHighlightTeacherId = null; }
@@ -15861,7 +15989,7 @@ function renderDemoGrid(classKey){
         }
         return;
       }
-      onDemoCellClick(classKey, +td.dataset.d, +td.dataset.p);
+      onDemoCellClick(classKey, dN, pN);
     });
   });
   const clearBtn = document.getElementById('btnDemoClearSelected');
