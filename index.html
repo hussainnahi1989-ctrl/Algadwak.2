@@ -6557,7 +6557,7 @@ async function downloadDirectFullSchedulePdfCore(isDemo, paper){
 
     // Table Header Cells
     const headSecs = cls.map(c => {
-      const code = isDemo ? (typeof demoClassCode === 'function' ? demoClassCode(c) : storeClassCode(store, c)) : (typeof realClassCode === 'function' ? realClassCode(c) : storeClassCode(store, c));
+      const code = (typeof masterGradeCode === 'function') ? masterGradeCode(store, c) : storeClassCode(store, c);
       return `<th style="background:#083e47;color:#ffffff;border:1.5px solid #000;font-size:${headFs};font-weight:900;padding:1px 0;text-align:center;vertical-align:middle;letter-spacing:0;line-height:1.1;" title="${esc(c.label)}">${esc(code)}</th>`;
     }).join('');
 
@@ -6927,7 +6927,7 @@ async function downloadDirectCutTwoPdf(isDemo, orient){
     let headCols = '';
     for(let i = 0; i < cls.length; i++){
       const cw = (!horiz && i >= n1) ? colW2 : colW1;
-      headCols += '<th style="width:' + cw.toFixed(3) + 'mm;min-width:' + cw.toFixed(3) + 'mm;max-width:' + cw.toFixed(3) + 'mm;height:' + headRowHpx + 'px;max-height:' + headRowHpx + 'px;box-sizing:border-box;" title="' + esc(cls[i].label) + '">' + esc(storeClassCode(store, cls[i])) + '</th>';
+      headCols += '<th style="width:' + cw.toFixed(3) + 'mm;min-width:' + cw.toFixed(3) + 'mm;max-width:' + cw.toFixed(3) + 'mm;height:' + headRowHpx + 'px;max-height:' + headRowHpx + 'px;box-sizing:border-box;" title="' + esc(cls[i].label) + '">' + esc(masterGradeCode(store, cls[i])) + '</th>';
     }
     const dayHead = '<tr class="cut2-h" style="height:' + headRowHpx + 'px;"><th class="cut2-col-day" style="width:' + dayColWmm + 'mm;min-width:' + dayColWmm + 'mm;max-width:' + dayColWmm + 'mm;height:' + headRowHpx + 'px;max-height:' + headRowHpx + 'px;">اليوم</th><th class="cut2-col-per" style="width:' + perColWmm + 'mm;min-width:' + perColWmm + 'mm;max-width:' + perColWmm + 'mm;height:' + headRowHpx + 'px;max-height:' + headRowHpx + 'px;">ح.</th>' + headCols + '</tr>';
     let body = '';
@@ -8889,7 +8889,7 @@ function renderFullMasterTab(){
   const days = DB.settings.days;
   const periods = DB.settings.periodsPerDay;
   const headSecs = cls.map(c=>{
-    const code = realClassCode(c);
+    const code = masterGradeCode(DB, c);
     return `<th class="sec-head" data-key="${c.key}" title="${esc(c.label)}">${esc(code)}</th>`;
   }).join('');
   const dayHeadRow = `<tr class="day-head-row">
@@ -14667,7 +14667,7 @@ function demoClassCode(c){
 function buildSecHeadCells(cls, asTh){
   const tag = asTh ? 'th' : 'td';
   return (cls||[]).map(function(c){
-    const code = demoClassCode(c);
+    const code = masterGradeCode(DEMO, c);
     return '<'+tag+' class="sec-head" data-key="'+c.key+'" title="'+esc(c.label)+'">'+esc(code)+'</'+tag+'>';
   }).join('');
 }
@@ -14886,6 +14886,44 @@ function storeClassCode(store, c){
   return String(n) + sec;
 }
 
+/* ═══ م48: تسمية مختصرة احترافية لرؤوس الجدول الكامل/التجريبي حسب صنف المدرسة
+   ابتدائية: الأول..السادس · أساسية: الأول..السادس ثم الأول م/..الثالث م/
+   ثانوية/إعدادية: الأول..الثالث ثم الرابع ع/ أو د/ حسب الفرع · متوسطة: الأول م/..الثالث م/
+   (عرض فقط: لا يغيّر أي بيانات أو تخطيط — والاسم غير القابل للتحليل يبقى بالكود القديم) */
+function masterGradeCode(store, c){
+  try{
+    const stages = (store && store.stages) || [];
+    const st = stages.find(function(x){ return x && x.id === c.stageId; }) || null;
+    let stName = st ? String(st.name || '') : '';
+    if(!stName) stName = String((String(c.label || '').split(' / ')[0]) || '');
+    let sec = '';
+    if(c.sectionId && st && Array.isArray(st.sections)){
+      const so = st.sections.find(function(x){ return x && x.id === c.sectionId; });
+      if(so) sec = String(so.name || '');
+    }
+    if(!sec) sec = (String(c.label || '').split(' / ')[1] || '').trim();
+    sec = String(sec).replace(/هـ/g, 'ه').replace(/\s+/g, '');
+    const t = stName.replace(/[أإآ]/g, 'ا');
+    let ord = null;
+    /* تُطابق الصيغ المعرّفة (الرابع) والمجرّدة (رابع) بهمزاتها أو بدونها */
+    if(/سادس/.test(t)) ord = 'السادس';
+    else if(/خامس/.test(t)) ord = 'الخامس';
+    else if(/رابع/.test(t)) ord = 'الرابع';
+    else if(/ثالث/.test(t)) ord = 'الثالث';
+    else if(/ثاني/.test(t)) ord = 'الثاني';
+    else if(/اول/.test(t)) ord = 'الأول';
+    if(!ord) return storeClassCode(store, c);
+    const lv = (store && store.settings && store.settings.schoolLevel) || '';
+    const hasM = t.indexOf('متوسط') >= 0;
+    const hasSci = t.indexOf('علمي') >= 0;
+    const hasLit = t.indexOf('ادبي') >= 0;
+    let tag = '';
+    if(lv === 'middle' || hasM) tag = 'م/';
+    else if(hasSci) tag = 'ع/';
+    else if(hasLit) tag = 'د/';
+    return ord + (tag ? ' ' + tag : '') + (sec ? ' ' + sec : '');
+  }catch(e){ try{ return storeClassCode(store, c); }catch(e2){ return '?'; } }
+}
 function printMasterSchedule(paper, store, orient){
   // Full multi-section weekly table — ONE page — header+table+footer — 5mm margins
   if(!store) store = DB;
@@ -15014,7 +15052,7 @@ function printMasterSchedule(paper, store, orient){
     </div></td>`;
   }
 
-  const headSecs = cls.map(c=>`<th title="${esc(c.label)}">${esc(storeClassCode(store,c))}</th>`).join('');
+  const headSecs = cls.map(c=>`<th title="${esc(c.label)}">${esc(masterGradeCode(store,c))}</th>`).join('');
   const dayHeadRow = `<tr class="mp-dayhead">
       <th class="mp-day">اليوم</th>
       <th class="mp-period">ح.</th>
@@ -15512,7 +15550,7 @@ function printMasterCutTwo(store, orient){
   var headCols = "";
   for(var i=0;i<classes.length;i++){
     var cw = (!horiz && i >= n1) ? colW2 : colW1;
-    headCols += "<th style=\"width:"+cw.toFixed(3)+"mm;min-width:"+cw.toFixed(3)+"mm;max-width:"+cw.toFixed(3)+"mm;box-sizing:border-box;\" title=\""+esc(classes[i].label)+"\">"+esc(storeClassCode(store, classes[i]))+"</th>";
+    headCols += "<th style=\"width:"+cw.toFixed(3)+"mm;min-width:"+cw.toFixed(3)+"mm;max-width:"+cw.toFixed(3)+"mm;box-sizing:border-box;\" title=\""+esc(classes[i].label)+"\">"+esc(masterGradeCode(store, classes[i]))+"</th>";
   }
   var dayHead = "<tr class=\"cut2-h\" style=\"height:"+headRowHmm+"mm;max-height:"+headRowHmm+"mm;\"><th class=\"cut2-col-day\" style=\"width:"+dayColWmm+"mm;min-width:"+dayColWmm+"mm;max-width:"+dayColWmm+"mm;\">اليوم</th><th class=\"cut2-col-per\" style=\"width:"+perColWmm+"mm;min-width:"+perColWmm+"mm;max-width:"+perColWmm+"mm;\">ح.</th>"+headCols+"</tr>";
   var body = "";
@@ -15741,7 +15779,7 @@ function printMasterScheduleSplitV(paper, store){
 
   var headCols = "";
   for(var i=0;i<classes.length;i++){
-    var code = storeClassCode(store, classes[i]);
+    var code = masterGradeCode(store, classes[i]);
     var cw = (i >= n1) ? colW2 : colW1;
     headCols += "<th style=\"width:"+cw.toFixed(3)+"mm;min-width:"+cw.toFixed(3)+"mm;max-width:"+cw.toFixed(3)+"mm;box-sizing:border-box;\" title=\""+esc(classes[i].label)+"\">"+esc(code)+"</th>";
   }
@@ -19180,7 +19218,7 @@ function exportAllSchedulesExcel(){
     const nCols = 2 + cls.length;
     let rows = bannerRows(nCols);
     let head = cell('اليوم','hdr')+cell('الحصة','hdr');
-    cls.forEach(function(c){ head += cell(storeClassCode(DB,c),'hdr'); });
+    cls.forEach(function(c){ head += cell(masterGradeCode(DB,c),'hdr'); });
     rows += row(head, 22);
     for(let d=0; d<days.length; d++){
       if(d>0) rows += row(head, 22);
