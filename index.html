@@ -7236,6 +7236,7 @@ async function nibrasExportPrintOutputAsPDF(sizeMm, customKind, opts){
   var pages = Array.prototype.slice.call(out.children).filter(function(el){ return el.nodeType===1; });
   if(!pages.length){ try{ toast('لا توجد صفحات للتصدير','err'); }catch(e){} return; }
 
+  try{ nibrasFitPrintCellText(); }catch(e){}
   try{ toast('جارٍ تجهيز ملف PDF…','ok'); }catch(e){}
   await nibrasEnsurePdfLibs();
   var jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
@@ -7435,6 +7436,49 @@ async function shareTeacherSchedule(teacherId){
   }
 }
 
+/* ═══ م49: ملائم نص خلايا الطباعة — يمنع قصّ الكلمات وأسماء المعلمين والمواد
+   عند كثرة الشعب (خاصة A3): يصغّر خط الخلية تدريجيًا حتى يتسع النص كاملًا
+   بلا قصّ ولا تقطيع حروف، وإن بلغ حدّ الوضوح لجأ إلى لفّ الأسطر عند حدود
+   الكلمات فقط. لا يغيّر أي قياس ورقة أو هامش أو تخطيط — يعمل فقط على ما
+   كان سيُقصّ أصلًا */
+function nibrasFitPrintCellText(){
+  try{
+    const out = document.getElementById('print-output');
+    if(!out || !out.querySelector) return;
+    const els = out.querySelectorAll('.mp-cell > b, .mp-cell > span, .cut2-cell > b, .cut2-cell > span, .mid-cell > b, .mid-cell > span');
+    els.forEach(function(el){
+      try{
+        const txt = (el.textContent||'').trim();
+        if(!txt || txt==='—') return;
+        const cell = el.parentElement; if(!cell) return;
+        const availW = (cell.clientWidth||0) - 2;
+        if(!(availW>4)) return;
+        el.style.setProperty('white-space','nowrap','important');
+        let fs = parseFloat(window.getComputedStyle(el).fontSize) || 11;
+        let guard = 0;
+        while(guard++ < 40 && el.scrollWidth > availW && fs > 6){
+          fs = Math.max(6, Math.round((fs - 0.5)*2)/2);
+          el.style.setProperty('font-size', fs+'px', 'important');
+        }
+        if(el.scrollWidth > availW){
+          /* حدّ الوضوح: لفّ عند حدود الكلمات فقط (لا تقطيع حروف) مع تصغير إضافي حتى يتسع ارتفاعًا */
+          el.style.setProperty('white-space','normal','important');
+          el.style.setProperty('overflow-wrap','break-word','important');
+          el.style.setProperty('word-break','normal','important');
+          el.style.setProperty('line-height','1.05','important');
+          let g2 = 0;
+          while(g2++ < 30 && (el.scrollWidth > availW || (cell.clientHeight>8 && el.scrollHeight > cell.clientHeight-1)) && fs > 5){
+            fs = Math.max(5, fs - 0.5);
+            el.style.setProperty('font-size', fs+'px', 'important');
+          }
+        } else {
+          el.style.setProperty('overflow','hidden','important');
+          el.style.setProperty('text-overflow','clip','important');
+        }
+      }catch(e){}
+    });
+  }catch(e){}
+}
 (function nibrasNativeBridge(){
   var origPrint = window.print.bind(window);
   window.print = function(){
@@ -7447,6 +7491,7 @@ async function shareTeacherSchedule(teacherId){
       }).then(function(){ try{ nibrasHidePrintOverlay(); }catch(e){} });
       return;
     }
+    try{ nibrasFitPrintCellText(); }catch(e){}
     if(window.NibrasAndroid && NibrasAndroid.printInChrome){
       try{ NibrasAndroid.printInChrome(nibrasBuildChromePrintHtml()); }catch(e){}
       setTimeout(nibrasHidePrintOverlay, 50);
