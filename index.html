@@ -11462,6 +11462,58 @@ function generateScheduleFor(store, attempts){
   }
 
   /* =========================================================================
+     قاعدة «لا تتكرر المادة في اليوم الواحد للشعبة الواحدة» (صارمة دائمًا):
+     فنية، رياضة، علوم، فيزياء، كيمياء، أحياء، إسلامية، كردية، أخلاقية.
+     + السقف اليومي لكل مادة يُحسب من الأيام التي يحضر فيها معلمها فعلًا
+       (لا من عدد أيام الأسبوع)، مع عقوبة على اليوم الخالي من مادة نصابها كبير.
+     ========================================================================= */
+  const HARD_ONCE={art:1,pe:1,science:1,physics:1,chemistry:1,biology:1,islamic:1,kurdish:1,ethics:1};
+  const hardOnceFast=function(sid){ return !!HARD_ONCE[kindFast(sid)]; };
+  const csW=[], csA=[], csMask=[], csFloorList=[], _capC=[];
+  for(let ci=0;ci<nC;ci++){
+    const Wm=new Map(), Mm=new Map();
+    cls[ci].units.forEach(function(u,ui){
+      Wm.set(u.sub,(Wm.get(u.sub)||0)+1);
+      let m=Mm.get(u.sub)||0;
+      unitDays[ci][ui].forEach(function(d){ if(P-freeCnt[ci][d]>0) m|=(1<<d); });
+      Mm.set(u.sub,m);
+    });
+    const Am=new Map();
+    Mm.forEach(function(m,sid){ let n=0; for(let d=0;d<D;d++) if((m>>d)&1) n++; Am.set(sid,n); });
+    csW.push(Wm); csA.push(Am); csMask.push(Mm); _capC.push(new Map());
+  }
+  const availCS=function(ci,sid){ const a=csA[ci].get(sid); return (a&&a>0)?a:D; };
+  const strictOnceCS=function(ci,sid){ return onceFast(sid)&&(hardOnceFast(sid)||(csW[ci].get(sid)||0)<=availCS(ci,sid)); };
+  const capCS=function(ci,sid){
+    let v=_capC[ci].get(sid); if(v!==undefined) return v;
+    const W=csW[ci].get(sid)||0, A=availCS(ci,sid);
+    v = strictOnceCS(ci,sid) ? 1 : ((W<=A)?1:Math.ceil(W/A));
+    _capC[ci].set(sid,v); return v;
+  };
+  for(let ci=0;ci<nC;ci++){
+    const list=[];
+    csW[ci].forEach(function(W,sid){
+      if(strictOnceCS(ci,sid)||W<2) return;
+      const A=csA[ci].get(sid)||0; if(A<1) return;
+      const fl=Math.floor(W/A);
+      if(fl>=1) list.push({sid:sid, fl:fl, mask:csMask[ci].get(sid)||0});
+    });
+    csFloorList.push(list);
+  }
+  /* فحص مسبق: مادة صارمة نصابها أكبر من عدد الأيام التي يحضر فيها معلمها = مستحيل حسابيًا */
+  const onceIssues=[];
+  for(let ci=0;ci<nC;ci++){
+    csW[ci].forEach(function(W,sid){
+      if(!hardOnceFast(sid)) return;
+      const A=csA[ci].get(sid)||0;
+      if(W>A) onceIssues.push({key:cls[ci].key, subjectId:sid, subject:(subjOf[sid]&&subjOf[sid].name)||'', weekly:W, days:A});
+    });
+  }
+  if(onceIssues.length){
+    return {success:false, unplaced:[], reason:'once-per-day-infeasible', onceIssues:onceIssues};
+  }
+
+  /* =========================================================================
      ٣) فحص مسبق محسوب: طاقة كل معلم، طاقة الساحات، وطاقة الحصة الأولى
      ========================================================================= */
   const need=new Array(T).fill(0);
@@ -11595,7 +11647,16 @@ function generateScheduleFor(store, attempts){
   const peAt=new Int32Array(CAP);
   const dayCount=cls.map(function(){ const a=[]; for(let d=0;d<D;d++) a.push(new Map()); return a; });
   const isFirstBlocked=function(ti,col){ return ti>=0 && forbFirst[ti] && PER(col)===0; };
-  let busyV=0, offV=0, peV=0, firstV=0, banV=0;
+  let busyV=0, offV=0, peV=0, firstV=0, banV=0, dupV=0;
+  /* حدّ التكرار اليومي الصارم لكل (شعبة، مادة): المواد التي لا تتكرر = 1، العربي والرياضيات = سقفها
+     المتوازن حسب أيام حضور المعلم — وأي تجاوز يُعدّ مخالفة صارمة كتعارض المعلم تمامًا */
+  const _limC=cls.map(function(){ return new Map(); });
+  const limOf=function(ci,sid){
+    let v=_limC[ci].get(sid); if(v!==undefined) return v;
+    if(strictOnceCS(ci,sid)) v=1;
+    else { const k=kindFast(sid); v=(k==='arabic'||k==='math')?capCS(ci,sid):1e9; }
+    _limC[ci].set(sid,v); return v;
+  };
   /* فراغات المعلمين في وسط النهار (محسوبة دوالّيًا لكل معلم/يوم) */
   const tgaps=new Int32Array(T*D);
   let gapTotal=0;
@@ -11627,7 +11688,8 @@ function generateScheduleFor(store, attempts){
       setGap(ti,d);
     }
     if(isPE){ const b=peAt[col]; if(b>=COURTS) peV++; peAt[col]=b+1; }
-    const m=dayCount[ci][d]; m.set(u.sub,(m.get(u.sub)||0)+1);
+    const m=dayCount[ci][d]; const c0=m.get(u.sub)||0; m.set(u.sub,c0+1);
+    if(c0+1>limOf(ci,u.sub)) dupV++;
     grid[ci][col]=u;
   }
   function removeUnit(ci,col){
@@ -11643,7 +11705,9 @@ function generateScheduleFor(store, attempts){
       setGap(ti,d);
     }
     if(isPE){ const b=peAt[col]; if(b>COURTS) peV--; peAt[col]=b-1; }
-    const m=dayCount[ci][d]; m.set(u.sub,(m.get(u.sub)||0)-1); if(m.get(u.sub)<=0) m.delete(u.sub);
+    const m=dayCount[ci][d]; const c0=m.get(u.sub)||0;
+    if(c0>limOf(ci,u.sub)) dupV--;
+    m.set(u.sub,c0-1); if(m.get(u.sub)<=0) m.delete(u.sub);
     grid[ci][col]=null;
   }
   /* لا يُسمح بأي حركة تُدخل حصة في خانة فراغ نهاية اليوم */
@@ -11668,10 +11732,11 @@ function generateScheduleFor(store, attempts){
         const k=kindFast(sid);
         const pr=prioFast(sid);
         /* السقف اليومي المتوازن: مرة واحدة إن سمح النصاب بالتوزيع على الأيام، وإلا توزيع متوازن */
-        const cap=(W<=D)?1:Math.ceil(W/D);
+        const cap=capCS(ci,sid);
         if(cnt<=cap) return;
         let per;
-        if(onceFast(sid)||W<=D) per=900+pr*60;
+        if(hardOnceFast(sid)) per=3000+pr*60;
+        else if(onceFast(sid)||cap===1) per=900+pr*60;
         else if(k==='arabic'||k==='math') per=600+pr*60;
         else per=320+pr*40;
         cost+=(cnt-cap)*per;
@@ -11687,10 +11752,20 @@ function generateScheduleFor(store, attempts){
       }
       for(let p=0;p<lastFill;p++) if(!grid[ci][base+p]) cost+=120;
     }
+    /* عقوبة اليوم الخالي/الناقص: مادة نصابها ≥ أيام حضور معلمها يجب أن تظهر في كل يوم متاح */
+    const fll=csFloorList[ci];
+    for(let i=0;i<fll.length;i++){
+      const f=fll[i];
+      for(let d=0;d<D;d++){
+        if(!((f.mask>>d)&1)) continue;
+        const c=dayCount[ci][d].get(f.sid)||0;
+        if(c<f.fl) cost+=(f.fl-c)*(260+prioFast(f.sid)*40);
+      }
+    }
     return cost;
   }
   const GAPW=58;   /* وزن فراغ المعلم في وسط النهار داخل دالة الهدف */
-  const hardTotal=function(){ return busyV+offV+peV+firstV+banV; };
+  const hardTotal=function(){ return busyV+offV+peV+firstV+banV+dupV; };
   const softOfAll=function(){ let s=0; for(let ci=0;ci<nC;ci++) s+=classSoft(ci); return s+GAPW*gapTotal; };
 
   /* السقف اليومي المتوازن: مادة نصابها ≤ عدد الأيام = مرة واحدة يوميًا (توزع على طول الأسبوع)،
@@ -11704,10 +11779,10 @@ function generateScheduleFor(store, attempts){
       dayCount[ci][d].forEach(function(cnt,sid){
         if(cnt<=1) return;
         const W=wcnt.get(sid)||0;
-        if(W<=D && onceFast(sid)){ v += (cnt-1); return; }
+        if(strictOnceCS(ci,sid)){ v += (cnt-1); return; }
         const k=kindFast(sid);
         if(k==='arabic'||k==='math'){
-          const cap=dayCapOfW(W);
+          const cap=capCS(ci,sid);
           if(cnt>cap) v += (cnt-cap);
         }
       });
@@ -11723,7 +11798,7 @@ function generateScheduleFor(store, attempts){
       dayCount[ci][d].forEach(function(cnt,sid){
         const W=wcnt.get(sid)||0;
         if(W<=1) return;
-        const cap=dayCapOfW(W);
+        const cap=capCS(ci,sid);
         if(cnt>cap) v += (cnt-cap);
       });
     }
@@ -11743,6 +11818,7 @@ function generateScheduleFor(store, attempts){
     }
     if(((sBanMap.get(u.sub)||0)>>PER(col))&1) v++;
     if(u.kind==='pe'&&peAt[col]>COURTS) v++;
+    if((dayCount[ci][DAY(col)].get(u.sub)||0)>limOf(ci,u.sub)) v++;
     return v;
   }
   /* هل يمكن نقل الوحدة u إلى العمود col دون إنشاء تعارض معلم؟ */
@@ -11886,13 +11962,13 @@ function generateScheduleFor(store, attempts){
           dayCount[ci][d].forEach(function(cnt,sid){
             const W=wcnt.get(sid)||0;
             if(W<=1) return;
-            const cap=dayCapOfW(W);
+            const cap=capCS(ci,sid);
             if(cnt<=cap) return;
-            const sc=(onceFast(sid)?10:0)+prioFast(sid);
+            const sc=(hardOnceFast(sid)?20:0)+(onceFast(sid)?10:0)+prioFast(sid);
             if(sc>dupScore){ dupScore=sc; dupSid=sid; }
           });
           if(!dupSid) continue;
-          const cap=dayCapOfW(wcnt.get(dupSid)||0);
+          const cap=capCS(ci,dupSid);
           const occ=[]; for(let p=0;p<P;p++){ const col=d*P+p; if(grid[ci][col]&&grid[ci][col].sub===dupSid) occ.push(col); }
           const v0=overCapV();
           for(let oi=0;oi<occ.length&&!moved;oi++){
@@ -12025,8 +12101,24 @@ function generateScheduleFor(store, attempts){
     }
     return true;
   }
-  function audit(){
+  function audit(skipStrict){
     const t=new Int32Array(T*CAP), pe=new Int32Array(CAP);
+    if(!skipStrict){
+      for(let ci=0;ci<nC;ci++){
+        for(let d=0;d<D;d++){
+          const m=new Map();
+          for(let p=0;p<P;p++){ const u=grid[ci][d*P+p]; if(u) m.set(u.sub,(m.get(u.sub)||0)+1); }
+          let bad=false;
+          m.forEach(function(cnt,sid){
+            if(cnt<=1) return;
+            if(strictOnceCS(ci,sid)){ bad=true; return; }
+            const k=kindFast(sid);
+            if((k==='arabic'||k==='math')&&cnt>capCS(ci,sid)) bad=true;
+          });
+          if(bad) return false;
+        }
+      }
+    }
     let off=0, first=0, bans=0;
     for(let ci=0;ci<nC;ci++){
       const g=grid[ci];
@@ -12163,7 +12255,7 @@ function generateScheduleFor(store, attempts){
         (store.assignments||[]).forEach(function(a){ tLoad[a.teacherId]=(tLoad[a.teacherId]||0)+(parseInt(a.periodsPerWeek,10)||0); });
         const blocks=[];
         for(let ci=0;ci<nC;ci++) order[ci].forEach(function(k){
-          const g=grp[ci][k], nb=Math.floor(g.n/2);
+          const g=grp[ci][k], nb=strictOnceCS(ci,g.sub)?0:Math.floor(g.n/2);
           for(let i=0;i<nb;i++) blocks.push({ci:ci, g:g});
         });
         /* المعلمون المقيّدون أولًا (أيام تفريغ/ممنوع-أولى/حصص ممنوعة) ثم الأثقل تكليفًا */
@@ -12300,7 +12392,11 @@ function generateScheduleFor(store, attempts){
      forb: مجموعة "رقم المهمة|العمود" الممنوعة (تُستخدم لحل التعارضات) */
   function flowBuild(forb){
     if(!NG) return null;
-    const baseG=1, baseSL=baseG+NG, SINK=baseSL+nC*CAP, NN=SINK+1;
+    /* بوابات الحد اليومي (شعبة، مادة، يوم): مدخل→مخرج بسعة الحد — تمنع تكرار المادة في اليوم */
+    const gateIdx=new Map(); let nGate=0;
+    const gateGroups=[];
+    for(let gi=0;gi<NG;gi++){ const g=groups[gi]; const k=g.ci+'|'+g.sub; if(!gateIdx.has(k)){ gateIdx.set(k,nGate++); gateGroups.push([]); } gateGroups[gateIdx.get(k)].push(gi); }
+    const baseG=1, baseGate=baseG+NG, baseSL=baseGate+nGate*D*2, SINK=baseSL+nC*CAP, NN=SINK+1;
     const head2=new Int32Array(NN).fill(-1);
     const eto=[], ecap=[], enext=[];
     const addE=function(u,v,c){
@@ -12327,15 +12423,24 @@ function generateScheduleFor(store, attempts){
     const order=[];
     for(let gi=0;gi<NG;gi++) order.push(gi);
     for(let i=order.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=order[i]; order[i]=order[j]; order[j]=t; }
+    const gateDone=new Uint8Array(nGate*D);
     for(let oi=0;oi<order.length;oi++){
       const gi=order[oi], g=groups[gi];
       total+=g.n;
       addE(0, baseG+gi, g.n);
+      const gx=gateIdx.get(g.ci+'|'+g.sub);
+      const lim=limOf(g.ci,g.sub), capL=(lim>=1e8)?P:lim;
+      for(let d=0;d<D;d++){
+        const gin=baseGate+(gx*D+d)*2, gout=gin+1;
+        addE(baseG+gi, gin, g.n);
+        if(!gateDone[gx*D+d]){ gateDone[gx*D+d]=1; addE(gin, gout, capL); }
+      }
       const cols=colsOf(gi);
       for(let i=cols.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=cols[i]; cols[i]=cols[j]; cols[j]=t; }
-      for(let i=0;i<cols.length;i++) addE(baseG+gi, baseSL+g.ci*CAP+cols[i], 1);
+      for(let i=0;i<cols.length;i++){ const gout=baseGate+(gx*D+DAY(cols[i]))*2+1; addE(gout, baseSL+g.ci*CAP+cols[i], 1); }
     }
     for(let ci=0;ci<nC;ci++) for(let col=0;col<CAP;col++) if(!isTail(ci,col)) addE(baseSL+ci*CAP+col, SINK, 1);
+    const ecapInit=ecap.slice();
     const lvl=new Int32Array(NN), it=new Int32Array(NN), que=new Int32Array(NN);
     let flow=0;
     for(;;){
@@ -12365,16 +12470,32 @@ function generateScheduleFor(store, attempts){
     if(flow<total) return null;
     const assign=[];
     for(let ci=0;ci<nC;ci++) assign.push(new Array(CAP).fill(null));
-    for(let gi=0;gi<NG;gi++){
-      const g=groups[gi];
-      for(let e=head2[baseG+gi]; e>=0; e=enext[e]){
-        if((e&1)!==0) continue;          /* الحواف الأمامية فقط */
-        if(ecap[e]!==0) continue;        /* غير مستخدمة */
-        const v=eto[e];
-        if(v<baseSL||v>=baseSL+nC*CAP) continue;
-        const col=(v-baseSL)%CAP;
-        if(assign[g.ci][col]) continue;
-        assign[g.ci][col]={sub:g.sub, t:g.t, ti:g.ti, kind:g.kind, a:g.a, gi:gi};
+    /* استخراج: لكل بوابة (شعبة، مادة، يوم) — الخانات المستعملة تُوزَّع على مجموعاتها بقدر تدفّق كل منها */
+    for(let gx=0;gx<nGate;gx++){
+      for(let d=0;d<D;d++){
+        const gin=baseGate+(gx*D+d)*2, gout=gin+1;
+        const flows=[];
+        gateGroups[gx].forEach(function(gi){
+          for(let e=head2[baseG+gi]; e>=0; e=enext[e]){
+            if((e&1)!==0||eto[e]!==gin) continue;
+            const amt=ecapInit[e]-ecap[e];
+            if(amt>0) flows.push([gi,amt]);
+          }
+        });
+        if(!flows.length) continue;
+        const cols=[];
+        for(let e=head2[gout]; e>=0; e=enext[e]){
+          if((e&1)!==0) continue;
+          const v=eto[e];
+          if(v<baseSL||v>=baseSL+nC*CAP) continue;
+          if(ecapInit[e]===1&&ecap[e]===0) cols.push((v-baseSL)%CAP);
+        }
+        let fi=0, left=flows[0][1];
+        for(let c=0;c<cols.length&&fi<flows.length;c++){
+          const gi=flows[fi][0], g=groups[gi], col=cols[c];
+          if(!assign[g.ci][col]) assign[g.ci][col]={sub:g.sub, t:g.t, ti:g.ti, kind:g.kind, a:g.a, gi:gi};
+          if(--left<=0){ fi++; if(fi<flows.length) left=flows[fi][1]; }
+        }
       }
     }
     return assign;
@@ -12601,20 +12722,50 @@ function generateScheduleFor(store, attempts){
         return shuffleArr(list);
       });
       const takenBy={};      /* العمود ⇒ رقم الوحدة لهذا المعلم */
-      const tryK=function(i,seen){
+      /* بوابات الحد اليومي: (شعبة، مادة، يوم) لا تستقبل أكثر من حدّها (مرة واحدة للمواد
+         التي لا تتكرر) — يُحترم أثناء المطابقة نفسها، مع إزاحة تعزيزية عند الامتلاء */
+      const colOf=new Array(units.length);
+      const gateMem={};
+      const gk=function(i,d){ return units[i].ci+'|'+units[i].u.sub+'|'+d; };
+      const baseCnt=function(i,d){
+        const ci=units[i].ci, sub=units[i].u.sub; let n=0;
+        for(let p=0;p<P;p++){ const x=assign[ci][d*P+p]; if(x&&x.sub===sub) n++; }
+        return n;
+      };
+      const place=function(i,col){ takenBy[col]=i; colOf[i]=col; const k=gk(i,DAY(col)); (gateMem[k]||(gateMem[k]=[])).push(i); };
+      const unplace=function(i){ const col=colOf[i]; if(col===undefined) return; delete takenBy[col]; const k=gk(i,DAY(col)); const m=gateMem[k]; if(m){ const j=m.indexOf(i); if(j>=0) m.splice(j,1); } colOf[i]=undefined; };
+      const tryK=function(i,seen,seenGate){
         const list=opts[i];
+        const lim=limOf(units[i].ci, units[i].u.sub);
         for(let k=0;k<list.length;k++){
           const col=list[k];
           if(seen[col]) continue;
-          seen[col]=1;
+          const d=DAY(col), key=gk(i,d);
           const other=takenBy[col];
-          if(other===undefined||tryK(other,seen)){ takenBy[col]=i; return true; }
+          const mem=gateMem[key]||[];
+          const occ=baseCnt(i,d)+mem.length-((other!==undefined&&gk(other,d)===key)?1:0);
+          if(occ<lim){
+            seen[col]=1;
+            if(other===undefined){ place(i,col); return true; }
+            unplace(other); place(i,col);
+            if(tryK(other,seen,seenGate)) return true;
+            unplace(i); place(other,col);
+          } else if(other===undefined && !seenGate[key]){
+            seenGate[key]=1; seen[col]=1;
+            const ms=mem.slice();
+            for(let yi=0;yi<ms.length;yi++){
+              const y=ms[yi], cy=colOf[y];
+              unplace(y); place(i,col);
+              if(tryK(y,seen,seenGate)) return true;
+              unplace(i); place(y,cy);
+            }
+          }
         }
         return false;
       };
       let fail=false;
       for(let i=0;i<units.length;i++){
-        if(!tryK(i,new Uint8Array(CAP))){ fail=true; break; }
+        if(!tryK(i,new Uint8Array(CAP),{})){ fail=true; break; }
       }
       if(fail) return null;
       for(const colKey in takenBy){
@@ -12819,17 +12970,15 @@ function generateScheduleFor(store, attempts){
     }
     /* صرامة الموضوع: مرة-واحدة-يوميًا + سقف الرياضيات/العربي المتوازن */
     function strictAt(ci,sid){
-      const W=subCnt[ci].get(sid)||0;
-      if(W<=D && onceFast(sid)) return true;
+      if(strictOnceCS(ci,sid)) return true;
       const k=kindFast(sid);
       return k==='arabic'||k==='math';
     }
     /* هل استقبال sid في اليوم dTo داخل الشعبة ci يبقي بلا تكرار صارم؟ */
     function dupOK(ci,sid,dTo){
-      const W=subCnt[ci].get(sid)||0;
-      if(W<=D && onceFast(sid)) return (dayCount[ci][dTo].get(sid)||0)===0;
+      if(strictOnceCS(ci,sid)) return (dayCount[ci][dTo].get(sid)||0)===0;
       const k=kindFast(sid);
-      if(k==='arabic'||k==='math') return (dayCount[ci][dTo].get(sid)||0)<dayCapOfW(W);
+      if(k==='arabic'||k==='math') return (dayCount[ci][dTo].get(sid)||0)<capCS(ci,sid);
       return true;
     }
     let steps=0;
@@ -12928,7 +13077,7 @@ function generateScheduleFor(store, attempts){
   let unitTotal=0; cls.forEach(function(c){ unitTotal+=c.units.length; });
   let deadline=Date.now()+Math.min(5000, Math.max(1200, unitTotal*8));
   let bestState=null, bestSoft=1e18, rounds=0;
-  let __retryLeft=1;
+  let __retryLeft=1, __onlyDupSeen=false;
   while(true){
   while(Date.now()<deadline){
     rounds++;
@@ -12947,8 +13096,9 @@ function generateScheduleFor(store, attempts){
       }
     }
     if(hardTotal()!==0) fixHard(Math.min(700, Math.max(150, (deadline-Date.now())/3)));
+    if(dupV>0 && busyV+offV+peV+firstV+banV===0) __onlyDupSeen=true;
     if(hardTotal()===0){ fixFirstPeriod(); fixDuplicates(); }
-    if(hardTotal()===0&&!audit()){ continue; }
+    if(hardTotal()===0&&!audit(true)){ continue; }
     if(hardTotal()!==0) continue;
     annealSoft(deadline);
     if(hardTotal()!==0) fixHard(150);
@@ -12980,6 +13130,12 @@ function generateScheduleFor(store, attempts){
   }
   /* احتياطي مضمون: حل التدفق نفسه (بلا أي تعارض وبفراغات نهاية اليوم) */
   loadFlow();
+  if(hardTotal()!==0) fixHard(1500);
+  if(hardTotal()===0){ fixFirstPeriod(); fixDuplicates(); }
+  /* بقيت مخالفة «لا تتكرر في اليوم» وحدها (بلا أي تعارض آخر) ⇒ سبب واضح بدل رسالة عامة */
+  if(busyV+offV+peV+firstV+banV===0 && (dupV>0 || (hardTotal()===0&&audit(true)&&!audit()))){
+    return {success:false, unplaced:[], reason:'once-per-day-unsat'};
+  }
   if(hardTotal()===0&&audit()){
     const preB=snapshot();
     let __bs2=0, bp2=0;
@@ -12991,6 +13147,7 @@ function generateScheduleFor(store, attempts){
     commitSchedule();
     return {success:true, unplaced:[], score:1, teacherGapTotal:gapTotal, restartsTried:rounds, plainFlow:true, balSteps:__bs2, pairApplied:__pair.applied, pairBlocks:__pair.pairs, pairClasses:__pair.classes};
   }
+  if(__onlyDupSeen) return {success:false, unplaced:[], reason:'once-per-day-unsat'};
   return {success:false, unplaced:[], reason:'unsat'};
 }
 function generateFullSchedule(){
@@ -13398,6 +13555,30 @@ document.getElementById('btnGenerate').addEventListener('click', async ()=>{
         extra:days
       });
       toast('عدد المعلمين المتاحين في الحصة الأولى غير كافٍ','err');
+    } else if(result.reason==='once-per-day-infeasible'){
+      const _clsAll = allClassesOf(DB);
+      const items = (result.onceIssues||[]).slice(0,8).map(function(g){
+        const fp=String(g.key||'').split('__');
+        const lab=(_clsAll.find(function(c){ return c.key===g.key; })||{}).label||g.key;
+        return {nav:'assign', stage:fp[0], section:fp[1], icon:'📅',
+          label:esc(lab)+' — '+esc(g.subject),
+          detail:'نصابها '+g.weekly+' حصص أسبوعيًا، ومعلمها يحضر '+g.days+' أيام فقط — لا يمكن أن تأتي مرة واحدة في اليوم'};
+      });
+      rd.innerHTML = genErrorCard({
+        title:'مادة لا يجوز تكرارها في اليوم نصابها أكبر من أيام حضور معلمها',
+        lead:'الفنية والرياضة والعلوم والفيزياء والكيمياء والأحياء والإسلامية والكردية والأخلاقية لا تتكرر في اليوم الواحد للشعبة، فيجب أن يحضر معلمها أيامًا بعدد حصصها على الأقل.',
+        fix:fixChip('قلّل أيام تفريغ المعلم','teachers')+' ، أو '+fixChip('عدّل النصاب أو المعلم','assign')+' — ثم أعد التوليد.',
+        items:items
+      });
+      toast('مادة لا يجوز تكرارها يوميًا نصابها أكبر من أيام حضور معلمها','err');
+    } else if(result.reason==='once-per-day-unsat'){
+      rd.innerHTML = genErrorCard({
+        title:'تعذّر منع تكرار المواد في اليوم الواحد مع بقية القيود',
+        lead:'وُجد توزيع بلا تعارض، لكنه يكرر إحدى المواد الممنوع تكرارها يوميًا؛ ولن يُكتب جدول مخالف.',
+        fix:'خفّف القيود: '+fixChip('أيام التفريغ','teachers')+' ، '+fixChip('قيد «لا يبدأ بالحصة الأولى»','teachers')+' ، أو '+fixChip('ساحات الرياضة','pecourts')+' — ثم أعد التوليد.',
+        items:[]
+      });
+      toast('تعذّر منع تكرار المواد يوميًا بالقيود الحالية','err');
     } else if(result.reason==='unsat'){
       const bl = (result.bottleneck||[]).map(function(g){
         const tn=(DB.teachers.find(function(x){return x.id===g.teacherId;})||{}).name||g.teacherId;
@@ -13421,7 +13602,7 @@ document.getElementById('btnGenerate').addEventListener('click', async ()=>{
       });
       toast('التوزيع اكتمل جزئيًا، راجع الحصص المتبقية','err');
     }
-    const _refuseReasons = ['no-classes','incomplete-load','incomplete-teachers','over-capacity','pe-capacity','first-period-capacity','unsat']; if(_refuseReasons.indexOf(result.reason)<0){
+    const _refuseReasons = ['no-classes','incomplete-load','incomplete-teachers','over-capacity','pe-capacity','first-period-capacity','unsat','once-per-day-infeasible','once-per-day-unsat']; if(_refuseReasons.indexOf(result.reason)<0){
       rd.insertAdjacentHTML('beforeend',
         '<div class="open-full-wrap"><button type="button" class="open-full-btn" id="btnOpenFullAfterGen">'+
           '<span class="of-ico">📋</span>'+
@@ -15401,8 +15582,70 @@ function printMasterSchedule(paper, store, orient){
   try{ window.addEventListener('afterprint', cleanup, {once:true}); }catch(e){}
   setTimeout(cleanup, 120000);
 
+  /* وضع «المعلم بجانب المادة»: حجم الخط يُحسب من القياس الفعلي لنصف الخلية وللأسماء نفسها
+     (أكبر حجم يتسع للاسم ولارتفاع الصف) بدل التقدير الثابت الذي كان يصغّر الكتابة كثيرًا.
+     لا يتغير أي عرض عمود أو ارتفاع صف أو تخطيط — الخط فقط. */
+  const fitSideText = ()=>{
+    if(getMasterCellLayout()!=='side') return;
+    const mt = host.querySelector('#masterPrintTable');           /* نسخة القياس (معروضة خارج الشاشة) */
+    const ot = out.querySelector('#masterPrintTable');            /* النسخة التي تُطبع */
+    if(!mt) return;
+    const ctx = document.createElement('canvas').getContext('2d');
+    const sel = ['.mp-cell b', '.mp-cell span'];
+    const userFs = Math.max(13, getMasterFontSize()) + 3;
+    const MIN_K = 0.62;                                           /* أقصى تضييق أفقي مسموح للاسم الطويل */
+    sel.forEach(function(q, gi){
+      const ml = mt.querySelectorAll(q), ol = ot ? ot.querySelectorAll(q) : [];
+      const items = [];
+      Array.prototype.forEach.call(ml, function(el, idx){
+        if(el.closest('.mp-cell.empty')) return;
+        const txt = (el.textContent||'').trim(); if(!txt) return;
+        const cs = getComputedStyle(el); if(cs.display==='none') return;
+        const avail = el.clientWidth - 3;
+        const cell = el.closest('td') || el.parentElement;
+        const rowH = cell ? cell.clientHeight : 0;
+        if(avail < 8 || rowH < 8) return;
+        items.push({el:el, twin:ol[idx]||null, txt:txt, avail:avail, fitH:(rowH-2)/1.2, fam:(cs.fontFamily||'Tajawal, sans-serif')});
+      });
+      if(!items.length) return;
+      const hs = items.map(function(x){ return x.fitH; }).sort(function(a,b){ return a-b; });
+      let fsU = Math.min(userFs, hs[Math.floor(hs.length*0.1)]);
+      if(gi===1) fsU = fsU * 0.92;                                /* المعلم أصغر قليلًا من المادة */
+      fsU = Math.max(9, fsU);
+      items.forEach(function(x){
+        ctx.font = '900 ' + fsU + 'px ' + x.fam;
+        const w = ctx.measureText(x.txt).width || 1;
+        let fs = Math.min(fsU, x.fitH), k = x.avail / (w * fs / fsU);
+        if(k >= 1) k = 1;
+        else if(k < MIN_K){ fs = Math.max(8, fs * k / MIN_K); k = MIN_K; }
+        [x.el, x.twin].forEach(function(e){
+          if(!e) return;
+          e.style.setProperty('font-size', fs.toFixed(2)+'px', 'important');
+          e.style.setProperty('line-height', '1.15', 'important');
+          e.style.setProperty('display', 'flex', 'important');
+          e.style.setProperty('justify-content', 'center', 'important');
+          e.style.setProperty('align-items', 'center', 'important');
+          if(k < 1){
+            /* الاسم الأطول من نصف الخلية: يُضيَّق أفقيًا فقط ليظهر كاملًا بنفس ارتفاع الخط */
+            if(!e.querySelector('nbfit')){
+              const w2 = document.createElement('nbfit');
+              while(e.firstChild) w2.appendChild(e.firstChild);
+              e.appendChild(w2);
+            }
+            const w2 = e.querySelector('nbfit');
+            w2.style.cssText = 'display:inline-block!important;white-space:nowrap!important;flex:none!important;max-width:none!important;overflow:visible!important;transform-origin:center center!important;transform:scaleX(' + k.toFixed(4) + ')!important;';
+            e.style.setProperty('display', 'flex', 'important');
+            e.style.setProperty('justify-content', 'center', 'important');
+            e.style.setProperty('align-items', 'center', 'important');
+            e.style.setProperty('text-overflow', 'clip', 'important');
+          }
+        });
+      });
+    });
+  };
+
   const run = ()=>{
-    try{ applyFit(); applyFit(); }catch(err){ console && console.error && console.error(err); }
+    try{ applyFit(); applyFit(); fitSideText(); applyFit(); }catch(err){ console && console.error && console.error(err); }
     const rt = document.getElementById('masterPrintTable');
     if(!rt || rt.rows.length < 2){ toast('تعذّر تجهيز الجدول للطباعة','err'); cleanup(); return; }
     host.innerHTML = '';
