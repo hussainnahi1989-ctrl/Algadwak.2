@@ -6369,6 +6369,186 @@ function nibrasRestoreDaysForPdf(reverts){
   });
 }
 
+/* ===== إصلاح تقطّع الأسماء العربية في تصدير PDF =====
+   html2canvas يرسم الكلمة حرفًا حرفًا (فتنفصل الحروف وتتبعثر) عندما يُقصّ النص بعلامة الحذف
+   (text-overflow:ellipsis) لأن الكلمة المقصوصة تُقاس كأكثر من مستطيل. هذه الدالة تعمل أثناء
+   الالتقاط فقط: تأخذ كل اسم لا يتّسع لخليته، وتضغطه أفقيًا بنسبة دقيقة ليظهر كاملًا ومتصلًا داخل
+   الخلية نفسها، دون تغيير حجم الخط أو ارتفاعه أو عرض الأعمدة أو أي قياس في التخطيط.
+   ثم تُعيد كل شيء كما كان حرفيًا بعد الالتقاط. */
+function nibrasFitOverflowTextForPdf(root){
+  var reverts = [];
+  if(!root || !root.querySelectorAll) return reverts;
+  var els;
+  try{ els = root.querySelectorAll('b, span, div, strong, small, i, em, p'); }catch(e){ return reverts; }
+  var cand = [];
+  for(var i=0; i<els.length; i++){
+    var el = els[i];
+    try{
+      if(el.children.length) continue;                    /* عناصر نصية نهائية فقط */
+      var txt = el.textContent;
+      if(!txt || !txt.trim()) continue;
+      var cs = window.getComputedStyle(el);
+      if(cs.display === 'none' || cs.display.indexOf('inline') === 0 || cs.display.indexOf('table') === 0) continue;
+      if(cs.whiteSpace.indexOf('nowrap') === -1 && cs.textOverflow !== 'ellipsis') continue;
+      if(cs.writingMode && cs.writingMode.indexOf('vertical') === 0) continue;
+      if(el.scrollWidth <= el.clientWidth + 1) continue;  /* يتّسع أصلًا — لا نلمسه */
+      cand.push(el);
+    }catch(e){}
+  }
+  /* المرحلة الأولى: التغليف (كتابة فقط) */
+  var items = [];
+  cand.forEach(function(el){
+    try{
+      var item = { el:el, style:el.getAttribute('style'), nodes:Array.prototype.slice.call(el.childNodes) };
+      /* وسم خاص (ليس span) حتى لا تلتقطه قواعد مثل td.slot span{...!important} فتعيد القصّ */
+      var wrap = document.createElement('nbfit');
+      wrap.setAttribute('data-nb-fit','1');
+      wrap.style.cssText = 'display:inline-block!important;flex:none!important;white-space:nowrap!important;max-width:none!important;min-width:0!important;width:auto!important;overflow:visible!important;text-overflow:clip!important;margin:0!important;padding:0!important;border:0!important;letter-spacing:inherit!important;line-height:inherit!important;font:inherit!important;color:inherit!important;text-align:inherit!important;transform-origin:center center!important;';
+      item.nodes.forEach(function(n){ wrap.appendChild(n); });
+      el.appendChild(wrap);
+      el.style.setProperty('text-overflow', 'clip', 'important');
+      el.style.setProperty('white-space', 'nowrap', 'important');
+      el.style.setProperty('display', 'flex', 'important');
+      el.style.setProperty('justify-content', 'center', 'important');
+      el.style.setProperty('align-items', 'center', 'important');
+      item.wrap = wrap;
+      items.push(item);
+      reverts.push(item);
+    }catch(e){}
+  });
+  /* المرحلة الثانية: القياس ثم الضغط الأفقي (قياسات تخطيطية لا تتأثر بتحويلات الآباء) */
+  items.forEach(function(item){
+    try{
+      var el = item.el, cs = window.getComputedStyle(el);
+      var avail = el.clientWidth - (parseFloat(cs.paddingLeft)||0) - (parseFloat(cs.paddingRight)||0);
+      var w = item.wrap.offsetWidth;
+      if(avail > 2 && w > avail){
+        var k = Math.max(0.3, (avail - 1) / w);
+        item.wrap.style.setProperty('transform', 'scaleX(' + k.toFixed(4) + ')', 'important');
+      }
+    }catch(e){}
+  });
+  return reverts;
+}
+/* ===== ملاءمة الجدول المقسوم داخل النسخة التي تُرسم فعلًا =====
+   كان معامل الضغط الرأسي يُقاس على الصفحة الحية؛ وعلى أندرويد يُكبَّر النص فيها تلقائيًا فيبدو
+   الجدول أطول مما هو عليه، ثم يُطبَّق المعامل على نسخة html2canvas (حيث الجدول بحجمه الطبيعي)
+   فيتقلص الجدول ويتوقف قبل التذييل. هنا نعيد القياس داخل النسخة المرسومة نفسها: يُضغط الجدول
+   فقط إذا تجاوز مساحته، ويصل دائمًا إلى بداية التذييل تمامًا دون أن يلمسه. */
+/* فحص سريع: هل خرجت لوحة الرسم فارغة (شفافة) أو سوداء بالكامل بسبب فشل صامت في ذاكرة الجهاز؟ */
+function nibrasCanvasLooksBlank(cv){
+  try{
+    if(!cv || !cv.width || !cv.height) return true;
+    var t = document.createElement('canvas'); t.width = 48; t.height = 64;
+    var x = t.getContext('2d'); x.drawImage(cv, 0, 0, 48, 64);
+    var d = x.getImageData(0, 0, 48, 64).data, bad = 0, n = d.length / 4;
+    for(var j=0; j<d.length; j+=4){ if(d[j+3] < 10 || (d[j] + d[j+1] + d[j+2]) < 24) bad++; }
+    t.width = 0; t.height = 0;
+    return bad / n > 0.97;
+  }catch(e){ return false; }
+}
+function nibrasRefitStripsInClone(doc){
+  function fitOne(body, wrap, tbl){
+    wrap.style.transform = 'none';
+    void tbl.offsetHeight;
+    var availH = body.clientHeight;
+    var th = Math.max(tbl.scrollHeight, tbl.offsetHeight, 1);
+    var k = 1;
+    if(availH > 50 && th > availH + 1){
+      k = Math.min(1, Math.max(0.1, (availH - 1) / th));
+      wrap.style.transformOrigin = 'top center';
+      wrap.style.transform = 'scaleY(' + k.toFixed(5) + ')';
+    }
+    return k;
+  }
+  /* القص الأفقي (ورقة عليا + ورقة سفلى): لا نسمح بأن يمر خط القص في منتصف صف.
+     الصف الذي يقطعه الخط يُدفع إلى رأس الورقة الثانية بفاصل أبيض صغير في آخر الورقة الأولى،
+     وإن كان أول صف في يوم جديد يُنقل معه شريط عناوين الشعب. ثم يُعاد ضبط الجدول ليبقى منتهيًا
+     عند التذييل تمامًا. */
+  function alignHorizontalCut(strip, body, wrap, tbl){
+    if(!(strip.offsetHeight > strip.offsetWidth * 1.2)) return;
+    var colCount = 0;
+    try{ Array.prototype.forEach.call(tbl.rows[0].cells, function(c){ colCount += (c.colSpan || 1); }); }catch(e){}
+    if(!colCount) return;
+    var spacer = null, target = null, spacerH = 0;
+    for(var it=0; it<8; it++){
+      var k = fitOne(body, wrap, tbl);
+      var sr = strip.getBoundingClientRect();
+      var cut = sr.top + sr.height / 2;
+      if(spacer){
+        var delta = cut - target.getBoundingClientRect().top;
+        if(Math.abs(delta) <= 0.6) break;
+        spacerH = Math.max(0, spacerH + delta / k);
+        spacer.style.height = spacerH + 'px';
+        spacer.firstChild.style.height = spacerH + 'px';
+        continue;
+      }
+      var cross = null;
+      for(var r=0; r<tbl.rows.length; r++){
+        var rr = tbl.rows[r].getBoundingClientRect();
+        if(rr.top < cut - 1 && rr.bottom > cut + 1){ cross = tbl.rows[r]; break; }
+      }
+      if(!cross) break;
+      target = cross;
+      var insideGroup = false;
+      if(!cross.classList.contains('cut2-h') && !cross.querySelector('td.cut2-day')){
+        insideGroup = true;
+      } else if(cross.querySelector('td.cut2-day')){
+        var prev = cross.previousElementSibling;
+        if(prev && prev.classList.contains('cut2-h')) target = prev;
+      }
+      if(target.parentNode && target.parentNode.tagName === 'THEAD') break;
+      if(insideGroup){
+        var p = cross.previousElementSibling;
+        while(p && !p.querySelector('td.cut2-day')) p = p.previousElementSibling;
+        var dayTd = p && p.querySelector('td.cut2-day');
+        if(dayTd) dayTd.rowSpan = (dayTd.rowSpan || 1) + 1; else insideGroup = false;
+      }
+      spacer = doc.createElement('tr');
+      spacer.className = 'nb-cut-spacer';
+      var td = doc.createElement('td');
+      td.colSpan = Math.max(1, colCount - (insideGroup ? 1 : 0));
+      td.style.cssText = 'padding:0!important;border:none!important;background:#ffffff!important;';
+      spacer.appendChild(td);
+      spacer.style.cssText = 'background:#ffffff!important;';
+      target.parentNode.insertBefore(spacer, target);
+      spacerH = Math.max(0, (cut - target.getBoundingClientRect().top) / k);
+      spacer.style.height = spacerH + 'px';
+      td.style.height = spacerH + 'px';
+    }
+    fitOne(body, wrap, tbl);
+  }
+  try{
+    var sets = [
+      ['.cut2-strip','.cut2-body','.cut2-tbl-wrap','table.cut2-tbl', true],
+      ['.mid-strip','.mid-body','.mid-tbl-wrap','table.mid-tbl', false]
+    ];
+    sets.forEach(function(sel){
+      Array.prototype.forEach.call(doc.querySelectorAll(sel[0]), function(strip){
+        var body = strip.querySelector(sel[1]);
+        var wrap = strip.querySelector(sel[2]) || body;
+        var tbl = strip.querySelector(sel[3]);
+        if(!body || !wrap || !tbl) return;
+        fitOne(body, wrap, tbl);
+        if(sel[4]){ try{ alignHorizontalCut(strip, body, wrap, tbl); }catch(e2){} }
+      });
+    });
+  }catch(e){}
+}
+function nibrasRestoreOverflowTextForPdf(reverts){
+  if(!reverts || !reverts.length) return;
+  reverts.forEach(function(item){
+    try{
+      if(item.wrap && item.wrap.parentNode === item.el){
+        item.nodes.forEach(function(n){ item.el.insertBefore(n, item.wrap); });
+        item.el.removeChild(item.wrap);
+      }
+      if(item.style === null) item.el.removeAttribute('style');
+      else item.el.setAttribute('style', item.style);
+    }catch(e){}
+  });
+}
+
 
 
 /* دالة التنزيل المباشر لملف PDF للجدول الكامل / التجريبي بقياس A3 أفقي
@@ -6687,6 +6867,8 @@ async function downloadDirectFullSchedulePdfCore(isDemo, paper){
     }
     await new Promise(r => setTimeout(r, 180));
 
+    let nbTextFix = null;
+    try{ nbTextFix = nibrasFitOverflowTextForPdf(pageEl); }catch(e_tf){}
     const canvas = await window.html2canvas(pageEl, {
       scale: 2,
       useCORS: true,
@@ -6695,6 +6877,7 @@ async function downloadDirectFullSchedulePdfCore(isDemo, paper){
       windowWidth: 1600,
       windowHeight: 1200
     });
+    try{ nibrasRestoreOverflowTextForPdf(nbTextFix); }catch(e_tf){}
 
     try{ host.remove(); host = null; }catch(e){}
     try{ loaderOverlay.remove(); loaderOverlay = null; }catch(e){}
@@ -7046,14 +7229,18 @@ async function downloadDirectCutTwoPdf(isDemo, orient){
       }
     }catch(e_fit){}
 
+    let nbTextFix2 = null;
+    try{ nbTextFix2 = nibrasFitOverflowTextForPdf(stripEl); }catch(e_tf){}
     const canvas = await window.html2canvas(stripEl, {
       scale: 2,
       useCORS: true,
       backgroundColor: '#ffffff',
       logging: false,
       windowWidth: Math.max(1600, hostWpx + 100),
-      windowHeight: Math.max(1200, hostHpx + 100)
+      windowHeight: Math.max(1200, hostHpx + 100),
+      onclone: function(cdoc){ nibrasRefitStripsInClone(cdoc); }
     });
+    try{ nibrasRestoreOverflowTextForPdf(nbTextFix2); }catch(e_tf){}
 
     try{ host.remove(); host = null; }catch(e){}
     try{ loaderOverlay.remove(); loaderOverlay = null; }catch(e){}
@@ -7236,7 +7423,6 @@ async function nibrasExportPrintOutputAsPDF(sizeMm, customKind, opts){
   var pages = Array.prototype.slice.call(out.children).filter(function(el){ return el.nodeType===1; });
   if(!pages.length){ try{ toast('لا توجد صفحات للتصدير','err'); }catch(e){} return; }
 
-  try{ nibrasFitPrintCellText(); }catch(e){}
   try{ toast('جارٍ تجهيز ملف PDF…','ok'); }catch(e){}
   await nibrasEnsurePdfLibs();
   var jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
@@ -7291,7 +7477,7 @@ async function nibrasExportPrintOutputAsPDF(sizeMm, customKind, opts){
     pg.style.setProperty('page-break-after', 'auto', 'important');
   });
 
-  var dayFixes = null;
+  var dayFixes = null, textFixes = null;
   try{
     if(document.fonts && document.fonts.ready){ try{ await document.fonts.ready; }catch(e){} }
     await new Promise(function(r){ setTimeout(r, 150); });
@@ -7355,14 +7541,31 @@ async function nibrasExportPrintOutputAsPDF(sizeMm, customKind, opts){
       });
     }catch(e_strip_fit){}
     dayFixes = nibrasPrepareDaysForPdf(out);
+    try{ textFixes = nibrasFitOverflowTextForPdf(out); }catch(e_tf){}
 
     var pdf = null;
     for(var i=0;i<pages.length;i++){
       var pg = pages[i];
       var rectW = pg.getBoundingClientRect().width || (singleWmm*96/25.4);
       var scaleFactor = Math.max(2, Math.min(3.5, 2200/Math.max(rectW,1)));
-      var canvas = await window.html2canvas(pg, { scale:scaleFactor, useCORS:true, backgroundColor:'#ffffff', logging:false });
-      var img = canvas.toDataURL('image/jpeg', 0.95);
+      /* على أندرويد قد تفشل لوحة الرسم الكبيرة الثانية بصمت (نفاد ذاكرة اللوحات) فتخرج الصفحة سوداء.
+         نتحقق من كل صفحة بعد رسمها؛ إن خرجت فارغة/سوداء نحرّر الذاكرة ونعيد رسمها بدقة أقل تدريجيًا. */
+      var img = null, tryScale = scaleFactor;
+      for(var attempt=0; attempt<4 && !img; attempt++){
+        if(attempt > 0){ await new Promise(function(r){ setTimeout(r, 350); }); }
+        var canvas = null;
+        try{
+          canvas = await window.html2canvas(pg, { scale:tryScale, useCORS:true, backgroundColor:'#ffffff', logging:false, onclone:function(cdoc){ nibrasRefitStripsInClone(cdoc); } });
+          if(!nibrasCanvasLooksBlank(canvas)){
+            img = canvas.toDataURL('image/jpeg', 0.95);
+            if(!img || img.length < 2000) img = null;
+          }
+        }catch(e_cap){ img = null; }
+        try{ if(canvas){ canvas.width = 0; canvas.height = 0; } }catch(e_free){}
+        canvas = null;
+        tryScale = Math.max(1.2, tryScale * 0.7);
+      }
+      if(!img) throw new Error('تعذّر رسم الصفحة '+(i+1)+' — ذاكرة الجهاز لا تكفي، أغلق التطبيقات الأخرى وأعد المحاولة');
       /* الصفحة في الملف بحجم الورقة الكامل (A4/A3) والمحتوى داخلها بهامش 5مم من كل جهة */
       var fullWmm = singleWmm + 10, fullHmm = singleHmm + 10;
       var orientCode = fullWmm >= fullHmm ? 'l' : 'p';
@@ -7381,6 +7584,7 @@ async function nibrasExportPrintOutputAsPDF(sizeMm, customKind, opts){
     setTimeout(function(){ try{ a.remove(); }catch(e){} }, 1500);
     try{ toast('تم تنزيل ملف PDF: '+fname,'ok'); }catch(e){}
   } finally {
+    try{ if(textFixes) nibrasRestoreOverflowTextForPdf(textFixes); }catch(e_tf){}
     if(dayFixes) nibrasRestoreDaysForPdf(dayFixes);
     restores.forEach(function(r){ if(r.style===null) r.el.removeAttribute('style'); else r.el.setAttribute('style', r.style); });
     if(outPrevStyle===null) out.removeAttribute('style'); else out.setAttribute('style', outPrevStyle);
@@ -7436,49 +7640,6 @@ async function shareTeacherSchedule(teacherId){
   }
 }
 
-/* ═══ م49: ملائم نص خلايا الطباعة — يمنع قصّ الكلمات وأسماء المعلمين والمواد
-   عند كثرة الشعب (خاصة A3): يصغّر خط الخلية تدريجيًا حتى يتسع النص كاملًا
-   بلا قصّ ولا تقطيع حروف، وإن بلغ حدّ الوضوح لجأ إلى لفّ الأسطر عند حدود
-   الكلمات فقط. لا يغيّر أي قياس ورقة أو هامش أو تخطيط — يعمل فقط على ما
-   كان سيُقصّ أصلًا */
-function nibrasFitPrintCellText(){
-  try{
-    const out = document.getElementById('print-output');
-    if(!out || !out.querySelector) return;
-    const els = out.querySelectorAll('.mp-cell > b, .mp-cell > span, .cut2-cell > b, .cut2-cell > span, .mid-cell > b, .mid-cell > span');
-    els.forEach(function(el){
-      try{
-        const txt = (el.textContent||'').trim();
-        if(!txt || txt==='—') return;
-        const cell = el.parentElement; if(!cell) return;
-        const availW = (cell.clientWidth||0) - 2;
-        if(!(availW>4)) return;
-        el.style.setProperty('white-space','nowrap','important');
-        let fs = parseFloat(window.getComputedStyle(el).fontSize) || 11;
-        let guard = 0;
-        while(guard++ < 40 && el.scrollWidth > availW && fs > 6){
-          fs = Math.max(6, Math.round((fs - 0.5)*2)/2);
-          el.style.setProperty('font-size', fs+'px', 'important');
-        }
-        if(el.scrollWidth > availW){
-          /* حدّ الوضوح: لفّ عند حدود الكلمات فقط (لا تقطيع حروف) مع تصغير إضافي حتى يتسع ارتفاعًا */
-          el.style.setProperty('white-space','normal','important');
-          el.style.setProperty('overflow-wrap','break-word','important');
-          el.style.setProperty('word-break','normal','important');
-          el.style.setProperty('line-height','1.05','important');
-          let g2 = 0;
-          while(g2++ < 30 && (el.scrollWidth > availW || (cell.clientHeight>8 && el.scrollHeight > cell.clientHeight-1)) && fs > 5){
-            fs = Math.max(5, fs - 0.5);
-            el.style.setProperty('font-size', fs+'px', 'important');
-          }
-        } else {
-          el.style.setProperty('overflow','hidden','important');
-          el.style.setProperty('text-overflow','clip','important');
-        }
-      }catch(e){}
-    });
-  }catch(e){}
-}
 (function nibrasNativeBridge(){
   var origPrint = window.print.bind(window);
   window.print = function(){
@@ -7491,7 +7652,6 @@ function nibrasFitPrintCellText(){
       }).then(function(){ try{ nibrasHidePrintOverlay(); }catch(e){} });
       return;
     }
-    try{ nibrasFitPrintCellText(); }catch(e){}
     if(window.NibrasAndroid && NibrasAndroid.printInChrome){
       try{ NibrasAndroid.printInChrome(nibrasBuildChromePrintHtml()); }catch(e){}
       setTimeout(nibrasHidePrintOverlay, 50);
