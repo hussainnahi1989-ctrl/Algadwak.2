@@ -4526,7 +4526,20 @@ html[data-theme="night"] .about-badge {
     </div>
     </div>
   <div class="build-pane" id="set-link">
-    <div class="card">
+    <div class="card nb-lock-card" id="nbLinkLock">
+      <h2>🔒 ميزة «ربط جهاز المعلم» — تفعيل مستقل</h2>
+      <p class="hint">توليد باركود تطبيق «جدولي» لهواتف المعلمين ميزة مدفوعة مستقلة، تحتاج مفتاح تفعيل خاصاً بها <b>حتى لو كان البرنامج مفعّلًا</b>. مفتاح البرنامج لا يفعّلها.</p>
+      <div class="nb-lock-dev"><span>رمز الجهاز</span><b id="nbLinkDev" dir="ltr">—</b><button type="button" class="btn btn-outline btn-sm" id="nbLinkDevCopy">نسخ</button></div>
+      <div class="field" style="margin-top:12px">
+        <label>مفتاح تفعيل الميزة (يبدأ بـ QRL)</label>
+        <input type="text" id="nbLinkKey" dir="ltr" placeholder="QRL-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <button type="button" class="btn btn-gold" id="nbLinkActivate">🔓 تفعيل الميزة</button>
+        <a class="btn btn-primary" id="nbLinkWa" href="#" target="_blank" rel="noopener">💬 طلب رمز التفعيل عبر واتساب</a>
+      </div>
+    </div>
+    <div class="card" id="nbLinkBody">
       <h2>ربط جهاز <span id="nbLinkTeacherLbl">المعلم</span> — تطبيق «جدولي»</h2>
       <p class="hint">يحمل الباركود جدول شخص واحد فقط مع تواقيت الحصص، ويُخزَّن في هاتفه دون إنترنت. عند تعديل الجدول أو توليد جدول جديد اعرض الباركود مرة أخرى ليحدّث جدوله.</p>
       <div class="field">
@@ -21527,6 +21540,78 @@ var NbQR = (function(){
   return {encode:encode, toCanvas:toCanvas};
 })();
 
+/* =========================================================================
+   تفعيل مستقل لميزة «ربط جهاز المعلم»: سرّ خاص + بادئة QRL + مخزن مستقل.
+   مفتاح البرنامج (obKeyFor) أو مفتاح أي تطبيق آخر لا يطابقه أبداً.
+   ========================================================================= */
+const NBJL_LS='nibras-jadwal-qrlink-v1';
+const JL_SECRET=(function(){
+  const p=[[74,65,68,87,65,76,73],[81,82,76,73,78,75],[72,78,50,48,50,54]];
+  return p.map(function(a){ return String.fromCharCode.apply(null,a); }).join('~');
+})();
+function jlKeyBody(dev){
+  const clean=obNormKeyStr(dev);
+  const h=obHashWide(JL_SECRET+'#QRLINK#'+clean+'#'+JL_SECRET, 5);
+  let out=''; for(let i=0;i<12;i++) out+=OB_ALPHA[parseInt(h.substr(i*2,2),16)%OB_ALPHA.length];
+  return out;
+}
+function jlKeyValid(key){
+  const k=obNormKeyStr(key);
+  if(!/^QRL/.test(k) || k.length!==15) return false;          /* البادئة إلزامية: مفتاح البرنامج (16 حرفاً بلا QRL) يُرفض */
+  return k.slice(3)===jlKeyBody(obGetDeviceCode());
+}
+function nbLinkActivated(){
+  try{ const o=JSON.parse(localStorage.getItem(NBJL_LS)||'null'); return !!(o && jlKeyValid(o.key)); }catch(e){ return false; }
+}
+function nbLinkWaUrl(){
+  const st=(DB&&DB.settings)||{};
+  const name=(st.schoolName&&String(st.schoolName).trim())||'—';
+  const lv=(typeof schoolLevelLabel==='function'&&schoolLevelLabel())||'غير محدد';
+  const g=st.schoolGender==='boys'?'بنين':st.schoolGender==='girls'?'بنات':st.schoolGender==='mixed'?'مختلطة':'غير محدد';
+  const n=(DB&&DB.teachers||[]).length;
+  const msg='السلام عليكم ورحمة الله\n\n'
+    +'📲 طلب تفعيل ميزة: ربط جهاز المعلم — باركود تطبيق «جدولي»\n'
+    +'ضمن برنامج: الجدول الأسبوعي الذكي\n\n'
+    +'🏫 اسم المدرسة: '+name+'\n'
+    +'🎓 صنف المدرسة: '+lv+'\n'
+    +'👥 نوع الدراسة: '+g+'\n'
+    +'🧑‍🏫 عدد الكادر: '+n+'\n\n'
+    +'🔑 رمز الجهاز:\n'
+    +'━━━━━━━━━━━━━━\n'
+    +'     '+obGetDeviceCode()+'\n'
+    +'━━━━━━━━━━━━━━\n\n'
+    +'أرجو تزويدي بمفتاح تفعيل هذه الميزة المرتبط بهذا الجهاز.';
+  return 'https://wa.me/9647712080871?text='+encodeURIComponent(msg);
+}
+function nbLinkLockRender(){
+  const ok=nbLinkActivated();
+  const lock=document.getElementById('nbLinkLock'), body=document.getElementById('nbLinkBody');
+  if(lock) lock.style.display=ok?'none':'';
+  if(body) body.style.display=ok?'':'none';
+  const dv=document.getElementById('nbLinkDev'); if(dv) dv.textContent=obGetDeviceCode();
+  const wa=document.getElementById('nbLinkWa'); if(wa) wa.href=nbLinkWaUrl();
+}
+document.addEventListener('click', function(e){
+  if(!e.target||!e.target.closest) return;
+  if(e.target.closest('#nbLinkActivate')){
+    e.preventDefault();
+    const inp=document.getElementById('nbLinkKey'); const v=inp?inp.value:'';
+    if(!obNormKeyStr(v)){ toast('اكتب مفتاح التفعيل أولًا','err'); return; }
+    if(jlKeyValid(v)){
+      try{ localStorage.setItem(NBJL_LS, JSON.stringify({key:obNormKeyStr(v), device:obNormKeyStr(obGetDeviceCode()), date:new Date().toISOString()})); }catch(_){}
+      nbLinkLockRender(); nbLinkRender(); toast('✅ تم تفعيل ميزة «ربط جهاز المعلم» على هذا الجهاز','ok');
+    } else {
+      const k=obNormKeyStr(v);
+      toast(/^QRL/.test(k) ? 'المفتاح غير صحيح لهذا الجهاز — تأكد من نسخه كاملًا' : 'هذا ليس مفتاح هذه الميزة — مفتاحها يبدأ بـ QRL ويُطلب بشكل منفصل','err');
+    }
+  } else if(e.target.closest('#nbLinkDevCopy')){
+    e.preventDefault(); const c=obGetDeviceCode();
+    try{ navigator.clipboard.writeText(c).then(function(){ toast('تم نسخ رمز الجهاز','ok'); }).catch(function(){ toast(c,'ok'); }); }catch(_){ toast(c,'ok'); }
+  } else if(e.target.closest('#nbLinkWa')){
+    const a=e.target.closest('#nbLinkWa'); a.href=nbLinkWaUrl();
+  }
+});
+
 /* بيانات معلم واحد فقط بصيغة مختصرة */
 function nbTeacherPayload(tid){
   const te=(DB.teachers||[]).find(function(t){ return t.id===tid; }); if(!te) return null;
@@ -21551,14 +21636,75 @@ function nbTeacherPayload(tid){
       L.push(d,p,si,ci);
     }
   });
+  /* مراقبو كل يوم (بترتيب: المراقب الأول … الخامس) — الأسماء مرة واحدة والأيام تشير إليها بالأرقام */
+  const sn=[], su=[];
+  try{
+    days.forEach(function(_,d){
+      const ids=(typeof supervisorsForDay==='function') ? (supervisorsForDay(d)||[]) : [];
+      const row=ids.map(function(id){
+        if(!id) return -1;
+        const t2=(DB.teachers||[]).find(function(t){ return t.id===id; }); if(!t2) return -1;
+        let k=sn.indexOf(t2.name); if(k<0){ k=sn.length; sn.push(t2.name); } return k;
+      });
+      while(row.length && row[row.length-1]===-1) row.pop();
+      su.push(row);
+    });
+  }catch(e){}
+  /* أيام مراقبة هذا المعلم فقط: حصص كل الشعب في تلك الأيام (لعرض «الحصة الجارية في المدرسة» فقط).
+     ترميز مضغوط: لكل شعبة سلسلة، لكل حصة ٣ رموز = مادة(١) + معلم(٢) بأساس ٦٢، و«~~~» للفراغ */
+  const B62='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const e62=function(n,w){ let o=''; for(let k=0;k<w;k++){ o=B62[n%62]+o; n=Math.floor(n/62); } return o; };
+  const supDays=[]; try{ days.forEach(function(_,d){ const ids=(typeof supervisorsForDay==='function')?(supervisorsForDay(d)||[]):[]; if(ids.indexOf(tid)>=0) supDays.push(d); }); }catch(e){}
+  let sv=null, sc=null, ss=null, st=null;
+  if(supDays.length){
+    sc=[]; ss=[]; st=[]; sv=[];
+    const classes=allClassesOf(DB);
+    classes.forEach(function(c){ sc.push(c.label); });
+    supDays.forEach(function(d){
+      const rows=classes.map(function(c){
+        const g=DB.schedule&&DB.schedule[c.key]&&DB.schedule[c.key].grid; let r='';
+        for(let p=0;p<P;p++){
+          const x=g&&g[d]?g[d][p]:null;
+          if(!x){ r+='~~~'; continue; }
+          const su2=(DB.subjects||[]).find(function(z){ return z.id===x.subjectId; }), sname=su2?su2.name:'';
+          let si=ss.indexOf(sname); if(si<0){ si=ss.length; ss.push(sname); }
+          const t3=(DB.teachers||[]).find(function(z){ return z.id===x.teacherId; });
+          const tname=t3?(typeof formatTeacherTwoPartName==='function'?formatTeacherTwoPartName(t3.name):t3.name):'';
+          let ti=st.indexOf(tname); if(ti<0){ ti=st.length; st.push(tname); }
+          r+=(si<62?B62[si]:'~')+e62(ti,2);
+        }
+        return r.replace(/(~~~)+$/,'');
+      });
+      sv.push([d].concat(rows));
+    });
+  }
   const tt=schoolTerms();
   const obj={a:'NBJ', v:1, s:(DB.settings&&DB.settings.schoolName)||'', n:te.name, i:te.id, g:Math.floor(Date.now()/1000),
-    tm:[tt.one, tt.theOne], d:days, w:days.map(function(n){ return WK.indexOf(n); }), h:sh, f:f, x:(te.excludedDays||[]).map(Number), b:sb, c:cl, l:L};
+    tm:[tt.one, tt.theOne], d:days, w:days.map(function(n){ return WK.indexOf(n); }), h:sh, f:f, x:(te.excludedDays||[]).map(Number), b:sb, c:cl, l:L,
+    sn:sn, su:su};
+  if(sv){ obj.sv=sv; obj.sc=sc; obj.ss=ss; obj.st=st; }
   return {obj:obj, json:JSON.stringify(obj), lessons:L.length/4, teacher:te};
 }
 function nbLinkCode(json){ try{ return 'NBJ1:'+btoa(unescape(encodeURIComponent(json))); }catch(e){ return ''; } }
+/* ضغط الحمولة: deflate ثم base64 (NBJZ:) — يُستعمل فقط إن كان أقصر؛ وإلا يبقى النص كما هو */
+function nbPack(json){
+  return new Promise(function(resolve){
+    try{
+      if(typeof CompressionStream==='undefined'){ resolve(json); return; }
+      const bytes=new TextEncoder().encode(json);
+      const cs=new CompressionStream('deflate-raw');
+      const w=cs.writable.getWriter(); w.write(bytes); w.close();
+      new Response(cs.readable).arrayBuffer().then(function(buf){
+        const u=new Uint8Array(buf); let bin=''; for(let i=0;i<u.length;i+=8192) bin+=String.fromCharCode.apply(null, u.subarray(i,i+8192));
+        const packed='NBJZ:'+btoa(bin);
+        resolve(packed.length < bytes.length ? packed : json);
+      }).catch(function(){ resolve(json); });
+    }catch(e){ resolve(json); }
+  });
+}
 function nbLinkRender(){
   const pane=document.getElementById('set-link'); if(!pane) return;
+  nbLinkLockRender();
   const tt=schoolTerms();
   const sel=document.getElementById('nbLinkTeacher');
   const cur=sel?sel.value:'';
@@ -21570,17 +21716,21 @@ function nbLinkRender(){
   const lbl=document.getElementById('nbLinkTeacherLbl'); if(lbl) lbl.textContent=tt.theOne;
 }
 function nbLinkShowQR(){
+  if(!nbLinkActivated()){ nbLinkLockRender(); toast('هذه الميزة تحتاج تفعيلًا مستقلًا — اطلب رمزها عبر واتساب','err'); return; }
   const sel=document.getElementById('nbLinkTeacher'); const tid=sel&&sel.value;
   const tt=schoolTerms();
   if(!tid){ toast('اختر '+tt.theOne+' أولًا','err'); return; }
   const pl=nbTeacherPayload(tid); if(!pl) return;
   if(!pl.lessons){ toast('لا توجد حصص لـ«'+pl.teacher.name+'» في الجدول الحالي — ولّد الجدول أولًا','err'); return; }
-  let qr; try{ qr=NbQR.encode(pl.json,'M'); }catch(e){ toast('بيانات '+tt.theOne+' أكبر من سعة الباركود — استخدم «نسخ رمز الربط»','err'); return; }
+  nbPack(pl.json).then(function(text){ nbLinkShowQR2(pl, text, tt); });
+}
+function nbLinkShowQR2(pl, text, tt){
+  let qr; try{ qr=NbQR.encode(text, text.length>1100?'L':'M'); }catch(e){ toast('بيانات '+tt.theOne+' أكبر من سعة الباركود — استخدم «نسخ رمز الربط»','err'); return; }
   const old=document.getElementById('nbLinkQR'); if(old) old.remove();
   const m=document.createElement('div'); m.id='nbLinkQR'; m.className='nb-swap-bg';
   m.innerHTML='<div class="nb-swap-card nb-qr-card" role="dialog" aria-label="باركود الربط">'
     +'<div class="nb-swap-h">📱 باركود ربط جهاز '+esc(tt.theOne)+'</div>'
-    +'<div class="nb-qr-who"><b>'+esc(pl.teacher.name)+'</b> · '+pl.lessons+' '+((pl.lessons>=3&&pl.lessons<=10)?'حصص':'حصة')+' أسبوعيًا</div>'
+    +'<div class="nb-qr-who"><b>'+esc(pl.teacher.name)+'</b> · '+pl.lessons+' '+((pl.lessons>=3&&pl.lessons<=10)?'حصص':'حصة')+' أسبوعيًا'+(pl.obj.sv?' · يشمل يوم مراقبته':'')+'</div>'
     +'<div class="nb-qr-box" id="nbQrBox"></div>'
     +'<div class="nb-qr-steps">افتح تطبيق «جدولي» على هاتف '+esc(tt.theOne)+' ← «ربط بجدول المدرسة» ← وجّه الكاميرا نحو الباركود.</div>'
     +'<div class="nb-swap-act"><button type="button" class="btn btn-gold btn-sm" id="nbQrCopy">نسخ رمز الربط</button>'
@@ -21590,12 +21740,14 @@ function nbLinkShowQR(){
   const px=Math.min(560, Math.floor(Math.min(window.innerWidth, window.innerHeight)*0.62));
   const cv=NbQR.toCanvas(qr, px*2); cv.style.width=px+'px'; cv.style.height=px+'px'; box.appendChild(cv);
   m.addEventListener('click', function(e){ if(e.target===m || (e.target.closest&&e.target.closest('#nbQrClose'))) m.remove(); });
-  document.getElementById('nbQrCopy').addEventListener('click', function(){ nbLinkCopy(pl); });
+  document.getElementById('nbQrCopy').addEventListener('click', function(){ nbLinkCopy(pl, text); });
 }
-function nbLinkCopy(pl){
+function nbLinkCopy(pl, packed){
+  if(!nbLinkActivated()){ nbLinkLockRender(); toast('هذه الميزة تحتاج تفعيلًا مستقلًا — اطلب رمزها عبر واتساب','err'); return; }
   if(!pl){ const sel=document.getElementById('nbLinkTeacher'); if(!sel||!sel.value){ toast('اختر '+schoolTerms().theOne+' أولًا','err'); return; } pl=nbTeacherPayload(sel.value); }
   if(!pl||!pl.lessons){ toast('لا توجد حصص لهذا '+schoolTerms().one+' في الجدول الحالي','err'); return; }
-  const code=nbLinkCode(pl.json);
+  if(packed===undefined){ nbPack(pl.json).then(function(t){ nbLinkCopy(pl, t); }); return; }
+  const code=/^NBJZ:/.test(packed) ? packed : nbLinkCode(pl.json);
   const done=function(){ toast('نُسخ رمز الربط — أرسله إلى «'+pl.teacher.name+'» والصقه في تطبيق «جدولي»','ok'); };
   if(navigator.share){ navigator.share({title:'رمز ربط جدولي — '+pl.teacher.name, text:code}).then(done).catch(function(){ fallback(); }); return; }
   fallback();
@@ -21611,6 +21763,67 @@ document.addEventListener('click', function(e){
   else if(e.target.closest('#nbLinkCopyBtn')){ e.preventDefault(); nbLinkCopy(null); }
   else if(e.target.closest('#settingsNav [data-set="link"]')){ setTimeout(nbLinkRender, 0); }
 });
+
+/* =========================================================================
+   بطاقة تعريف «جدولي» — تظهر مرة واحدة فقط، وللزبائن المفعّلين سابقًا فقط
+   تنتظر انتهاء شاشة البداية وأي نافذة أخرى (الإعداد، الترحيب، التفعيل، ما الجديد)
+   ========================================================================= */
+const NBJ_PROMO_LS='nibras-jadwali-promo-seen-v1';
+function nbPromoBlocked(){
+  const h=document.documentElement;
+  if(['setup-open','welcome-open','activate-open'].some(function(c){ return h.classList.contains(c); })) return true;
+  const sg=document.getElementById('splashGate'); if(sg && sg.offsetParent!==null && getComputedStyle(sg).display!=='none') return true;
+  if(document.querySelector('.nwn-back')) return true;
+  const mr=document.getElementById('modal-root'); if(mr && mr.children.length) return true;
+  if(document.querySelector('.nb-swap-bg')) return true;
+  return false;
+}
+function nbPromoShow(){
+  try{ localStorage.setItem(NBJ_PROMO_LS, new Date().toISOString()); }catch(e){}
+  const tt=schoolTerms();
+  const m=document.createElement('div'); m.id='nbPromo'; m.className='nb-promo-bg';
+  m.innerHTML='<div class="nb-promo" role="dialog" aria-label="ميزة جديدة">'
+    +'<div class="nb-promo-top"><span class="nb-promo-new">جديد</span><div class="nb-promo-ic">📲</div>'
+    +'<h2>تطبيق «جدولي» لهواتف '+esc(tt.thePluralGen)+'</h2>'
+    +'<p>اربط هاتف كل '+esc(tt.one)+' بجدول المدرسة بباركود واحد — دون إنترنت.</p></div>'
+    +'<ul class="nb-promo-list">'
+    +'<li><i>📅</i><div><b>جدوله الشخصي فقط</b><span>مع تواقيت الحصص وعدّ تنازلي للدرس الجاري والقادم.</span></div></li>'
+    +'<li><i>🔔</i><div><b>تنبيه بدء الدرس وانتهائه</b><span>بجرس يختاره أو بصوت عربي ناطق — حتى والتطبيق مغلق.</span></div></li>'
+    +'<li><i>👁️</i><div><b>المراقبون ولوحة المراقبة الحية</b><span>مراقبو اليوم والأسبوع، ويرى المراقب الحصة الجارية في كل الشعب يوم مراقبته.</span></div></li>'
+    +'<li><i>🔕</i><div><b>تنبيهات ذكية</b><span>تتوقف تلقائيًا يوم الجمعة وفي يوم التفريغ.</span></div></li>'
+    +'<li><i>🌙</i><div><b>وضع ليلي وحجم خط قابل للتكبير</b><span>بتصميم مطابق للبرنامج.</span></div></li>'
+    +'</ul>'
+    +'<div class="nb-promo-note">ميزة إضافية تُفعَّل بمفتاح خاص بها من: الإعدادات ← ربط جهاز '+esc(tt.theOne)+'</div>'
+    +'<div class="nb-promo-act">'
+    +'<a class="btn btn-gold" id="nbPromoWa" href="'+nbLinkWaUrl()+'" target="_blank" rel="noopener">💬 اطلب تفعيل الميزة</a>'
+    +'<button type="button" class="btn btn-primary" id="nbPromoGo">🔗 عرض الميزة</button>'
+    +'<button type="button" class="btn btn-outline" id="nbPromoLater">لاحقًا</button>'
+    +'</div></div>';
+  document.body.appendChild(m);
+  const close=function(){ m.classList.add('out'); setTimeout(function(){ m.remove(); }, 220); };
+  m.addEventListener('click', function(e){
+    if(e.target===m || (e.target.closest&&e.target.closest('#nbPromoLater'))){ close(); return; }
+    if(e.target.closest&&e.target.closest('#nbPromoWa')){ e.target.closest('#nbPromoWa').href=nbLinkWaUrl(); setTimeout(close, 300); return; }
+    if(e.target.closest&&e.target.closest('#nbPromoGo')){
+      close();
+      try{ const t=document.querySelector('.tab-btn[data-view="settings"]'); if(t) t.click(); setTimeout(function(){ const b=document.querySelector('#settingsNav [data-set="link"]'); if(b) b.click(); }, 120); }catch(_){}
+    }
+  });
+}
+(function(){
+  try{
+    if(localStorage.getItem(NBJ_PROMO_LS)) return;                 /* عُرضت سابقًا ⇒ لا تُعرض أبدًا */
+    if(typeof nibrasIsActivated!=='function' || !nibrasIsActivated()) return;   /* للمفعّلين فقط */
+    if(typeof nbLinkActivated==='function' && nbLinkActivated()){ localStorage.setItem(NBJ_PROMO_LS,'already-active'); return; }
+    let tries=0, calm=0;
+    const iv=setInterval(function(){
+      tries++;
+      if(nbPromoBlocked()){ calm=0; } else { calm++; }
+      if(calm>=3){ clearInterval(iv); nbPromoShow(); }               /* هدوء ٣ ثوانٍ متتالية بلا أي نافذة */
+      if(tries>180) clearInterval(iv);
+    }, 1000);
+  }catch(e){}
+})();
 
 
 init();
@@ -22010,6 +22223,43 @@ html[data-theme="night"] .nb-tc-cls li{ background:rgba(126,196,255,.07); }
 .nb-qr-box canvas{ image-rendering:pixelated; image-rendering:crisp-edges; }
 .nb-qr-steps{ font-size:13px; font-weight:700; line-height:1.9; margin-top:10px; opacity:.85; }
 @media print{ #nbLinkQR{ display:none !important; } }
+</style>
+<style id="nibras-jlink-css">
+.nb-lock-card{ border:1.5px solid rgba(196,160,74,.55) !important; }
+.nb-lock-dev{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 12px; border-radius:12px; background:rgba(11,77,88,.06); margin-top:8px; }
+.nb-lock-dev span{ font-size:13px; font-weight:800; opacity:.8; }
+.nb-lock-dev b{ font-size:20px; letter-spacing:1.5px; font-family:ui-monospace,Menlo,Consolas,monospace; }
+html[data-theme="night"] .nb-lock-dev{ background:rgba(126,196,255,.07); }
+#nbLinkWa{ text-decoration:none; display:inline-flex; align-items:center; }
+</style>
+<style id="nibras-promo-css">
+.nb-promo-bg{ position:fixed; inset:0; z-index:100001; background:rgba(3,14,20,.62); display:flex; align-items:center; justify-content:center; padding:16px; animation:nbpIn .25s ease; }
+.nb-promo-bg.out{ opacity:0; transition:opacity .2s; }
+@keyframes nbpIn{ from{ opacity:0; } to{ opacity:1; } }
+.nb-promo{ width:100%; max-width:470px; max-height:92vh; overflow:auto; border-radius:22px; background:#fff; color:#08303a; direction:rtl;
+  box-shadow:0 30px 70px -18px rgba(0,0,0,.6); animation:nbpUp .3s ease; }
+@keyframes nbpUp{ from{ transform:translateY(16px) scale(.98); } to{ transform:none; } }
+.nb-promo-top{ position:relative; text-align:center; color:#fff; padding:22px 18px 18px; border-radius:22px 22px 0 0;
+  background:linear-gradient(150deg,#0e6a78 0%,#04272d 100%); box-shadow:inset 0 -3px 0 #d9b55c; }
+.nb-promo-new{ position:absolute; top:14px; left:14px; font-size:12px; font-weight:900; padding:4px 10px; border-radius:99px; background:linear-gradient(180deg,#f3dc95,#d9b55c); color:#2a1d02; }
+.nb-promo-ic{ width:64px; height:64px; margin:0 auto 8px; border-radius:18px; display:grid; place-items:center; font-size:34px; background:rgba(255,255,255,.12); border:1px solid rgba(243,220,149,.5); }
+.nb-promo-top h2{ margin:0; font-size:20px; line-height:1.45; }
+.nb-promo-top p{ margin:6px 0 0; font-size:14px; opacity:.92; line-height:1.7; font-weight:700; }
+.nb-promo-list{ list-style:none; margin:0; padding:14px 16px 6px; display:flex; flex-direction:column; gap:10px; }
+.nb-promo-list li{ display:flex; gap:10px; align-items:flex-start; }
+.nb-promo-list i{ font-style:normal; flex:none; width:34px; height:34px; border-radius:10px; display:grid; place-items:center; background:rgba(11,77,88,.08); font-size:17px; }
+.nb-promo-list b{ display:block; font-size:14.5px; }
+.nb-promo-list span{ font-size:13px; color:#3e6670; font-weight:600; line-height:1.6; }
+.nb-promo-note{ margin:6px 16px 0; padding:8px 12px; border-radius:10px; font-size:12.5px; font-weight:800; color:#7a5a12; background:rgba(217,181,92,.16); text-align:center; line-height:1.7; }
+.nb-promo-act{ display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:14px 16px 16px; }
+.nb-promo-act .btn{ justify-content:center; text-decoration:none; display:flex; align-items:center; }
+.nb-promo-act #nbPromoLater{ grid-column:1 / -1; }
+html[data-theme="night"] .nb-promo{ background:#0e1e3d; color:#eef6ff; }
+html[data-theme="night"] .nb-promo-top{ background:linear-gradient(150deg,#1b3a6b 0%,#0b1830 100%); box-shadow:inset 0 -3px 0 #22d3ee; }
+html[data-theme="night"] .nb-promo-list i{ background:rgba(126,196,255,.10); }
+html[data-theme="night"] .nb-promo-list span{ color:#b9cbe6; }
+html[data-theme="night"] .nb-promo-note{ color:#e0b06a; background:rgba(224,176,106,.12); }
+@media print{ #nbPromo{ display:none !important; } }
 </style>
 </body>
 </html>
