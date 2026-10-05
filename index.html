@@ -4235,6 +4235,11 @@ html[data-theme="night"] .about-badge {
         <b>تثبيت التطبيق</b>
         <small>على الشاشة الرئيسية</small>
       </button>
+      <button type="button" class="set-nav-btn" data-set="link">
+        <span class="ico">🔗</span>
+        <b>ربط جهاز المعلم</b>
+        <small>باركود تطبيق «جدولي»</small>
+      </button>
     </div>
 
     <div class="build-pane active" id="set-school">
@@ -4520,6 +4525,22 @@ html[data-theme="night"] .about-badge {
       <div id="tmNowBox" class="hint" style="margin:0"></div>
     </div>
     </div>
+  <div class="build-pane" id="set-link">
+    <div class="card">
+      <h2>ربط جهاز <span id="nbLinkTeacherLbl">المعلم</span> — تطبيق «جدولي»</h2>
+      <p class="hint">يحمل الباركود جدول شخص واحد فقط مع تواقيت الحصص، ويُخزَّن في هاتفه دون إنترنت. عند تعديل الجدول أو توليد جدول جديد اعرض الباركود مرة أخرى ليحدّث جدوله.</p>
+      <div class="field">
+        <label>اختر الاسم</label>
+        <select id="nbLinkTeacher"></select>
+      </div>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <button type="button" class="btn btn-primary" id="nbLinkShow">📱 إظهار الباركود</button>
+        <button type="button" class="btn btn-outline" id="nbLinkCopyBtn">🔗 نسخ / مشاركة رمز الربط</button>
+      </div>
+      <p class="hint" style="margin-top:10px">إن تعذّر المسح بالكاميرا: استخدم «رمز الربط» وأرسله عبر واتساب، ثم الصقه في تطبيق «جدولي».</p>
+    </div>
+  </div>
+
   <div class="build-pane" id="set-install">
     <div class="card">
       <h2>📲 تثبيت التطبيق على الشاشة الرئيسية</h2>
@@ -9545,9 +9566,9 @@ function setSchedSubTab(tab){
 }
 let settingsSubTab = 'school';
 function setSettingsSubTab(tab){
-  const ok = {school:1,days:1,theme:1,backup:1,timings:1,alerts:1,install:1};
+  const ok = {school:1,days:1,theme:1,backup:1,timings:1,alerts:1,install:1,link:1};
   settingsSubTab = ok[tab] ? tab : 'school';
-  ['school','days','theme','backup','timings','alerts','install'].forEach(function(k){
+  ['school','days','theme','backup','timings','alerts','install','link'].forEach(function(k){
     const pane = document.getElementById('set-'+k);
     if(pane) pane.classList.toggle('active', k===settingsSubTab);
   });
@@ -21422,6 +21443,175 @@ function nbTeacherCard(tid){
   m.addEventListener('click', function(ev){ if(ev.target===m || (ev.target.closest && ev.target.closest('#nbTcClose'))) m.remove(); });
 }
 
+/* =========================================================================
+   ربط جهاز المعلم (التطبيق الملحق) — باركود يحمل جدول معلم واحد فقط
+   الباركود يحتوي: اسم المدرسة، اسم المعلم، أيام الدوام، تواقيت الحصص، دروسه فقط.
+   لا إنترنت ولا خادم: المعلم يمسحه بتطبيق «جدولي» فيُخزَّن في هاتفه.
+   ========================================================================= */
+var NbQR = (function(){
+  var ECC = {L:0, M:1, Q:2, H:3};
+  var ECC_FMT = [1,0,3,2];
+  var EC_PER_BLOCK = [
+    [-1,7,10,15,20,26,18,20,24,30,18,20,24,26,30,22,24,28,30,28,28,28,28,30,30,26,28,30,30,30,30,30,30,30,30,30,30,30,30,30,30],
+    [-1,10,16,26,18,24,16,18,22,22,26,30,22,22,24,24,28,28,26,26,26,26,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28],
+    [-1,13,22,18,26,18,24,18,22,20,24,28,26,24,20,30,24,28,28,26,30,28,30,30,30,30,28,30,30,30,30,30,30,30,30,30,30,30,30,30,30],
+    [-1,17,28,22,16,22,28,26,26,24,28,24,28,22,24,24,30,28,28,26,28,30,24,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30]];
+  var NUM_BLOCKS = [
+    [-1,1,1,1,1,1,2,2,2,2,4,4,4,4,4,6,6,6,6,7,8,8,9,9,10,12,12,12,13,14,15,16,17,18,19,19,20,21,22,24,25],
+    [-1,1,1,1,2,2,4,4,4,5,5,5,8,9,9,10,10,11,13,14,16,17,17,18,20,21,23,25,26,28,29,31,33,35,37,38,40,43,45,47,49],
+    [-1,1,1,2,2,4,4,6,6,8,8,8,10,12,16,12,17,16,18,21,20,23,23,25,27,29,34,34,35,38,40,43,45,48,51,53,56,59,62,65,68],
+    [-1,1,1,2,4,4,4,5,6,8,8,11,11,16,16,18,16,19,21,25,25,25,34,30,32,35,37,40,42,45,48,51,54,57,60,63,66,70,74,77,81]];
+  function rawModules(ver){ var r=(16*ver+128)*ver+64; if(ver>=2){ var na=Math.floor(ver/7)+2; r-=(25*na-10)*na-55; if(ver>=7) r-=36; } return r; }
+  function dataCodewords(ver,e){ return Math.floor(rawModules(ver)/8)-EC_PER_BLOCK[e][ver]*NUM_BLOCKS[e][ver]; }
+  function rsMul(x,y){ var z=0; for(var i=7;i>=0;i--){ z=(z<<1)^((z>>>7)*0x11D); z^=((y>>>i)&1)*x; } return z&0xFF; }
+  function rsDivisor(deg){ var r=[]; for(var i=0;i<deg-1;i++) r.push(0); r.push(1); var root=1;
+    for(var i=0;i<deg;i++){ for(var j=0;j<r.length;j++){ r[j]=rsMul(r[j],root); if(j+1<r.length) r[j]^=r[j+1]; } root=rsMul(root,2); } return r; }
+  function rsRemainder(data,div){ var res=div.map(function(){return 0;}); data.forEach(function(b){ var f=b^res.shift(); res.push(0); div.forEach(function(c,i){ res[i]^=rsMul(c,f); }); }); return res; }
+  function utf8(str){ var out=[]; var s=unescape(encodeURIComponent(str)); for(var i=0;i<s.length;i++) out.push(s.charCodeAt(i)); return out; }
+  function encode(text, eccName){
+    var e=ECC[eccName||'M'], bytes=utf8(text), ver;
+    for(ver=1; ver<=40; ver++){ if(4+(ver<=9?8:16)+bytes.length*8 <= dataCodewords(ver,e)*8) break; }
+    if(ver>40) throw new Error('DATA_TOO_LONG');
+    for(var ne=e+1; ne<=3; ne++){ if(4+(ver<=9?8:16)+bytes.length*8 <= dataCodewords(ver,ne)*8) e=ne; }
+    var bb=[]; function app(val,len){ for(var i=len-1;i>=0;i--) bb.push((val>>>i)&1); }
+    app(4,4); app(bytes.length, ver<=9?8:16); bytes.forEach(function(b){ app(b,8); });
+    var capBits=dataCodewords(ver,e)*8;
+    app(0, Math.min(4, capBits-bb.length)); app(0, (8-bb.length%8)%8);
+    for(var pad=0xEC; bb.length<capBits; pad^=0xEC^0x11) app(pad,8);
+    var data=[]; for(var i=0;i<bb.length;i+=8){ var v=0; for(var j=0;j<8;j++) v=(v<<1)|bb[i+j]; data.push(v); }
+    var nb=NUM_BLOCKS[e][ver], ecl=EC_PER_BLOCK[e][ver], raw=Math.floor(rawModules(ver)/8);
+    var nShort=nb-raw%nb, shortLen=Math.floor(raw/nb), blocks=[], div=rsDivisor(ecl), k=0;
+    for(var i=0;i<nb;i++){ var dat=data.slice(k, k+shortLen-ecl+(i<nShort?0:1)); k+=dat.length; var ec=rsRemainder(dat,div); if(i<nShort) dat.push(0); blocks.push(dat.concat(ec)); }
+    var all=[]; for(var i=0;i<blocks[0].length;i++) blocks.forEach(function(b,j){ if(i!==shortLen-ecl||j>=nShort) all.push(b[i]); });
+    var size=ver*4+17, M=[], F=[];
+    for(var y=0;y<size;y++){ M.push(new Array(size).fill(false)); F.push(new Array(size).fill(false)); }
+    function setF(x,y,d){ M[y][x]=d; F[y][x]=true; }
+    for(var i=0;i<size;i++){ setF(6,i,i%2===0); setF(i,6,i%2===0); }
+    function finder(cx,cy){ for(var dy=-4;dy<=4;dy++) for(var dx=-4;dx<=4;dx++){ var d=Math.max(Math.abs(dx),Math.abs(dy)), x=cx+dx, y=cy+dy; if(x>=0&&x<size&&y>=0&&y<size) setF(x,y,d!==2&&d!==4); } }
+    finder(3,3); finder(size-4,3); finder(3,size-4);
+    var ap=[]; if(ver>1){ var na=Math.floor(ver/7)+2, step=(ver===32)?26:Math.ceil((ver*4+4)/(na*2-2))*2; ap=[6]; for(var pos=size-7; ap.length<na; pos-=step) ap.splice(1,0,pos); }
+    for(var i=0;i<ap.length;i++) for(var j=0;j<ap.length;j++){ if((i===0&&j===0)||(i===0&&j===ap.length-1)||(i===ap.length-1&&j===0)) continue;
+      for(var dy=-2;dy<=2;dy++) for(var dx=-2;dx<=2;dx++) setF(ap[i]+dx,ap[j]+dy, Math.max(Math.abs(dx),Math.abs(dy))!==1); }
+    function drawFormat(mask){ var d=ECC_FMT[e]<<3|mask, rem=d; for(var i=0;i<10;i++) rem=(rem<<1)^((rem>>>9)*0x537); var bits=(d<<10|rem)^0x5412;
+      for(var i=0;i<=5;i++) setF(8,i,((bits>>>i)&1)!==0); setF(8,7,((bits>>>6)&1)!==0); setF(8,8,((bits>>>7)&1)!==0); setF(7,8,((bits>>>8)&1)!==0);
+      for(var i=9;i<15;i++) setF(14-i,8,((bits>>>i)&1)!==0); for(var i=0;i<8;i++) setF(size-1-i,8,((bits>>>i)&1)!==0);
+      for(var i=8;i<15;i++) setF(8,size-15+i,((bits>>>i)&1)!==0); setF(8,size-8,true); }
+    drawFormat(0);
+    if(ver>=7){ var rem=ver; for(var i=0;i<12;i++) rem=(rem<<1)^((rem>>>11)*0x1F25); var bits=ver<<12|rem;
+      for(var i=0;i<18;i++){ var bt=((bits>>>i)&1)!==0, a=size-11+i%3, b=Math.floor(i/3); setF(a,b,bt); setF(b,a,bt); } }
+    var bi=0;
+    for(var right=size-1; right>=1; right-=2){ if(right===6) right=5;
+      for(var vert=0; vert<size; vert++) for(var j=0;j<2;j++){ var x=right-j, up=((right+1)&2)===0, y=up?size-1-vert:vert;
+        if(!F[y][x] && bi<all.length*8){ M[y][x]=((all[bi>>>3]>>>(7-(bi&7)))&1)!==0; bi++; } } }
+    function applyMask(m){ for(var y=0;y<size;y++) for(var x=0;x<size;x++){ if(F[y][x]) continue; var inv;
+      switch(m){case 0:inv=(x+y)%2===0;break;case 1:inv=y%2===0;break;case 2:inv=x%3===0;break;case 3:inv=(x+y)%3===0;break;
+        case 4:inv=(Math.floor(x/3)+Math.floor(y/2))%2===0;break;case 5:inv=x*y%2+x*y%3===0;break;case 6:inv=(x*y%2+x*y%3)%2===0;break;default:inv=((x+y)%2+x*y%3)%2===0;}
+      if(inv) M[y][x]=!M[y][x]; } }
+    function penalty(){ var r=0;
+      function lines(get){ for(var a=0;a<size;a++){ var col=null, len=0;
+        for(var b=0;b<size;b++){ var c=get(a,b); if(c===col){ len++; if(len===5) r+=3; else if(len>5) r++; } else { col=c; len=1; } } } }
+      lines(function(a,b){ return M[a][b]; }); lines(function(a,b){ return M[b][a]; });
+      for(var y=0;y<size-1;y++) for(var x=0;x<size-1;x++){ var c=M[y][x]; if(c===M[y][x+1]&&c===M[y+1][x]&&c===M[y+1][x+1]) r+=3; }
+      var dark=0; M.forEach(function(row){ row.forEach(function(c){ if(c) dark++; }); });
+      r+=(Math.ceil(Math.abs(dark*20-size*size*10)/(size*size))-1)*10; return r; }
+    var best=0, minP=Infinity;
+    for(var m=0;m<8;m++){ applyMask(m); drawFormat(m); var p=penalty(); if(p<minP){ minP=p; best=m; } applyMask(m); }
+    applyMask(best); drawFormat(best);
+    return {size:size, version:ver, ecc:['L','M','Q','H'][e], modules:M};
+  }
+  function toCanvas(qr, px){ var q=4, n=qr.size+q*2, s=Math.max(2,Math.floor((px||560)/n));
+    var c=document.createElement('canvas'); c.width=c.height=n*s; var g=c.getContext('2d');
+    g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.fillStyle='#000';
+    for(var y=0;y<qr.size;y++) for(var x=0;x<qr.size;x++) if(qr.modules[y][x]) g.fillRect((x+q)*s,(y+q)*s,s,s);
+    return c; }
+  return {encode:encode, toCanvas:toCanvas};
+})();
+
+/* بيانات معلم واحد فقط بصيغة مختصرة */
+function nbTeacherPayload(tid){
+  const te=(DB.teachers||[]).find(function(t){ return t.id===tid; }); if(!te) return null;
+  const days=(DB.settings&&DB.settings.days)||[], P=parseInt(DB.settings&&DB.settings.periodsPerDay,10)||0;
+  const WK=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const T=getTimings(); ensureDayShifts(T);
+  const shiftOf=function(d){ return T.shiftMode==='evening' ? 'evening' : (T.shiftMode==='both' ? (T.dayShifts[d]==='evening'?'evening':'morning') : 'morning'); };
+  const shiftKeys=[], sh=[], f=[];
+  days.forEach(function(_,d){
+    const k=shiftOf(d); let i=shiftKeys.indexOf(k);
+    if(i<0){ i=shiftKeys.length; shiftKeys.push(k); sh.push(buildShiftSlots(T[k]).filter(function(s){ return s.kind==='lesson'; }).map(function(s){ return [s.start, s.end]; })); }
+    f.push(i);
+  });
+  const sb=[], cl=[], L=[];
+  allClassesOf(DB).forEach(function(c){
+    const g=DB.schedule&&DB.schedule[c.key]&&DB.schedule[c.key].grid; if(!g) return;
+    for(let d=0; d<days.length; d++) for(let p=0; p<P; p++){
+      const x=g[d]&&g[d][p]; if(!x || x.teacherId!==tid) continue;
+      const su=(DB.subjects||[]).find(function(s){ return s.id===x.subjectId; });
+      const sn=su?su.name:''; let si=sb.indexOf(sn); if(si<0){ si=sb.length; sb.push(sn); }
+      let ci=cl.indexOf(c.label); if(ci<0){ ci=cl.length; cl.push(c.label); }
+      L.push(d,p,si,ci);
+    }
+  });
+  const tt=schoolTerms();
+  const obj={a:'NBJ', v:1, s:(DB.settings&&DB.settings.schoolName)||'', n:te.name, i:te.id, g:Math.floor(Date.now()/1000),
+    tm:[tt.one, tt.theOne], d:days, w:days.map(function(n){ return WK.indexOf(n); }), h:sh, f:f, x:(te.excludedDays||[]).map(Number), b:sb, c:cl, l:L};
+  return {obj:obj, json:JSON.stringify(obj), lessons:L.length/4, teacher:te};
+}
+function nbLinkCode(json){ try{ return 'NBJ1:'+btoa(unescape(encodeURIComponent(json))); }catch(e){ return ''; } }
+function nbLinkRender(){
+  const pane=document.getElementById('set-link'); if(!pane) return;
+  const tt=schoolTerms();
+  const sel=document.getElementById('nbLinkTeacher');
+  const cur=sel?sel.value:'';
+  const list=(DB.teachers||[]).slice().sort(function(a,b){ return String(a.name).localeCompare(String(b.name),'ar'); });
+  if(sel){
+    sel.innerHTML='<option value="">— اختر '+esc(tt.theOne)+' —</option>'+list.map(function(t){ return '<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>'; }).join('');
+    if(cur) sel.value=cur;
+  }
+  const lbl=document.getElementById('nbLinkTeacherLbl'); if(lbl) lbl.textContent=tt.theOne;
+}
+function nbLinkShowQR(){
+  const sel=document.getElementById('nbLinkTeacher'); const tid=sel&&sel.value;
+  const tt=schoolTerms();
+  if(!tid){ toast('اختر '+tt.theOne+' أولًا','err'); return; }
+  const pl=nbTeacherPayload(tid); if(!pl) return;
+  if(!pl.lessons){ toast('لا توجد حصص لـ«'+pl.teacher.name+'» في الجدول الحالي — ولّد الجدول أولًا','err'); return; }
+  let qr; try{ qr=NbQR.encode(pl.json,'M'); }catch(e){ toast('بيانات '+tt.theOne+' أكبر من سعة الباركود — استخدم «نسخ رمز الربط»','err'); return; }
+  const old=document.getElementById('nbLinkQR'); if(old) old.remove();
+  const m=document.createElement('div'); m.id='nbLinkQR'; m.className='nb-swap-bg';
+  m.innerHTML='<div class="nb-swap-card nb-qr-card" role="dialog" aria-label="باركود الربط">'
+    +'<div class="nb-swap-h">📱 باركود ربط جهاز '+esc(tt.theOne)+'</div>'
+    +'<div class="nb-qr-who"><b>'+esc(pl.teacher.name)+'</b> · '+pl.lessons+' '+((pl.lessons>=3&&pl.lessons<=10)?'حصص':'حصة')+' أسبوعيًا</div>'
+    +'<div class="nb-qr-box" id="nbQrBox"></div>'
+    +'<div class="nb-qr-steps">افتح تطبيق «جدولي» على هاتف '+esc(tt.theOne)+' ← «ربط بجدول المدرسة» ← وجّه الكاميرا نحو الباركود.</div>'
+    +'<div class="nb-swap-act"><button type="button" class="btn btn-gold btn-sm" id="nbQrCopy">نسخ رمز الربط</button>'
+    +'<button type="button" class="btn btn-primary btn-sm" id="nbQrClose">إغلاق</button></div></div>';
+  document.body.appendChild(m);
+  const box=document.getElementById('nbQrBox');
+  const px=Math.min(560, Math.floor(Math.min(window.innerWidth, window.innerHeight)*0.62));
+  const cv=NbQR.toCanvas(qr, px*2); cv.style.width=px+'px'; cv.style.height=px+'px'; box.appendChild(cv);
+  m.addEventListener('click', function(e){ if(e.target===m || (e.target.closest&&e.target.closest('#nbQrClose'))) m.remove(); });
+  document.getElementById('nbQrCopy').addEventListener('click', function(){ nbLinkCopy(pl); });
+}
+function nbLinkCopy(pl){
+  if(!pl){ const sel=document.getElementById('nbLinkTeacher'); if(!sel||!sel.value){ toast('اختر '+schoolTerms().theOne+' أولًا','err'); return; } pl=nbTeacherPayload(sel.value); }
+  if(!pl||!pl.lessons){ toast('لا توجد حصص لهذا '+schoolTerms().one+' في الجدول الحالي','err'); return; }
+  const code=nbLinkCode(pl.json);
+  const done=function(){ toast('نُسخ رمز الربط — أرسله إلى «'+pl.teacher.name+'» والصقه في تطبيق «جدولي»','ok'); };
+  if(navigator.share){ navigator.share({title:'رمز ربط جدولي — '+pl.teacher.name, text:code}).then(done).catch(function(){ fallback(); }); return; }
+  fallback();
+  function fallback(){
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(code).then(done).catch(manual); }
+    else manual();
+  }
+  function manual(){ const ta=document.createElement('textarea'); ta.value=code; ta.style.cssText='position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); done(); }catch(e){ toast('تعذّر النسخ','err'); } ta.remove(); }
+}
+document.addEventListener('click', function(e){
+  if(!e.target || !e.target.closest) return;
+  if(e.target.closest('#nbLinkShow')){ e.preventDefault(); nbLinkShowQR(); }
+  else if(e.target.closest('#nbLinkCopyBtn')){ e.preventDefault(); nbLinkCopy(null); }
+  else if(e.target.closest('#settingsNav [data-set="link"]')){ setTimeout(nbLinkRender, 0); }
+});
+
 
 init();
 
@@ -21812,6 +22002,14 @@ html[data-theme="night"] .nb-theme-opt.active{ border-color:#22d3ee; box-shadow:
 html[data-theme="night"] .nb-tc-bar{ background:rgba(126,196,255,.12); }
 html[data-theme="night"] .nb-tc-cls li{ background:rgba(126,196,255,.07); }
 @media print{ #nbTeachCard{ display:none !important; } }
+</style>
+<style id="nibras-link-css">
+.nb-qr-card{ max-width:640px !important; text-align:center; }
+.nb-qr-who{ font-size:14px; margin-bottom:10px; opacity:.9; }
+.nb-qr-box{ display:flex; justify-content:center; padding:10px; background:#fff; border-radius:14px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.08); }
+.nb-qr-box canvas{ image-rendering:pixelated; image-rendering:crisp-edges; }
+.nb-qr-steps{ font-size:13px; font-weight:700; line-height:1.9; margin-top:10px; opacity:.85; }
+@media print{ #nbLinkQR{ display:none !important; } }
 </style>
 </body>
 </html>
