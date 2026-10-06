@@ -6425,7 +6425,8 @@ function nibrasFitOverflowTextForPdf(root){
       if(cs.display === 'none' || cs.display.indexOf('inline') === 0 || cs.display.indexOf('table') === 0) continue;
       if(cs.whiteSpace.indexOf('nowrap') === -1 && cs.textOverflow !== 'ellipsis') continue;
       if(cs.writingMode && cs.writingMode.indexOf('vertical') === 0) continue;
-      if(el.scrollWidth <= el.clientWidth + 1) continue;  /* يتّسع أصلًا — لا نلمسه */
+      /* كل عنصر قابل للاقتطاع بـ«…» يُعالَج — حتى التجاوز بكسور البكسل (كان يفلت فتتقطع حروفه في PDF).
+         الاسم الذي يتّسع يبقى بلا أي تضييق (المعامل = 1) — فقط يُلغى «…» في نسخة الالتقاط. */
       cand.push(el);
     }catch(e){}
   }
@@ -6455,10 +6456,13 @@ function nibrasFitOverflowTextForPdf(root){
     try{
       var el = item.el, cs = window.getComputedStyle(el);
       var avail = el.clientWidth - (parseFloat(cs.paddingLeft)||0) - (parseFloat(cs.paddingRight)||0);
-      var w = item.wrap.offsetWidth;
-      if(avail > 2 && w > avail){
+      /* قياس بكسور البكسل: عرض الغلاف الفعلي مُعادًا إلى مقياس التخطيط (يحيّد تحجيم الصفحة) */
+      var er = el.getBoundingClientRect(), wr = item.wrap.getBoundingClientRect();
+      var sx = (el.offsetWidth > 0 && er.width > 0) ? (er.width / el.offsetWidth) : 1;
+      var w = sx > 0 ? (wr.width / sx) : item.wrap.offsetWidth;
+      if(avail > 2 && w > avail - 0.5){
         var k = Math.max(0.3, (avail - 1) / w);
-        item.wrap.style.setProperty('transform', 'scaleX(' + k.toFixed(4) + ')', 'important');
+        if(k < 0.999) item.wrap.style.setProperty('transform', 'scaleX(' + k.toFixed(4) + ')', 'important');
       }
     }catch(e){}
   });
@@ -7612,7 +7616,13 @@ async function nibrasExportPrintOutputAsPDF(sizeMm, customKind, opts){
         if(attempt > 0){ await new Promise(function(r){ setTimeout(r, 350); }); }
         var canvas = null;
         try{
-          canvas = await window.html2canvas(pg, { scale:tryScale, useCORS:true, backgroundColor:'#ffffff', logging:false, onclone:function(cdoc, croot){ nibrasRefitStripsInClone(cdoc, croot); } });
+          /* الصفحات مكدّسة عموديًا: ما يقع خارج نافذة الالتقاط كانت ترسَم طبقاته الزخرفية (::before/::after)
+             ومواضع بعض الحروف خطأً (رأس/تذييل ذهبي بالكامل، حروف متداخلة) بدءًا من الصفحة الثانية/الثالثة.
+             نوجّه الالتقاط إلى موضع الصفحة نفسها ونافذة بارتفاعها ⇒ كل الصفحات تُرسم كالأولى تمامًا. */
+          const pr = pg.getBoundingClientRect();
+          canvas = await window.html2canvas(pg, { scale:tryScale, useCORS:true, backgroundColor:'#ffffff', logging:false,
+            scrollY: -pr.top, windowHeight: Math.max(window.innerHeight||0, Math.ceil(pr.height)+20),
+            onclone:function(cdoc, croot){ nibrasRefitStripsInClone(cdoc, croot); } });
           if(!nibrasCanvasLooksBlank(canvas)){
             img = canvas.toDataURL('image/jpeg', 0.95);
             if(!img || img.length < 2000) img = null;
@@ -7848,8 +7858,9 @@ function showSplashThen(done){
     if(e.target.closest('#btnSplashSkip') || e.target===gate) finish();
   });
 
-  // تشغيل الموسيقى الافتتاحية الجميلة فور فتح المقدمة
-  playIntroMusic();
+  // تشغيل الموسيقى الافتتاحية بعد أول رسم للمقدمة مباشرة (تظهر الشاشة فورًا بلا انتظار تجهيز الصوت)
+  const startMusic=function(){ if(!finished){ try{ playIntroMusic(); }catch(e){} } };
+  if(window.requestAnimationFrame) requestAnimationFrame(function(){ setTimeout(startMusic, 0); }); else setTimeout(startMusic, 0);
   const resumeMusic = function(){
     if(splashAudioCtx && splashAudioCtx.state === 'suspended'){
       splashAudioCtx.resume().catch(function(){});
@@ -9720,7 +9731,8 @@ function appFontApply(v){
   }catch(e){}
 })();
 (function installAppFeature(){
-  const ICON_EMBED = 'data:image/png;base64,' + '__ICON_B64__';
+  /* إن بقي العنصر النائب __ICON_B64__ بلا استبدال، تُستخدم أيقونة الاستضافة الحقيقية بدل صورة مكسورة */
+  const ICON_EMBED = (function(){ const b='__ICON_B64__'; return (b.indexOf('__ICON')===0) ? abs('app-icon-192.png') : ('data:image/png;base64,'+b); })();
   let deferredPrompt = null;
   let installedDone = false;
   function abs(u){ try{ return new URL(u, location.href).href; }catch(e){ return u; } }
@@ -15265,6 +15277,17 @@ function loadDemoFromStorage(){
   }catch(e){ return null; }
 }
 
+/* هل يحتاج الجدول التجريبي إلى توليد؟ (نفس شروط ensureDemoReady بالضبط — قراءة فقط، بلا توليد) */
+function demoNeedsGeneration(){
+  if(demoReady && DEMO) return false;
+  try{
+    const d = loadDemoFromStorage();
+    const valid = d && d.stages && d.stages.length===6 && d.teachers && d.teachers.length>=20 && d.subjects && d.subjects.length>=8;
+    if(!valid) return true;
+    const hasAny = Object.values(d.schedule||{}).some(sc=> sc.grid && sc.grid.some(row=>row.some(c=>c)));
+    return !hasAny;
+  }catch(e){ return true; }
+}
 function ensureDemoReady(){
   if(demoReady && DEMO) return;
   DEMO = loadDemoFromStorage();
@@ -16736,6 +16759,15 @@ function printRealMasterTable(paper){
 
 function renderDemoTab(){
   try{ maybeShowRotateHint(); }catch(e){}
+  if(!(demoReady && DEMO) && demoNeedsGeneration()){
+    const wrap=document.getElementById('demoAllWrap');
+    if(wrap) wrap.innerHTML='<div class="empty-hint" style="padding:34px 12px;text-align:center;font-weight:800;line-height:2">⏳ جاري تجهيز الجدول التجريبي لأول مرة…<br><small style="font-weight:700;opacity:.8">يحدث هذا مرة واحدة فقط على هذا الجهاز</small></div>';
+    setTimeout(function(){
+      try{ ensureDemoReady(); }catch(e){}
+      if(currentViewName==='demo'){ demoViewMode='all'; renderDemoAllOverview(); }
+    }, 40);
+    return;
+  }
   ensureDemoReady();
   demoViewMode = 'all';
   renderDemoAllOverview();
@@ -20334,7 +20366,9 @@ function init(){
   try{ renderSettingsTab(); }catch(e){}
   try{ applyMasterFontSize(); }catch(e){}
   try{ applyHideTeacherName(); }catch(e){}
-  try{ ensureDemoReady(); }catch(e){}
+  /* تسريع الإقلاع: الجدول التجريبي يُحمَّل من الذاكرة إن وُجد، ولا يُولَّد أثناء الإقلاع أبدًا —
+     يُولَّد عند أول فتح لتبويب «جدول تجريبي» فقط (مع رسالة تجهيز) */
+  try{ if(!demoNeedsGeneration()) ensureDemoReady(); }catch(e){}
   try{ bindSchoolWizard(); }catch(e){}
   try{ bindActivation(); }catch(e){}
   try{ bindNibrasBack(); }catch(e){}
