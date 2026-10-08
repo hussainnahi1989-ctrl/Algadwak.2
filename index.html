@@ -4094,6 +4094,20 @@ html[data-theme="night"] .about-badge {
   color: #93c5fd;
 }
 </style>
+<style id="nb-boot-cover">
+/* غطاء الإقلاع: من أول رسم تظهر خلفية المقدمة مباشرة بدل الواجهة الفارغة لحظة تحميل الملف */
+html.nb-boot, html.nb-boot body{ background:linear-gradient(165deg,#081415 0%,#0b2e33 38%,#1b2a4a 100%) !important; min-height:100%; }
+html.nb-boot .topbar, html.nb-boot main{ visibility:hidden !important; }
+</style>
+<script>
+(function(){
+  var h=document.documentElement; h.classList.add('nb-boot','splash-open');
+  /* أمان: إن لم تبدأ المقدمة لأي سبب يُرفع الغطاء تلقائيًا فلا تبقى الشاشة مغطاة */
+  var lift=function(){ if(h.classList.contains('nb-boot')){ h.classList.remove('nb-boot','splash-open'); } };
+  window.addEventListener('load', function(){ setTimeout(lift, 9000); });
+  setTimeout(lift, 25000);
+})();
+</script>
 </head>
 <body>
 
@@ -4929,6 +4943,7 @@ html[data-theme="night"] .about-badge {
       <h2>🖨️ طباعة وتصدير</h2>
       <small>كل ما في البرنامج قابل للطباعة وPDF وإكسل — من مكان واحد</small>
     </div>
+    <div class="qrs-card" id="nbQrSheetCard"></div>
     <div class="pex-scroll">
       <table class="pex">
         <thead><tr><th>النوع</th><th>🖨️ طباعة</th><th>📄 تصدير PDF</th><th>📊 تصدير إكسل</th></tr></thead>
@@ -6852,7 +6867,7 @@ async function downloadDirectFullSchedulePdfCore(isDemo, paper){
             const teachName = teach ? (typeof getTeacherDisplayName === 'function' ? getTeacherDisplayName(teach) : teach.name) : '';
             tbody += `
               <td style="border:1.5px solid #000;background:${bg};${borderTop}padding:0;text-align:center;vertical-align:middle;box-sizing:border-box;overflow:hidden;height:${periodRowH}px;max-height:${periodRowH}px;">
-                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;box-sizing:border-box;padding:0 2px;margin:0;gap:0px;overflow:hidden;">
+                <div class="dpf-cell" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;box-sizing:border-box;padding:0 2px;margin:0;gap:0px;overflow:hidden;">
                   <b style="display:block;width:100%;max-width:100%;font-size:${subjFs};font-weight:900;color:#000000;line-height:1.06;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;margin:0;padding:0;letter-spacing:0;text-indent:0;">${esc(subjName)}</b>
                   <span style="display:block;width:100%;max-width:100%;font-size:${teachFs};font-weight:900;color:#000000;line-height:1.06;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;margin:0;padding:0;letter-spacing:0;text-indent:0;">${esc(teachName)}</span>
                 </div>
@@ -6942,6 +6957,7 @@ async function downloadDirectFullSchedulePdfCore(isDemo, paper){
     await new Promise(r => setTimeout(r, 180));
 
     let nbTextFix = null;
+    try{ nbFitCellsIn(pageEl); }catch(e_fit){}
     try{ nbTextFix = nibrasFitOverflowTextForPdf(pageEl); }catch(e_tf){}
     const canvas = await window.html2canvas(pageEl, {
       scale: 2,
@@ -7305,6 +7321,7 @@ async function downloadDirectCutTwoPdf(isDemo, orient){
     }catch(e_fit){}
 
     let nbTextFix2 = null;
+    try{ nbFitCellsIn(stripEl); }catch(e_fit){}
     try{ nbTextFix2 = nibrasFitOverflowTextForPdf(stripEl); }catch(e_tf){}
     const canvas = await window.html2canvas(stripEl, {
       scale: 2,
@@ -7615,6 +7632,9 @@ async function nibrasExportPrintOutputAsPDF(sizeMm, customKind, opts){
         mTbl.style.height = mTargetTableH + 'px';
       });
     }catch(e_strip_fit){}
+    /* ملاءمة الخط لكل خلية بالتخطيط النهائي للالتقاط نفسه (مقاسات الصفحات مثبتة الآن) */
+    try{ nbFitCellsIn(out); }catch(e_fit){}
+    try{ nbAddCutLines(out); }catch(e_cut){}
     dayFixes = nibrasPrepareDaysForPdf(out);
     try{ textFixes = nibrasFitOverflowTextForPdf(out); }catch(e_tf){}
 
@@ -7721,9 +7741,186 @@ async function shareTeacherSchedule(teacherId){
   }
 }
 
+
+/* =========================================================================
+   ملاءمة خط الطباعة تلقائيًا (الجدول الكامل، القص الطولي/العرضي، التقسيم)
+   الخط كان ثابتًا بالبكسل فلا يكبر مع الورقة/الخلية. هنا يُحسب لكل جدول أكبر خط
+   يتسع لارتفاع الخلية وعرضها الحقيقيين على الورق — بلا أي تغيير في مقاسات الجدول أو تخطيطه:
+   • ارتفاع النص لا يتجاوز الخلية أبدًا (سطران: المادة فوق المعلم، أو سطر واحد: بجانبه).
+   • الأسماء الأطول تُضيَّق أفقيًا قليلًا (حتى 78%) لتبقى كاملة بنفس الحجم.
+   • لا يصغر الخط عن حجمه الحالي إلا إذا كان أصلًا لا يتسع للخلية.
+   • فحص أمان: إن تغيّر مقاس أي جدول ولو بكسر بكسل تُعاد الخطوط كما كانت.
+   ========================================================================= */
+var NB_FIT_SEL = '.mp-cell:not(.empty), .cut2-cell:not(.e), .mid-cell:not(.e), .dpf-cell';
+function nbFitCellsIn(root){
+  var undo = [];
+  if(!root || !root.querySelectorAll) return undo;
+  var LH = 1.12, KMIN = 0.78, ctx = document.createElement('canvas').getContext('2d');
+  var tables = Array.prototype.filter.call(root.querySelectorAll('table'), function(t){ return t.querySelector(NB_FIT_SEL); });
+  tables.forEach(function(tbl){
+    var before = [tbl.offsetWidth, tbl.offsetHeight];
+    var items = [];
+    Array.prototype.forEach.call(tbl.querySelectorAll(NB_FIT_SEL), function(c){
+      var td = c.closest('td'); if(!td) return;
+      var b = c.querySelector('b'); if(!b) return;
+      var sp = null; for(var k=0;k<c.children.length;k++){ if(c.children[k].tagName==='SPAN'){ sp=c.children[k]; break; } }
+      var bt = (b.textContent||'').trim(); if(!bt) return;
+      var st = sp ? (sp.textContent||'').trim() : '';
+      if(sp && (!st || getComputedStyle(sp).display==='none')) sp = null;
+      var tcs = getComputedStyle(td), ccs = getComputedStyle(c);
+      var W = td.clientWidth - (parseFloat(tcs.paddingLeft)||0) - (parseFloat(tcs.paddingRight)||0) - (parseFloat(ccs.paddingLeft)||0) - (parseFloat(ccs.paddingRight)||0);
+      var H = td.clientHeight - (parseFloat(tcs.paddingTop)||0) - (parseFloat(tcs.paddingBottom)||0) - (parseFloat(ccs.paddingTop)||0) - (parseFloat(ccs.paddingBottom)||0);
+      if(W < 8 || H < 6) return;
+      var bcs = getComputedStyle(b), fam = bcs.fontFamily || 'Tajawal, sans-serif', wt = bcs.fontWeight || '900';
+      var fsB0 = parseFloat(bcs.fontSize) || 12;
+      var fsS0 = sp ? (parseFloat(getComputedStyle(sp).fontSize) || fsB0*0.85) : 0;
+      var r = sp ? Math.min(1, Math.max(0.6, fsS0/fsB0)) : 0;
+      var side = !!sp && /row/.test(ccs.flexDirection||'') && ccs.display.indexOf('flex')>=0;
+      /* قياس الحبر الحقيقي للكلمة بالخط المستخدم فعلًا: أعلى نقطة وأسفل ذيل (نقاط الياء، أذيال الحروف)
+         ⇒ أقل تباعد أسطر يضمن عدم قصّ أي جزء من الحروف — يتكيف تلقائيًا مع خط الجهاز */
+      var lineFor = function(m){
+        var A=(m.fontBoundingBoxAscent||m.actualBoundingBoxAscent||80)/100, D=(m.fontBoundingBoxDescent||m.actualBoundingBoxDescent||25)/100;
+        var ia=(m.actualBoundingBoxAscent||A*100)/100, id=(m.actualBoundingBoxDescent||D*100)/100;
+        return Math.max(ia+id, 2*ia-A+D, A-D+2*id) * 1.06 + 0.02;
+      };
+      /* تباعد موحّد للجدول كله: من حروف عربية تمثّل أعلى النقاط وأعمق الأذيال (لا قياس لكل كلمة على حدة) */
+      /* حبر الكلمات الفعلية (أعلى نقطة/أعمق ذيل) — يُجمع لاحقًا على مستوى الجدول كله لتباعد موحّد واقعي */
+      ctx.font = wt+' 100px '+fam; var mb = ctx.measureText(bt), wb = mb.width/100;
+      var inkB = [(mb.actualBoundingBoxAscent||80)/100, (mb.actualBoundingBoxDescent||25)/100];
+      /* مقاييس الخط نفسه (موضع خط القاعدة داخل السطر) — ضرورية ليحتوي السطر حبره كاملًا */
+      var fmB = [(mb.fontBoundingBoxAscent||mb.actualBoundingBoxAscent||90)/100, (mb.fontBoundingBoxDescent||mb.actualBoundingBoxDescent||25)/100], fmS = fmB;
+      var ws = 0, inkS = inkB; if(sp){ ctx.font = (getComputedStyle(sp).fontWeight||'800')+' 100px '+fam; var ms2 = ctx.measureText(st); ws = ms2.width/100; inkS = [(ms2.actualBoundingBoxAscent||80)/100, (ms2.actualBoundingBoxDescent||25)/100]; fmS = [(ms2.fontBoundingBoxAscent||ms2.actualBoundingBoxAscent||90)/100, (ms2.fontBoundingBoxDescent||ms2.actualBoundingBoxDescent||25)/100]; }
+      var Lb = 1, Ls = 1;
+      /* العرض المتاح الفعلي لكل عنصر كما رُسم (يشمل الحشوات والفواصل الحقيقية) */
+      var innerW = function(el){ var cs2=getComputedStyle(el); return el.clientWidth - (parseFloat(cs2.paddingLeft)||0) - (parseFloat(cs2.paddingRight)||0); };
+      var Wb = Math.min(W, innerW(b)) || W, Ws = sp ? (Math.min(W, innerW(sp)) || W) : W;
+      if(side){ var g = (parseFloat(ccs.columnGap)||parseFloat(ccs.gap)||2); var half=Math.max(6,(W-g)/2); if(!(Wb>4)) Wb=half; if(!(Ws>4)) Ws=half; Wb=Math.min(Wb,half+1); Ws=Math.min(Ws,half+1); }
+      var hMax = 0;
+      var wMax = Math.min(Wb*0.96/(wb*KMIN), sp ? Ws*0.96/(ws*Math.max(r,0.01)*KMIN) : 1e9);
+      items.push({c:c, td:td, b:b, sp:sp, bt:bt, st:st, wb:wb, ws:ws, Wb:Wb, Ws:Ws, H:H, r:r||0.85, side:side, inkB:inkB, inkS:inkS, fmB:fmB, fmS:fmS, wMax:wMax, fs0:fsB0});
+    });
+    if(!items.length) return;
+    /* تباعد أسطر موحّد للجدول: أقصى حبر فعلي بين كل كلماته (والنص غير مقصوص عموديًا، فلا هدر) */
+    var aB=0,dB=0,aS=0,dS=0,AB=0,DB_=0,AS=0,DS=0; items.forEach(function(x){ aB=Math.max(aB,x.inkB[0]); dB=Math.max(dB,x.inkB[1]); aS=Math.max(aS,x.inkS[0]); dS=Math.max(dS,x.inkS[1]);
+      AB=Math.max(AB,x.fmB[0]); DB_=Math.max(DB_,x.fmB[1]); AS=Math.max(AS,x.fmS[0]); DS=Math.max(DS,x.fmS[1]); });
+    /* أقل ارتفاع سطر يحتوي الحبر مع موضع خط القاعدة الفعلي:
+       أعلى الحبر ≥ 0 ⇒ L ≥ 2a − A + D ، وأسفله ≤ L ⇒ L ≥ A − D + 2d */
+    var needL = function(a,d,A,D){ return Math.max(a+d, 2*a - A + D, A - D + 2*d) * 1.04 + 0.02; };
+    var LHB = needL(aB,dB,AB,DB_), LHS = needL(aS,dS,AS,DS);
+    items.forEach(function(x){
+      /* ارتفاع السطر لكل خلية من حبر كلماتها هي (الحروف الطويلة كالهمزة لا تصغّر الجدول كله) */
+      x.lb = needL(x.inkB[0], x.inkB[1], AB, DB_); x.ls = x.sp ? needL(x.inkS[0], x.inkS[1], AS, DS) : x.lb;
+      var LHB = x.lb, LHS = x.ls;
+      x.hMax = x.side ? (x.H*0.95/Math.max(LHB,LHS)) : (x.sp ? x.H*0.95/(LHB + x.r*LHS) : x.H*0.95/LHB);
+      x.max = Math.min(x.hMax, x.wMax);
+    });
+    var mx = items.map(function(x){ return x.max; }).sort(function(a,b){ return a-b; });
+    var base = mx[Math.floor(mx.length*0.2)];
+    var cur = items.map(function(x){ return x.fs0; }).sort(function(a,b){ return a-b; })[Math.floor(items.length/2)];
+    /* نعدّل الجدول إن وُجد مكسب في الحجم، أو إن كانت الحروف تُقصّ أصلًا (نقاط الياء/الأذيال) */
+    var clipping = items.some(function(x){ return x.fs0 > x.hMax*1.01; });
+    if(!(base > cur*1.03) && !clipping) return;
+    base = Math.min(base, 96);
+    var local = [];
+    var put = function(e, prop, val){ local.push([e, prop, e.style.getPropertyValue(prop), e.style.getPropertyPriority(prop)]); e.style.setProperty(prop, val, 'important'); };
+    /* غلاف داخلي لكل نص؛ عرضه الطبيعي يُقاس من الصفحة نفسها (لا تقدير) */
+    var ensureWrap = function(el){
+      var w = el.querySelector('nbfit');
+      if(!w){ w = document.createElement('nbfit'); while(el.firstChild) w.appendChild(el.firstChild); el.appendChild(w); local.push([el, '__unwrap', w]); }
+      else local.push([w, '__css', w.getAttribute('style')]);      /* غلاف سابق: نحفظ حالته لإعادتها حرفيًا عند التراجع */
+      w.style.cssText = 'display:inline-block!important;white-space:nowrap!important;flex:none!important;max-width:none!important;overflow:visible!important;transform-origin:center center!important;transform:none!important;';
+      put(el,'display','flex'); put(el,'justify-content','center'); put(el,'align-items','center'); put(el,'text-overflow','clip'); put(el,'white-space','nowrap');
+      return w;
+    };
+    var setScale = function(w, k){ w.style.setProperty('transform', k<0.999 ? 'scaleX('+k.toFixed(4)+')' : 'none', 'important'); };
+    var avail = function(el){ var cs2=getComputedStyle(el); return el.clientWidth - (parseFloat(cs2.paddingLeft)||0) - (parseFloat(cs2.paddingRight)||0); };
+    items.forEach(function(x){
+      var fs = Math.min(Math.max(base, x.fs0), x.hMax);              /* لا أصغر من الحالي إلا إذا كان يقصّ الحروف */
+      if(fs < x.fs0*0.80) fs = Math.min(x.fs0*0.80, x.hMax);            /* تصغير محدود — ولا يتجاوز ارتفاع الخلية أبدًا (لا قصّ للحروف) */
+      /* العرض مضبوط بالقياس الفعلي، فلا حاجة لقصّ النص عموديًا: نقاط الحروف وأذيالها تظهر كاملة */
+      put(x.b,'line-height', x.lb.toFixed(3)); put(x.b,'overflow','visible');
+      if(x.sp){ put(x.sp,'line-height', x.ls.toFixed(3)); put(x.sp,'overflow','visible'); }
+      var wb = ensureWrap(x.b), ws = x.sp ? ensureWrap(x.sp) : null;
+      for(var pass=0; pass<3; pass++){
+        put(x.b,'font-size', fs.toFixed(2)+'px'); if(x.sp) put(x.sp,'font-size', (fs*x.r).toFixed(2)+'px');
+        var ab = avail(x.b)*0.96, kb = Math.min(1, ab/Math.max(1, wb.offsetWidth));
+        var ks = 1; if(ws){ var as = avail(x.sp)*0.96; ks = Math.min(1, as/Math.max(1, ws.offsetWidth)); }
+        var kmin = Math.min(kb, ks);
+        if(kmin >= KMIN || pass===2){ setScale(wb, Math.max(kb, 0.5)); if(ws) setScale(ws, Math.max(ks, 0.5)); break; }
+        fs = fs * kmin / KMIN;                                        /* الاسم أطول من أن يُضيَّق فقط ⇒ يصغر بقدر الحاجة */
+      }
+    });
+    /* فحص أمان: مقاس الجدول يجب أن يبقى كما هو تمامًا */
+    if(Math.abs(tbl.offsetWidth-before[0])>0.5 || Math.abs(tbl.offsetHeight-before[1])>0.5){
+      for(var i=local.length-1;i>=0;i--){ var u=local[i];
+        if(u[1]==='__unwrap'){ var w=u[2]; if(w.parentNode===u[0]){ while(w.firstChild) u[0].insertBefore(w.firstChild,w); u[0].removeChild(w); } }
+        else if(u[1]==='__css'){ if(u[2]===null) u[0].removeAttribute('style'); else u[0].setAttribute('style', u[2]); }
+        else { if(u[2]) u[0].style.setProperty(u[1],u[2],u[3]); else u[0].style.removeProperty(u[1]); } }
+      return;
+    }
+    undo = undo.concat(local);
+  });
+  return undo;
+}
+
+/* خط القص بين جدولي معلمَين في الورقة الواحدة: عنصر مطلق في منتصف الفراغ تمامًا — لا يغيّر أي قياس */
+function nbAddCutLines(root){
+  if(!root || !root.querySelectorAll) return;
+  Array.prototype.forEach.call(root.querySelectorAll('.nb-cut-line'), function(e){ e.remove(); });
+  Array.prototype.forEach.call(root.querySelectorAll('.print-page'), function(pg){
+    var ws = pg.querySelectorAll('.pt-teacher-wrap');
+    if(ws.length !== 2 || ws[0].parentNode !== ws[1].parentNode) return;
+    var host = ws[0].parentNode, a = ws[0].getBoundingClientRect(), b = ws[1].getBoundingClientRect();
+    if(!(a.height > 0) || b.top < a.bottom - 0.5) return;           /* ليسا فوق بعض ⇒ لا خط */
+    var line = document.createElement('div');
+    line.className = 'nb-cut-line'; line.setAttribute('aria-hidden','true');
+    line.style.cssText = 'position:absolute!important;left:0;right:0;top:0;height:0;margin:0;padding:0;z-index:5;pointer-events:none;';
+    host.appendChild(line);
+    var k = (ws[0].offsetHeight > 0) ? (a.height / ws[0].offsetHeight) : 1;
+    var y0 = line.getBoundingClientRect().top, mid = (a.bottom + b.top) / 2;
+    line.style.setProperty('top', ((mid - y0) / (k || 1)).toFixed(2) + 'px', 'important');
+    var hr = host.getBoundingClientRect(), wr = ws[0].getBoundingClientRect();
+    line.style.setProperty('left', ((wr.left - hr.left) / (k || 1)).toFixed(2) + 'px', 'important');
+    line.style.setProperty('width', (wr.width / (k || 1)).toFixed(2) + 'px', 'important');
+    line.style.removeProperty('right');
+  });
+}
+/* تُطبَّق على مخرجات الطباعة بتخطيطها الطباعي الحقيقي (قواعد @media print مفعّلة مؤقتًا للقياس فقط) */
+function nbAutoFitPrintOutput(){
+  var out = document.getElementById('print-output'); if(!out || !(out.querySelector(NB_FIT_SEL) || out.querySelector('.pt-teacher-wrap'))) return;
+  var force = null, dyn = document.getElementById('dynamic-print-style');
+  if(dyn && dyn.textContent && !document.getElementById('nibras-pdf-force-style')){
+    var t = dyn.textContent.replace(/@media\s+print\s*{/,'').trim(); if(t.slice(-1)==='}') t = t.slice(0,-1);
+    force = document.createElement('style'); force.id = 'nb-fit-force-style'; force.textContent = t; document.head.appendChild(force);
+  }
+  /* مساحة الطباعة الحقيقية = مقاس الورقة − الهوامش (من قاعدة @page نفسها) */
+  var PAPER = {A3:[297,420], A4:[210,297], A5:[148,210]}, pw = 0, ph = 0;
+  try{
+    var mt = (dyn && dyn.textContent || '').match(/@page\s*\{[^}]*size:\s*(A3|A4|A5)\s*(landscape|portrait)?[^}]*?margin:\s*([\d.]+)mm/i);
+    if(mt){ var d = PAPER[mt[1].toUpperCase()], land = /landscape/i.test(mt[2]||''), mg = parseFloat(mt[3])||0;
+      pw = (land ? d[1] : d[0]) - 2*mg; ph = (land ? d[0] : d[1]) - 2*mg; }
+  }catch(e){}
+  var oldStyle = out.getAttribute('style');
+  out.style.cssText = 'display:block!important;position:fixed!important;left:-20000px!important;top:0!important;width:auto!important;height:auto!important;overflow:visible!important;visibility:hidden!important;';
+  var pages = Array.prototype.filter.call(out.children, function(e){ return e.nodeType===1; });
+  var saved = pages.map(function(pg){ return pg.getAttribute('style'); });
+  if(pw > 0 && ph > 0){
+    pages.forEach(function(pg){
+      pg.style.setProperty('width', pw+'mm', 'important'); pg.style.setProperty('height', ph+'mm', 'important');
+      pg.style.setProperty('max-height', ph+'mm', 'important'); pg.style.setProperty('min-height', ph+'mm', 'important');
+    });
+  }
+  try{ if(pw > 0) nbFitCellsIn(out); }catch(e){}                    /* بلا مقاس ورقة معروف لا نخاطر بأي تعديل */
+  try{ if(pw > 0) nbAddCutLines(out); }catch(e){}
+  pages.forEach(function(pg, i){ if(saved[i]===null) pg.removeAttribute('style'); else pg.setAttribute('style', saved[i]); });
+  if(oldStyle===null) out.removeAttribute('style'); else out.setAttribute('style', oldStyle);
+  if(force) force.remove();
+}
+
 (function nibrasNativeBridge(){
   var origPrint = window.print.bind(window);
   window.print = function(){
+    if(!(window.__nibrasPdfExportOnce && window.__nibrasPdfExportOnce.on)){ try{ nbAutoFitPrintOutput(); }catch(e){} }
     if(window.__nibrasPdfExportOnce && window.__nibrasPdfExportOnce.on){
       var _pdfSize = window.__nibrasPdfExportOnce;
       window.__nibrasPdfExportOnce = null;
@@ -7854,8 +8051,9 @@ function stopIntroMusic(){
 
 function showSplashThen(done){
   const gate = document.getElementById('splashGate');
-  if(!gate){ if(done) done(); return; }
+  if(!gate){ document.documentElement.classList.remove('nb-boot','splash-open'); if(done) done(); return; }
   document.documentElement.classList.add('splash-open');
+  document.documentElement.classList.remove('nb-boot');
   let finished=false;
   const finish=function(){
     if(finished) return; finished=true;
@@ -18064,7 +18262,7 @@ function buildTimingsPrintDoc(o){
         offTeachersPrintBlock()+
       '</div>'+
       '<div class="foot"><span>إعداد الجدول<br><img src="'+DEFAULT_STAMP+'" style="height:36px;background:transparent"><br><b>'+esc((DB.settings&&DB.settings.preparer)||'')+'</b></span><span>مدير / مديرة المدرسة<br><b>'+esc((DB.settings&&DB.settings.principal)||'ــــ')+'</b></span><span>التوقيع والختم<br>'+((function(){ var s=getStamp(); return s?'<img src="'+s+'" style="height:36px;background:transparent">':''; })())+'</span></div>'+
-      '</div></body></ht'+'ml>';
+      '</div><scr'+'ipt>'+"(function(){\n  /* ملاءمة خط جداول التواقيت: لكل جدول أكبر خط موحّد يتسع لارتفاع صفوفه، ويصغر فقط ما كان أعرض من خليته.\n     فحص أمان: إن تغيّر ارتفاع الوثيقة أو أي جدول تُعاد الخطوط كما كانت. */\n  try{\n    var doc=document, pageH=doc.documentElement.scrollHeight, undo=[];\n    var put=function(e,v){ undo.push([e,e.style.getPropertyValue('font-size'),e.style.getPropertyPriority('font-size')]); e.style.setProperty('font-size',v,'important'); };\n    Array.prototype.forEach.call(doc.querySelectorAll('table'), function(t){\n      var tH=t.offsetHeight, cells=Array.prototype.filter.call(t.querySelectorAll('td'), function(td){ return (td.textContent||'').trim() && td.children.length<=2; });\n      if(!cells.length) return;\n      var rowsH=cells.map(function(td){ var cs=getComputedStyle(td); return td.clientHeight-(parseFloat(cs.paddingTop)||0)-(parseFloat(cs.paddingBottom)||0); }).sort(function(a,b){ return a-b; });\n      var h=rowsH[0]; if(!(h>8)) return;\n      var cur=parseFloat(getComputedStyle(cells[0]).fontSize)||10;\n      var target=Math.min(h*0.66, 24);\n      if(!(target>cur*1.05)) return;\n      cells.forEach(function(td){\n        var cs=getComputedStyle(td), w=td.clientWidth-(parseFloat(cs.paddingLeft)||0)-(parseFloat(cs.paddingRight)||0);\n        put(td, ((td.colSpan>1||td.rowSpan>1) ? Math.min(target,17) : target).toFixed(2)+'px');\n        var guard=0; while(td.scrollWidth>td.clientWidth+1 && guard++<12){ var f=parseFloat(td.style.getPropertyValue('font-size'))*0.92; td.style.setProperty('font-size',f.toFixed(2)+'px','important'); }\n      });\n      Array.prototype.forEach.call(t.querySelectorAll('th'), function(th){ var f=parseFloat(getComputedStyle(th).fontSize)||10; var nf=Math.min(f*1.25, target); if(nf>f){ put(th, nf.toFixed(2)+'px'); } });\n      if(Math.abs(t.offsetHeight-tH)>0.5){ for(var k=undo.length-1;k>=0;k--){ var u=undo[k]; if(t.contains(u[0])){ if(u[1]) u[0].style.setProperty('font-size',u[1],u[2]); else u[0].style.removeProperty('font-size'); } } }\n    });\n    if(doc.documentElement.scrollHeight>pageH+0.5){ for(var k=undo.length-1;k>=0;k--){ var u=undo[k]; if(u[1]) u[0].style.setProperty('font-size',u[1],u[2]); else u[0].style.removeProperty('font-size'); } }\n  }catch(e){}\n})();"+'</scr'+'ipt></body></ht'+'ml>';
 }
 
 let _timingsPdfBusy = false;
@@ -18735,13 +18933,22 @@ function renderAttendanceTab(){
 })();
 
 /* ─── بطاقة «ما الجديد في التحديث» — لمرة واحدة فقط للمفعّلين سابقًا ─── */
-const NIBRAS_WN_VER='5.2';
+const NIBRAS_WN_VER='5.3';
 const NIBRAS_WN_LS='nibras-whatsnew-seen-'+NIBRAS_WN_VER;
 function nibrasMaybeShowWhatsNew(){
   try{
     if(typeof nibrasIsActivated!=='function' || !nibrasIsActivated()) return;
     if(localStorage.getItem(NIBRAS_WN_LS)) return;
+    /* انتظار انتهاء المقدمة وأي نافذة أخرى (إعداد/ترحيب/تفعيل) — لا تظهر فوق المقدمة */
+    const h=document.documentElement;
+    if(['nb-boot','splash-open','setup-open','welcome-open','activate-open'].some(function(c){ return h.classList.contains(c); }) || (document.getElementById('modal-root')||{children:[]}).children.length){
+      if(!(nibrasMaybeShowWhatsNew._n>60)){ nibrasMaybeShowWhatsNew._n=(nibrasMaybeShowWhatsNew._n||0)+1; setTimeout(nibrasMaybeShowWhatsNew, 1000); }
+      return;
+    }
     localStorage.setItem(NIBRAS_WN_LS, String(Date.now()));
+    /* لوحة هذا التحديث تعرّف بميزة الربط — فلا داعي لبطاقة «جدولي» المنفصلة بعدها */
+    try{ if(!localStorage.getItem('nibras-jadwali-promo-seen-v1')) localStorage.setItem('nibras-jadwali-promo-seen-v1','whatsnew-5.3'); }catch(e){}
+    const TT=(typeof schoolTerms==='function')?schoolTerms():{thePluralGen:'المعلمين'};
     if(!document.getElementById('nwn-style')){
       const st=document.createElement('style'); st.id='nwn-style';
       st.textContent=
@@ -18766,6 +18973,12 @@ function nibrasMaybeShowWhatsNew(){
         'html[data-theme="night"] .nwn-item{background:#101d36;border-color:#1d2c4d;box-shadow:none}'+
         'html[data-theme="night"] .nwn-item b{color:#eef3ff}'+
         'html[data-theme="night"] .nwn-item span{color:#9fb0d0}'+
+        '.nwn-hero{border:1.5px solid #e3b84f;background:linear-gradient(180deg,#fffaf0,#fff)}'+
+        '.nwn-item em{font-style:normal;font-weight:900;color:#9a6b12}'+
+        '.nwn-link{display:block;margin:-6px auto 16px;border:0;background:none;color:#1e3a75;font-weight:900;font-size:14px;cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:4px}'+
+        'html[data-theme="night"] .nwn-hero{background:#13203a;border-color:#22d3ee}'+
+        'html[data-theme="night"] .nwn-item em{color:#7defff}'+
+        'html[data-theme="night"] .nwn-link{color:#7defff}'+
         '@media print{.nwn-back{display:none!important}}';
       document.head.appendChild(st);
     }
@@ -18780,16 +18993,21 @@ function nibrasMaybeShowWhatsNew(){
           '<p class="nwn-sub">جديد هذا التحديث</p>'+
         '</div>'+
         '<div class="nwn-body">'+
-          '<div class="nwn-item"><div class="nwn-ic">🧑‍🏫</div><div><b>ميزة جديدة: تسجيل حضور الملاك</b><span>حضور يومي بالتوقيع، مع الغياب والمجاز، وتبويب إحصاء كامل قابل للطباعة.</span></div></div>'+
-          '<div class="nwn-item"><div class="nwn-ic">🔗</div><div><b>ميزة جديدة يمكن تفعيلها: الدروس الملاصقة</b><span>توزيع جدول الدروس بشكل ملاصق (متتابع) — كل مادة كتلتان متتابعتان بالشعبة.</span></div></div>'+
-          '<div class="nwn-item"><div class="nwn-ic">🛠️</div><div><b>إصلاح بعض الأخطاء</b><span>تحسينات عامة وتثبيت أداء التطبيق.</span></div></div>'+
+          '<div class="nwn-item nwn-hero"><div class="nwn-ic">📲</div><div><b>جديد: باركودات ربط أجهزة '+TT.thePluralGen+'</b><span>من «طباعة وتصدير» اطبع أو صدّر PDF أوراق A4 فيها 12 باركود لكل ورقة — يمسح كل فرد باركوده بتطبيق «جدولي» فيصله جدوله وتنبيهات دروسه. <em>ميزة إضافية تُفعَّل بمفتاح مستقل.</em></span></div></div>'+
+          '<div class="nwn-item"><div class="nwn-ic">✂️</div><div><b>جداول '+TT.thePluralGen+' دفعة واحدة: جدولان في كل ورقة</b><span>طباعة وPDF لكل '+TT.thePluralGen+' — جدولان في ورقة A4 مع خط «قصّ هنا» في المنتصف لتوزيعها بسهولة.</span></div></div>'+
+          '<div class="nwn-item"><div class="nwn-ic">🔠</div><div><b>خط طباعة ذكي يكبر مع الورقة</b><span>اسم المادة والمعلم يتكيفان تلقائيًا مع حجم الخلية (A4 وA3، كل الوضعيات) — أكبر ما يمكن، والحروف ونقاطها كاملة بلا تداخل.</span></div></div>'+
+          '<div class="nwn-item"><div class="nwn-ic">🎨</div><div><b>إصلاحات الطباعة وPDF</b><span>ألوان كل الصفحات صحيحة مهما كثر عدد '+TT.thePluralGen+' أو الشعب، والأسماء متصلة بلا تقطّع، وجدول التواقيت والمراقبين بخط أكبر وأوضح.</span></div></div>'+
+          '<div class="nwn-item"><div class="nwn-ic">⚡</div><div><b>إقلاع أسرع وأنعم</b><span>يفتح التطبيق بسرعة أكبر، والمقدمة تظهر فورًا بلا ومضة للواجهة.</span></div></div>'+
         '</div>'+
         '<button type="button" class="nwn-btn">رائع، لنبدأ ✨</button>'+
+        '<button type="button" class="nwn-link" id="nwnGoQr">📲 عرض باركودات الربط</button>'+
       '</div>';
     document.body.appendChild(ov);
     const close=function(){ try{ ov.remove(); }catch(e){} };
     const btn=ov.querySelector('.nwn-btn');
     if(btn) btn.addEventListener('click', close);
+    const go=ov.querySelector('#nwnGoQr');
+    if(go) go.addEventListener('click', function(){ close(); try{ document.querySelector('.tab-btn[data-view="pex"]').click(); }catch(e){} });
     ov.addEventListener('click', function(e){ if(e.target===ov) close(); });
   }catch(e){}
 }
@@ -19509,7 +19727,7 @@ function pexDoPrint(it){
       }
       case 'all_teachers': {
         const ts=(DB.teachers||[]).map(function(t){ return buildTeacherTableHtml(t.id); });
-        paginateAndPrintFit(ts, 1, 'row', 'portrait', 'A4'); break;
+        paginateAndPrintFit(ts, 2, 'col', 'portrait', 'A4'); break;
       }
       case 'cls': {
         let c=null; try{ c=allClasses().find(function(x){ return x.key===it.key; }); }catch(e){}
@@ -19549,7 +19767,7 @@ function pexDoPdf(it){
       }
       case 'all_teachers': {
         const ts=(DB.teachers||[]).map(function(t){ return buildTeacherTableHtml(t.id); });
-        exportTableListAsPdf(ts, 'جداول_المعلمين', 'A4', 'portrait'); break;
+        exportTableListAsPdf(ts, 'جداول_المعلمين', 'A4', 'portrait', 2, 'col'); break;
       }
       case 'cls': {
         let c=null; try{ c=allClasses().find(function(x){ return x.key===it.key; }); }catch(e){}
@@ -21854,8 +22072,8 @@ document.addEventListener('click', function(e){
 const NBJ_PROMO_LS='nibras-jadwali-promo-seen-v1';
 function nbPromoBlocked(){
   const h=document.documentElement;
-  if(['setup-open','welcome-open','activate-open'].some(function(c){ return h.classList.contains(c); })) return true;
-  const sg=document.getElementById('splashGate'); if(sg && sg.offsetParent!==null && getComputedStyle(sg).display!=='none') return true;
+  if(['nb-boot','splash-open','setup-open','welcome-open','activate-open'].some(function(c){ return h.classList.contains(c); })) return true;
+  const sg=document.getElementById('splashGate'); if(sg && getComputedStyle(sg).display!=='none') return true;
   if(document.querySelector('.nwn-back')) return true;
   const mr=document.getElementById('modal-root'); if(mr && mr.children.length) return true;
   if(document.querySelector('.nb-swap-bg')) return true;
@@ -21902,11 +22120,179 @@ function nbPromoShow(){
     const iv=setInterval(function(){
       tries++;
       if(nbPromoBlocked()){ calm=0; } else { calm++; }
-      if(calm>=3){ clearInterval(iv); nbPromoShow(); }               /* هدوء ٣ ثوانٍ متتالية بلا أي نافذة */
+      if(calm>=3){ clearInterval(iv); try{ if(localStorage.getItem(NBJ_PROMO_LS)) return; }catch(_){} nbPromoShow(); }               /* هدوء ٣ ثوانٍ متتالية بلا أي نافذة */
       if(tries>180) clearInterval(iv);
     }, 1000);
   }catch(e){}
 })();
+
+/* =========================================================================
+   «ربط أجهزة المعلمين» في قسم الطباعة والتصدير — أوراق باركودات الربط
+   A4 عمودي، 12 باركود في الورقة (3 × 4)، ورقة جديدة تلقائيًا عند الزيادة.
+   طباعة / PDF — للمفعّلين ميزة الربط فقط؛ الميزة ظاهرة للجميع مع نافذة مزاياها.
+   ========================================================================= */
+var _nbQrSheetBusy=false;
+function nbQrSheetRender(){
+  const host=document.getElementById('nbQrSheetCard'); if(!host) return;
+  const ok=(typeof nbLinkActivated==='function') && nbLinkActivated();
+  const tt=schoolTerms();
+  const n=(DB.teachers||[]).length;
+  host.classList.toggle('locked', !ok);
+  host.innerHTML=
+     '<div class="qrs-main">'
+    +'<div class="qrs-ico">📲</div>'
+    +'<div class="qrs-txt"><div class="qrs-title">ربط أجهزة '+esc(tt.thePluralGen)+' <button type="button" class="qrs-info" id="nbQrInfo" title="مزايا الخدمة" aria-label="مزايا الخدمة">ⓘ</button>'
+    +(ok?'<span class="qrs-badge ok">مفعّلة</span>':'<span class="qrs-badge lock">🔒 تحتاج تفعيل</span>')+'</div>'
+    +'<div class="qrs-sub">أوراق باركودات الربط لتطبيق «جدولي» — 12 باركود في كل ورقة A4، لكل '+esc(tt.one)+' باركوده الخاص · '+n+' في القائمة</div></div>'
+    +'</div>'
+    +'<div class="qrs-acts">'
+    +'<button type="button" class="pex-btn print qrs-btn" id="nbQrPrint">🖨️ طباعة الباركودات</button>'
+    +'<button type="button" class="pex-btn pdf qrs-btn" id="nbQrPdf">📄 تصدير PDF</button>'
+    +'</div>';
+}
+function nbQrInfoOpen(){
+  const tt=schoolTerms(), ok=(typeof nbLinkActivated==='function') && nbLinkActivated();
+  const old=document.getElementById('nbQrInfoModal'); if(old) old.remove();
+  const m=document.createElement('div'); m.id='nbQrInfoModal'; m.className='nb-promo-bg';
+  m.innerHTML='<div class="nb-promo" role="dialog" aria-label="ربط أجهزة '+esc(tt.thePluralGen)+'">'
+    +'<div class="nb-promo-top"><span class="nb-promo-new">'+(ok?'مفعّلة':'ميزة إضافية')+'</span><div class="nb-promo-ic">📲</div>'
+    +'<h2>ربط أجهزة '+esc(tt.thePluralGen)+'</h2><p>اطبع باركودات الربط مرة واحدة، ووزّعها على '+esc(tt.thePluralGen)+' — كلٌّ يمسح باركوده بتطبيق «جدولي» فيصله جدوله فورًا.</p></div>'
+    +'<ul class="nb-promo-list">'
+    +'<li><i>🖨️</i><div><b>ورقة A4 لكل 12 '+esc(tt.one)+'</b><span>باركود باسم كل فرد وعدد حصصه، مع خطوط قصّ — وأوراق إضافية تلقائيًا.</span></div></li>'
+    +'<li><i>📄</i><div><b>طباعة مباشرة أو ملف PDF</b><span>أرسل الملف عبر واتساب أو اطبعه ووزّعه في غرفة '+esc(tt.thePluralGen)+'.</span></div></li>'
+    +'<li><i>📅</i><div><b>جدول كل فرد في هاتفه</b><span>الدرس الجاري وتنبيهات البداية والنهاية بالجرس أو بصوت عربي — حتى والتطبيق مغلق.</span></div></li>'
+    +'<li><i>👁️</i><div><b>المراقبون والمراقبة الحية</b><span>يرى المراقب الحصة الجارية في كل الشعب يوم مراقبته.</span></div></li>'
+    +'<li><i>🔒</i><div><b>بلا إنترنت وبخصوصية تامة</b><span>كل باركود يحمل جدول صاحبه فقط، والبيانات لا تخرج من الأجهزة.</span></div></li>'
+    +'<li><i>🔄</i><div><b>تحديث سهل</b><span>عند تعديل الجدول اطبع الأوراق من جديد — يمسحها كل فرد فيتحدّث جدوله.</span></div></li>'
+    +'</ul>'
+    +(ok?'':'<div class="nb-promo-note">الميزة تحتاج مفتاح تفعيل مستقلًّا — اطلبه بضغطة واحدة.</div>')
+    +'<div class="nb-promo-act">'
+    +(ok?'<button type="button" class="btn btn-gold" id="nbQrInfoPrint">🖨️ طباعة الباركودات</button><button type="button" class="btn btn-primary" id="nbQrInfoPdf">📄 تصدير PDF</button>'
+        :'<a class="btn btn-gold" id="nbQrInfoWa" href="'+nbLinkWaUrl()+'" target="_blank" rel="noopener">💬 اطلب تفعيل الميزة</a><button type="button" class="btn btn-primary" id="nbQrInfoGo">🔓 إدخال مفتاح التفعيل</button>')
+    +'<button type="button" class="btn btn-outline" id="nbQrInfoClose">إغلاق</button></div></div>';
+  document.body.appendChild(m);
+  const close=function(){ m.classList.add('out'); setTimeout(function(){ m.remove(); },200); };
+  m.addEventListener('click', function(e){
+    const t=e.target;
+    if(t===m || (t.closest&&t.closest('#nbQrInfoClose'))){ close(); return; }
+    if(t.closest&&t.closest('#nbQrInfoPrint')){ close(); nbQrSheetRun('print'); return; }
+    if(t.closest&&t.closest('#nbQrInfoPdf')){ close(); nbQrSheetRun('pdf'); return; }
+    if(t.closest&&t.closest('#nbQrInfoWa')){ t.closest('#nbQrInfoWa').href=nbLinkWaUrl(); setTimeout(close,300); return; }
+    if(t.closest&&t.closest('#nbQrInfoGo')){ close(); try{ document.querySelector('.tab-btn[data-view="settings"]').click(); setTimeout(function(){ const b=document.querySelector('#settingsNav [data-set="link"]'); if(b) b.click(); },120); }catch(_){} }
+  });
+}
+/* بناء الأوراق: كل باركود يحمل جدول صاحبه فقط (نفس باركود الإعدادات تمامًا) */
+async function nbQrSheetBuild(){
+  const tt=schoolTerms();
+  const list=(DB.teachers||[]).slice().sort(function(a,b){ return String(a.name).localeCompare(String(b.name),'ar'); });
+  const cards=[], skipped=[];
+  for(const t of list){
+    const pl=nbTeacherPayload(t.id, false); if(!pl) continue;
+    if(!pl.lessons){ skipped.push(t.name); continue; }
+    const text=await nbPack(pl.json);
+    let img='', big=false;
+    try{ const qr=NbQR.encode(text,'L'); img=NbQR.toCanvas(qr, 640).toDataURL('image/png'); }catch(e){ big=true; }
+    cards.push({name:t.name, lessons:pl.lessons, img:img, big:big, sup:!!pl.obj.sv});
+  }
+  const school=esc((DB.settings&&DB.settings.schoolName)||'المدرسة');
+  const year=esc((DB.settings&&DB.settings.academicYear)||'');
+  const pages=[]; for(let i=0;i<cards.length;i+=12) pages.push(cards.slice(i,i+12));
+  const nP=function(n){ return n===1?'حصة واحدة':(n===2?'حصتان':(n>=3&&n<=10?(n+' حصص'):(n+' حصة'))); };
+  const pageHtml=pages.map(function(pg, pi){
+    return '<section class="qp">'
+      +'<header><div><b>'+school+'</b><small>باركودات ربط تطبيق «جدولي» — '+esc(tt.thePluralGen)+'</small></div><span>'+(year?year+' · ':'')+'ورقة '+(pi+1)+' من '+pages.length+'</span></header>'
+      +'<div class="qg">'+pg.map(function(c){
+        return '<div class="qc"><div class="qn">'+esc(c.name)+'</div>'
+          +(c.img?'<img src="'+c.img+'" alt="">':'<div class="qbig">البيانات أكبر من باركود — استخدم «رمز الربط» من الإعدادات</div>')
+          +'<div class="qm">'+nP(c.lessons)+' أسبوعيًا'+(c.sup?' · يشمل يوم المراقبة':'')+'</div>'
+          +'<div class="qh">امسح بتطبيق «جدولي» ← ربط بجدول المدرسة</div></div>';
+      }).join('')+'</div>'
+      +'<footer>✂︎ قصّ على الخطوط المتقطعة ووزّع كل باركود على صاحبه · تصميم الأستاذ حسين ناهي المسعودي</footer>'
+      +'</section>';
+  }).join('');
+  const css='@page{size:A4 portrait;margin:6mm}*{box-sizing:border-box;margin:0;padding:0}'
+    +'body{font-family:Tajawal,"Noto Kufi Arabic","Segoe UI",Tahoma,sans-serif;direction:rtl;color:#0b2530;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    +'.qp{width:198mm;height:285mm;display:flex;flex-direction:column;page-break-after:always;break-after:page;overflow:hidden;background:#fff}'
+    +'.qp:last-child{page-break-after:auto;break-after:auto}'
+    +'header{flex:none;height:15mm;display:flex;align-items:center;justify-content:space-between;padding:0 5mm;border-radius:3mm;color:#fff;background:linear-gradient(135deg,#04272d,#0b4d58 60%,#0e6a78);box-shadow:inset 0 -0.8mm 0 #d9b55c}'
+    +'header b{display:block;font-size:4.6mm;font-weight:900}header small{display:block;font-size:3mm;color:#f3dc95;font-weight:700;margin-top:.6mm}header span{font-size:3mm;font-weight:800;color:#e6f3f5}'
+    +'.qg{flex:1;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,1fr);margin-top:2.5mm;border:0.3mm dashed #9bb3b8}'
+    +'.qc{border:0.3mm dashed #9bb3b8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2mm;padding:2mm;text-align:center;overflow:hidden}'
+    +'.qn{font-size:4.2mm;font-weight:900;line-height:1.25;max-width:100%;color:#06303a}'
+    +'.qc img{width:44mm;height:44mm;image-rendering:pixelated;display:block}'
+    +'.qm{font-size:2.9mm;font-weight:800;color:#0e6a78}.qh{font-size:2.5mm;font-weight:700;color:#5b7a80}'
+    +'.qbig{width:44mm;height:44mm;display:flex;align-items:center;justify-content:center;font-size:3mm;font-weight:800;color:#8a5d0c;border:0.3mm solid #e0c27a;border-radius:2mm;padding:3mm;background:#fff8e6}'
+    +'footer{flex:none;height:7mm;display:flex;align-items:center;justify-content:center;font-size:2.8mm;font-weight:700;color:#5b7a80}';
+  return {pages:pages.length, cards:cards.length, skipped:skipped,
+    doc:'<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>باركودات ربط «جدولي»</title><style>'+css+'</style></head><body>'+pageHtml+'</body></html>',
+    css:css, body:pageHtml};
+}
+async function nbQrSheetRun(mode){
+  if(!nbLinkActivated()){ nbQrInfoOpen(); toast('هذه الميزة تحتاج تفعيلًا مستقلًا — اطلب رمزها عبر واتساب','err'); return; }
+  if(_nbQrSheetBusy) return; _nbQrSheetBusy=true;
+  const tt=schoolTerms();
+  try{
+    if(!Object.keys(DB.schedule||{}).length){ toast('ولّد الجدول أولًا','err'); return; }
+    toast('جارٍ تجهيز باركودات '+tt.thePluralGen+'…','ok');
+    const r=await nbQrSheetBuild();
+    if(!r.cards){ toast('لا توجد حصص في الجدول الحالي — ولّد الجدول أولًا','err'); return; }
+    if(mode==='print'){
+      if(window.NibrasAndroid && typeof window.NibrasAndroid.printInChrome==='function'){ window.NibrasAndroid.printInChrome(r.doc); }
+      else {
+        const w=window.open('', '_blank'); if(!w){ toast('اسمح بالنوافذ المنبثقة للطباعة','err'); return; }
+        w.document.open(); w.document.write(r.doc); w.document.close();
+        try{ w.focus(); }catch(e){}
+        setTimeout(function(){ try{ w.print(); }catch(e){} }, 500);
+      }
+      toast(r.cards+' باركود في '+r.pages+' '+(r.pages===1?'ورقة':'أوراق')+' A4'+(r.skipped.length?(' · بلا حصص: '+r.skipped.length):''),'ok');
+      return;
+    }
+    /* PDF: نفس الأوراق ← صورة عالية الدقة لكل ورقة ← ملف A4 */
+    if(!window.html2canvas || !(window.jspdf && window.jspdf.jsPDF)){ if(typeof nibrasEnsurePdfLibs==='function') await nibrasEnsurePdfLibs(); }
+    const J=(window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+    if(!J || !window.html2canvas) throw new Error('pdf libs');
+    const box=document.createElement('div');
+    box.style.cssText='position:fixed;left:-30000px;top:0;width:198mm;background:#fff;z-index:-1;';
+    /* كل قاعدة تُحصر داخل حاوية الأوراق فقط — لا تمس أي عنصر في واجهة البرنامج */
+    const scoped=r.css.replace(/@page\{[^}]*\}/,'').replace(/(^|\})\s*([^{}@]+)\{/g, function(m0,pre,sel){
+      return pre+sel.split(',').map(function(x){ x=x.trim(); return x==='body' ? '#nbQrBox' : '#nbQrBox '+x; }).join(',')+'{';
+    });
+    box.innerHTML='<style>'+scoped+'</style><div id="nbQrBox">'+r.body+'</div>';
+    document.body.appendChild(box);
+    await new Promise(function(res){ setTimeout(res, 120); });
+    const pdf=new J({orientation:'portrait', unit:'mm', format:'a4', compress:true});
+    const secs=box.querySelectorAll('.qp');
+    for(let i=0;i<secs.length;i++){
+      const pr=secs[i].getBoundingClientRect();
+      const cv=await window.html2canvas(secs[i], {scale:2.4, useCORS:true, backgroundColor:'#ffffff', logging:false, scrollY:-pr.top, windowHeight:Math.max(window.innerHeight||0, Math.ceil(pr.height)+20)});
+      if(i>0) pdf.addPage('a4','portrait');
+      pdf.addImage(cv.toDataURL('image/jpeg', 0.95), 'JPEG', 6, 6, 198, 285, undefined, 'FAST');
+      cv.width=0; cv.height=0;
+    }
+    box.remove();
+    const blob=pdf.output('blob');
+    const fileName='باركودات-ربط-جدولي-'+((DB.settings&&DB.settings.schoolName)||'المدرسة').replace(/[\\\/:*?"<>|]+/g,'-')+'.pdf';
+    try{
+      const f=new File([blob], fileName, {type:'application/pdf'});
+      if(navigator.canShare && navigator.canShare({files:[f]}) && navigator.share){ await navigator.share({files:[f], title:fileName}); toast('تم حفظ / مشاركة ملف الباركودات','ok'); return; }
+    }catch(e_s){ if(e_s && e_s.name==='AbortError') return; }
+    const u=URL.createObjectURL(blob), a=document.createElement('a');
+    a.href=u; a.download=fileName; a.style.display='none'; document.body.appendChild(a); a.click();
+    setTimeout(function(){ try{ a.remove(); URL.revokeObjectURL(u); }catch(e){} }, 3000);
+    toast('تم تنزيل ملف الباركودات: '+r.cards+' باركود في '+r.pages+' '+(r.pages===1?'ورقة':'أوراق'),'ok');
+  }catch(err){
+    toast('تعذّر تجهيز الباركودات','err');
+  }finally{ _nbQrSheetBusy=false; }
+}
+document.addEventListener('click', function(e){
+  const t=e.target; if(!t||!t.closest) return;
+  if(t.closest('#nbQrInfo')){ e.preventDefault(); nbQrInfoOpen(); return; }
+  if(t.closest('#nbQrPrint')){ e.preventDefault(); nbQrSheetRun('print'); return; }
+  if(t.closest('#nbQrPdf')){ e.preventDefault(); nbQrSheetRun('pdf'); return; }
+  if(t.closest('.tab-btn[data-view="pex"]')) setTimeout(nbQrSheetRender, 0);
+  if(t.closest('#nbLinkActivate')) setTimeout(nbQrSheetRender, 50);
+});
+try{ setTimeout(nbQrSheetRender, 0); }catch(e){}
 
 
 init();
@@ -22429,5 +22815,33 @@ html[data-theme="night"] .nb-mgr-opt{ border-color:rgba(34,211,238,.45); backgro
   },true);
 })();
 </script>
+<style id="nibras-qrsheet-css">
+.qrs-card{ position:relative; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin:0 0 14px; padding:16px 18px; border-radius:18px; color:#fff;
+  background:linear-gradient(135deg,#04272d 0%,#0b4d58 55%,#0e6a78 100%); box-shadow:0 14px 34px -14px rgba(4,39,45,.65), inset 0 -3px 0 #d9b55c; overflow:hidden; }
+.qrs-card::after{ content:''; position:absolute; left:-40px; bottom:-70px; width:220px; height:220px; border-radius:50%; background:radial-gradient(circle,rgba(243,220,149,.22),transparent 70%); pointer-events:none; }
+.qrs-main{ display:flex; align-items:center; gap:14px; min-width:0; flex:1 1 320px; position:relative; z-index:1; }
+.qrs-ico{ flex:none; width:56px; height:56px; border-radius:16px; display:grid; place-items:center; font-size:30px; background:linear-gradient(180deg,#f3dc95,#d9b55c); box-shadow:0 6px 16px -6px rgba(217,181,92,.9); }
+.qrs-title{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:19px; font-weight:900; }
+.qrs-sub{ font-size:12.5px; font-weight:700; color:#cfeef2; margin-top:4px; line-height:1.7; }
+.qrs-info{ width:30px; height:30px; border-radius:50%; border:1.5px solid rgba(243,220,149,.8); background:rgba(255,255,255,.12); color:#f3dc95; font-size:17px; font-weight:900; cursor:pointer; display:inline-grid; place-items:center; line-height:1; animation:qrsPulse 2.4s ease-in-out infinite; font-family:inherit; }
+.qrs-info:hover{ background:rgba(255,255,255,.22); }
+@keyframes qrsPulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(243,220,149,.55); } 50%{ box-shadow:0 0 0 7px rgba(243,220,149,0); } }
+.qrs-badge{ font-size:11.5px; font-weight:900; padding:3px 10px; border-radius:99px; }
+.qrs-badge.ok{ background:rgba(162,197,86,.22); color:#c9f08a; border:1px solid rgba(162,197,86,.5); }
+.qrs-badge.lock{ background:rgba(255,255,255,.12); color:#f3dc95; border:1px solid rgba(243,220,149,.5); }
+.qrs-acts{ display:flex; gap:8px; flex-wrap:wrap; position:relative; z-index:1; }
+.qrs-btn{ padding:11px 16px !important; font-size:13px !important; }
+.qrs-card.locked .qrs-btn{ filter:grayscale(.85) brightness(.85); opacity:.72; cursor:not-allowed; }
+html[data-theme="night"] .qrs-card{ background:linear-gradient(135deg,#071228 0%,#0e1e3d 55%,#13264b 100%); box-shadow:0 14px 34px -14px rgba(0,0,0,.7), inset 0 -3px 0 #22d3ee; }
+html[data-theme="night"] .qrs-ico{ background:linear-gradient(180deg,#7defff,#22d3ee); }
+#nbQrInfoModal #nbQrInfoClose{ grid-column:1 / -1; }
+@media print{ .qrs-card, #nbQrInfoModal{ display:none !important; } }
+</style>
+<style id="nibras-cutline-css">
+.nb-cut-line{ border-top:0.35mm dashed #6f7f86 !important; }
+.nb-cut-line::before{ content:'✂'; position:absolute; right:-1mm; top:-2.6mm; font-size:3.6mm; line-height:1; color:#4b5a60; background:#fff; padding:0 0.6mm; }
+.nb-cut-line::after{ content:'قصّ هنا'; position:absolute; left:50%; top:-1.7mm; transform:translateX(-50%); font-size:2.3mm; line-height:1; font-weight:800; color:#6f7f86; background:#fff; padding:0 1.5mm; }
+@media screen{ #print-output:not(.printing) .nb-cut-line{ display:none; } }
+</style>
 </body>
 </html>
