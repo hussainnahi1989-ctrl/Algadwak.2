@@ -4,8 +4,8 @@
    • باقي الملفات (الأيقونات…): من النسخة المحفوظة فورًا مع تحديثها بصمت في الخلفية.
    • عند رفع نسخة جديدة من هذا الملف تُحذف الذاكرة القديمة تلقائيًا.
    ========================================================================= */
-const CACHE = 'jadwal-cache-2026-10-v10';
-const CORE = ['./', './index.html', './app-icon-192.png', './app-icon-180.png', './app-icon-512.png'];
+const CACHE = 'jadwal-cache-2026-10-v13';
+const CORE = ['./', './index.html', './assets/teacher-app-phone.png', './app-icon-192.png', './app-icon-180.png', './app-icon-512.png'];
 
 self.addEventListener('install', function(e){
   self.skipWaiting();
