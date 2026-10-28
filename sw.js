@@ -7,7 +7,7 @@
    • باقي الملفات: المحفوظ فورًا مع تحديث صامت.
    • البيانات والتفعيل محفوظة في المتصفح ولا يمسّها التحديث.
    ========================================================================= */
-const CACHE = 'jadwal-cache-2026-10-v43';
+const CACHE = 'jadwal-cache-2026-10-v52';
 const CORE = ['./', './index.html', './assets/teacher-app-phone.png', './app-icon-192.png', './app-icon-180.png', './app-icon-512.png'];
 const PAGE_KEY = './index.html';
 const FLAG_KEY = './__nb_update_pending';   /* علامة «وصلت نسخة أحدث» يقرؤها البرنامج حتى لو فاتته الرسالة */
