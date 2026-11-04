@@ -10024,10 +10024,11 @@ function renderFullMasterTab(){
     if(!withSched.length){ toast('لا يوجد جدول للطباعة — وزّع الحصص أولًا','err'); return; }
     const isPdf = !!(chkPdf && chkPdf.checked);
     const tables = withSched.map(c=>buildClassTableHtml(c.key));
+    /* شعبتان في كل ورقة لتوفير الورق — والطباعة تفتح واجهة المعاينة */
     if(isPdf){
-      exportTableListAsPdf(tables, 'جداول_الشعب_المدرسية', paper, orient);
+      exportTableListAsPdf(tables, 'جداول_الشعب_المدرسية', paper, 'portrait', 2, 'col');
     } else {
-      paginateAndPrintFit(tables, 1, 'row', orient, paper);
+      pexDoPrint({act:'all_classes', name:'جداول جميع الشعب', paper:paper});
     }
   });
 
@@ -10042,7 +10043,7 @@ function renderFullMasterTab(){
     if(isPdf){
       exportTableListAsPdf(tables, 'جداول_المعلمين_والمدرسين', paper, 'portrait', 2, 'col');
     } else {
-      paginateAndPrintFit(tables, 2, 'col', 'portrait', paper);
+      pexDoPrint({act:'all_teachers', name:'جداول جميع المعلمين', paper:paper});
     }
   });
   document.addEventListener('click', function(e){
@@ -17110,9 +17111,12 @@ async function exportTableListAsPdf(tableHtmlList, customKind, paper, orient, n,
   try{
     paper = (String(paper || printPaper || 'A4').toUpperCase() === 'A3') ? 'A3' : 'A4';
     orient = orient || 'landscape';
+    if(nbIsBatch2(tableHtmlList, n, dir)){ orient='portrait'; nbBuildBatch2Pages(tableHtmlList, paper); }
+    else {
     buildPaginatedPrintPages(tableHtmlList, n || 1, dir || 'row', orient, paper);
     try{ fitPrintPagesOnePage(paper, orient); fitPrintPagesOnePage(paper, orient); }catch(e){ console && console.error && console.error(e); }
     try{ hardenPrintedPages(Array.from(document.querySelectorAll('#print-output .print-page')), 0.97, orient); }catch(e){ console && console.error && console.error(e); }
+    }
 
     const isA3 = paper === 'A3';
     const pageMM = isA3
@@ -17126,7 +17130,52 @@ async function exportTableListAsPdf(tableHtmlList, customKind, paper, orient, n,
   }
 }
 
+/* طباعة دفعة واحدة موفّرة للورق: جدولان في كل ورقة عمودية — تخطيط ثابت بالمليمتر (CSS فقط، بلا قياسات JS)
+   فيظهر الجدولان كاملين بالحجم نفسه على كل الأجهزة (تابلت أندرويد، Brave، WebView، لابتوب) */
+function nbBuildBatch2Pages(tableHtmlList, paper){
+  paper = (String(paper || printPaper || 'A4').toUpperCase() === 'A3') ? 'A3' : 'A4';
+  injectPrintPageStyle('portrait', paper);
+  const out = document.getElementById('print-output');
+  if(!out) return false;
+  out.innerHTML = '';
+  out.classList.add('printing');
+  const W = paper==='A3' ? 287 : 200, H = paper==='A3' ? 410 : 287;
+  const headHtml = printHeaderHtml(), footHtml = printFooterHtml();
+  const IMP = '!important;';
+  const pageCss = 'position:relative'+IMP+'width:'+W+'mm'+IMP+'height:'+H+'mm'+IMP+'max-height:'+H+'mm'+IMP+'overflow:hidden'+IMP+'box-sizing:border-box'+IMP+'display:flex'+IMP+'flex-direction:column'+IMP+'gap:2mm'+IMP+'background:#fff'+IMP+'margin:0'+IMP+'padding:0'+IMP;
+  const bodyCss = 'flex:1 1 0'+IMP+'min-height:0'+IMP+'height:auto'+IMP+'display:flex'+IMP+'flex-direction:column'+IMP+'gap:3mm'+IMP+'overflow:hidden'+IMP+'position:relative'+IMP;
+  const slotCss = 'flex:1 1 0'+IMP+'min-height:0'+IMP+'height:auto'+IMP+'display:flex'+IMP+'flex-direction:column'+IMP+'overflow:hidden'+IMP;
+  let html = '';
+  for(let i = 0; i < tableHtmlList.length; i += 2){
+    const chunk = tableHtmlList.slice(i, i + 2);
+    let inner = '';
+    for(let k = 0; k < 2; k++){
+      inner += '<div class="nb-b2slot" style="'+slotCss+'">'+(chunk[k] || '')+'</div>';
+    }
+    html += '<div class="print-page nb-b2page" style="'+pageCss+'">'+
+              '<div style="flex:0 0 auto'+IMP+'">'+headHtml+'</div>'+
+              '<div class="print-body nb-b2body" style="'+bodyCss+'">'+inner+'</div>'+
+              '<div style="flex:0 0 auto'+IMP+'">'+footHtml+'</div>'+
+            '</div>';
+  }
+  out.innerHTML = html;
+  /* كل جدول يملأ نصفه: إطار مرن والجدول بارتفاع 100% وأعمدة ثابتة */
+  out.querySelectorAll('.nb-b2slot > .print-table-wrap').forEach(function(w){
+    w.style.cssText = 'flex:1 1 0'+IMP+'min-height:0'+IMP+'height:auto'+IMP+'display:flex'+IMP+'flex-direction:column'+IMP+'overflow:hidden'+IMP+'border:1px solid #cfc6ac'+IMP+'border-radius:4px'+IMP+'background:#fff'+IMP;
+    const t = w.querySelector('table.pt');
+    if(t) t.style.cssText = 'flex:1 1 0'+IMP+'width:100%'+IMP+'height:100%'+IMP+'min-height:0'+IMP+'table-layout:fixed'+IMP+'border-collapse:collapse'+IMP;
+  });
+  return true;
+}
+function nbIsBatch2(list, n, dir){ return n === 2 && dir === 'col' && Array.isArray(list) && list.length > 1; }
+
 function paginateAndPrintFit(tableHtmlList, n, dir, orient, paper, shrink){
+  if(nbIsBatch2(tableHtmlList, n, dir)){
+    if(!nbBuildBatch2Pages(tableHtmlList, paper)) return;
+    const go = ()=> setTimeout(()=> window.print(), 120);
+    if(document.fonts && document.fonts.ready){ nbFontsGuard(2500).then(()=> setTimeout(go, 60)).catch(()=> setTimeout(go, 60)); } else setTimeout(go, 100);
+    return;
+  }
   buildPaginatedPrintPages(tableHtmlList, n, dir, orient, paper);
   paper = paper || printPaper || 'A4';
   const run = ()=>{
@@ -22168,13 +22217,17 @@ function pexDoPrint(it){
         const ts=allClasses().filter(function(c){
           const g=DB.schedule[c.key]&&DB.schedule[c.key].grid; return g&&g.some(function(r){ return r.some(Boolean); });
         }).map(function(c){ return buildClassTableHtml(c.key); });
-        /* شعبتان في كل ورقة A4 لتوفير الورق */
-        paginateAndPrintFit(ts, 2, 'col', 'portrait', 'A4'); break;
+        /* شعبتان في كل ورقة A4 لتوفير الورق (أو شعبة واحدة إن اختير ذلك من المعاينة) */
+        if(it.per===1) paginateAndPrintFit(ts, 1, 'row', 'landscape', it.paper||'A4');
+        else paginateAndPrintFit(ts, 2, 'col', 'portrait', it.paper||'A4');
+        break;
       }
       case 'all_teachers': {
         const ts=nbPexTeachersInSchedule().map(function(t){ return buildTeacherTableHtml(t.id); });
-        /* مدرّسان في كل ورقة A4 لتوفير الورق */
-        paginateAndPrintFit(ts, 2, 'col', 'portrait', 'A4'); break;
+        /* مدرّسان في كل ورقة A4 لتوفير الورق (أو مدرّس واحد إن اختير ذلك من المعاينة) */
+        if(it.per===1) paginateAndPrintFit(ts, 1, 'row', 'portrait', it.paper||'A4');
+        else paginateAndPrintFit(ts, 2, 'col', 'portrait', it.paper||'A4');
+        break;
       }
       case 'cls': {
         let c=null; try{ c=allClasses().find(function(x){ return x.key===it.key; }); }catch(e){}
@@ -22210,11 +22263,11 @@ function pexDoPdf(it){
         const ts=allClasses().filter(function(c){
           const g=DB.schedule[c.key]&&DB.schedule[c.key].grid; return g&&g.some(function(r){ return r.some(Boolean); });
         }).map(function(c){ return buildClassTableHtml(c.key); });
-        exportTableListAsPdf(ts, 'جداول_الشعب_المدرسية', 'A4', 'landscape'); break;
+        exportTableListAsPdf(ts, 'جداول_الشعب_المدرسية', 'A4', 'portrait', 2, 'col'); break;
       }
       case 'all_teachers': {
         const ts=(DB.teachers||[]).map(function(t){ return buildTeacherTableHtml(t.id); });
-        exportTableListAsPdf(ts, 'جداول_المعلمين', 'A4', 'portrait'); break;
+        exportTableListAsPdf(ts, 'جداول_المعلمين', 'A4', 'portrait', 2, 'col'); break;
       }
       case 'cls': {
         let c=null; try{ c=allClasses().find(function(x){ return x.key===it.key; }); }catch(e){}
@@ -22252,14 +22305,14 @@ function pexItems(){
   items.push({icon:'🗓️', name:'سجل غيابات اليوم', sub:'حضور اليوم بالتوقيعات والحالة', act:'att_today'});
   items.push({icon:'📊', name:'إحصاء حضور الملاك', sub:'غياب/حضور/إجازات لكل معلم', act:'att_stats'});
   items.push({group:'الشعب', sub:'جدول لكل شعبة أنشأتها'});
-  items.push({icon:'🏫', name:'جداول كل الشعب', sub:'كل شعبة في صفحة مستقلة', act:'all_classes'});
+  items.push({icon:'🏫', name:'جداول كل الشعب', sub:'كل شعبتين في ورقة A4', act:'all_classes'});
   try{
     allClasses().forEach(function(c){
       items.push({icon:'📗', name:'جدول شعبة: '+c.label, sub:'طباعة وتصدير فردي', act:'cls', key:c.key});
     });
   }catch(e){}
   items.push({group:'المعلمون والمدرسون', sub:'جدول لكل معلم أضفته'});
-  items.push({icon:'👨‍🏫', name:'جداول كل المعلمين', sub:'كل معلم في صفحة مستقلة', act:'all_teachers'});
+  items.push({icon:'👨‍🏫', name:'جداول كل المعلمين', sub:'كل معلمَين في ورقة A4', act:'all_teachers'});
   try{
     (DB.teachers||[]).forEach(function(t){
       items.push({icon:'🧑‍🏫', name:'جدول المعلم: '+(getTeacherDisplayName(t)||t.name||''), sub:'طباعة وتصدير فردي', act:'tch', key:t.id});
@@ -23696,7 +23749,8 @@ document.addEventListener('input', function(e){
         return g && g.some(r=>r.some(Boolean));
       });
       if(!withSched.length){ toast('لا توجد جداول شعب للطباعة — وزّع الحصص أولًا','err'); return; }
-      paginateAndPrintFit(withSched.map(c=>buildClassTableHtml(c.key)), 1, 'row', 'landscape', printPaper||'A4');
+      /* شعبتان في كل ورقة لتوفير الورق — عبر واجهة المعاينة */
+      pexDoPrint({act:'all_classes', name:'جداول جميع الشعب', paper:printPaper||'A4'});
     }catch(err){ toast('تعذّرت الطباعة','err'); }
   });
 
@@ -23709,7 +23763,7 @@ document.addEventListener('input', function(e){
         return g && g.some(r=>r.some(Boolean));
       });
       if(!withSched.length){ toast('لا توجد جداول شعب للتصدير — وزّع الحصص أولًا','err'); return; }
-      await exportTableListAsPdf(withSched.map(c=>buildClassTableHtml(c.key)), 'جداول_الشعب_المدرسية', printPaper||'A4', 'landscape');
+      await exportTableListAsPdf(withSched.map(c=>buildClassTableHtml(c.key)), 'جداول_الشعب_المدرسية', printPaper||'A4', 'portrait', 2, 'col');
     }catch(err){ toast('تعذّر تنزيل ملف PDF لجداول الشعب','err'); }
   });
 })();
@@ -25985,7 +26039,7 @@ function nbPromoShow(){
     L.push({group:'الجدول الكامل', sub:'كل الشعب في جدول واحد'});
     L.push({icon:'🗓️', name:'الجدول الكامل', sub:'الورقة والاتجاه والقص وموضع اسم المدرّس من المعاينة', act:'full', paper:'A4', orient:'landscape', fname:'الجدول_الكامل'});
     var cls=classesWithLessons();
-    L.push({group:'جداول الشعب', sub:'كل شعبة في صفحة مستقلة', count:cls.length});
+    L.push({group:'جداول الشعب', sub:'دفعة واحدة: كل شعبتين في ورقة — أو كل شعبة وحدها', count:cls.length});
     L.push({icon:'🏫', name:'طباعة جميع الشعب دفعة واحدة', sub:cls.length+' شعبة — كل شعبتين في ورقة A4', act:'all_classes', all:true, fname:'جداول_الشعب'});
     cls.forEach(function(c){ L.push({icon:'📗', name:c.label, sub:'طباعة هذه الشعبة وحدها', act:'cls', key:c.key, sublist:'cls', fname:'جدول_'+c.label}); });
     var ts=teachersWithLessons();
@@ -26319,6 +26373,7 @@ function nbPromoShow(){
       '</div>'+
       '<div class="nbpv-ribbon">'+
         '<div class="nbpv-pane on" data-pane="paper">'+
+          '<div class="nbpv-grp" data-only="batch"><div class="c"><span class="nbpv-seg" data-seg="per"><button type="button" data-val="2">📄 جدولان في الورقة</button><button type="button" data-val="1">📃 جدول في الورقة</button></span></div><div class="cap">عدد الجداول في كل ورقة (توفير الورق)</div></div>'+
           grp('قياس الورقة','<span class="nbpv-seg" data-seg="paper"><button type="button" data-val="A4">A4</button><button type="button" data-val="A3">A3</button></span>')+
           grp('الاتجاه','<span class="nbpv-seg" data-seg="orient"><button type="button" data-val="portrait">▯ عمودي</button><button type="button" data-val="landscape">▭ أفقي</button></span>')+
           grp('الهوامش', rng('margin','',0,15,0.5,'مم'))+
@@ -26390,7 +26445,7 @@ function nbPromoShow(){
   function setTab(t){ qa('.nbpv-tab').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-tab')===t); }); qa('.nbpv-pane').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-pane')===t); }); PV.tab=t; }
   function syncUI(){
     if(!PV) return;
-    var segVal={paper:S.paper, orient:S.orient, split:S.split, colorMode:S.colorMode, mode:S.mode, teach:(hideOn()?'hide':'show'), tlayout:(PV.it&&PV.it.act==='full_beside'?'beside':'under')};
+    var segVal={paper:S.paper, orient:S.orient, split:S.split, colorMode:S.colorMode, mode:S.mode, teach:(hideOn()?'hide':'show'), tlayout:(PV.it&&PV.it.act==='full_beside'?'beside':'under'), per:(PV.it&&PV.it.per===1?'1':'2')};
     qa('[data-seg]').forEach(function(sg){ var k=sg.getAttribute('data-seg'); sg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-val')===String(segVal[k])); }); });
     qa('input[type=range][data-k]').forEach(function(r){ var k=r.getAttribute('data-k'); r.value=S[k]; var v=PV.root.querySelector('[data-v="'+k+'"]'); if(v) v.textContent=(k==='gridW'&&!S[k]?'الأصلي':S[k]+(v.getAttribute('data-u')||'')); });
     qa('select[data-k]').forEach(function(s){ s.value=S[s.getAttribute('data-k')]||''; });
@@ -26400,6 +26455,7 @@ function nbPromoShow(){
     var z=q('[data-r="zoom"]'); if(z) z.textContent=S.zoom?Math.round(S.zoom*100)+'%':'ملاءمة';
     var tt=q('[data-tab="teach"]'); if(tt) tt.style.display=isClassAct()?'':'none';
     var tl=q('[data-only="full"]'); if(tl) tl.style.display=isFullAct()?'':'none';
+    var bt=q('[data-only="batch"]'); if(bt) bt.style.display=(PV.it&&(PV.it.act==='all_classes'||PV.it.act==='all_teachers'))?'':'none';
     if(PV.tab==='teach' && !isClassAct()) setTab('paper');
     renderSubjList();
     renderSelInfo();
@@ -26447,6 +26503,7 @@ function nbPromoShow(){
     if(k==='teach'){ try{ setHideTeacherName(v==='hide'); }catch(e){} syncUI(); recapture({}); return; }
     if(k==='tlayout'){ var ch={act:(v==='beside'?'full_beside':'full')}; if(v==='beside'){ S.orient='landscape'; ch.orient='landscape'; } ch.paper=S.paper; syncUI(); recapture(ch); return; }
     if(k==='mode'){ S.mode=v; syncUI(); applyModeClass(); return; }
+    if(k==='per'){ var per=(v==='1')?1:2; if(PV.it && PV.it.per!==per && !(PV.it.per===undefined && per===2)){ S.split='none'; S.orient=(per===1&&PV.it.act==='all_classes')?'landscape':'portrait'; recapture({per:per}); syncUI(); } return; }
     if(k==='split' && v!=='none' && PV.units && PV.units.some(function(u){ return u.type==='flow'; })){ T('هذه الوثيقة متعددة الصفحات بطبيعتها — القص متاح للجداول ذات الصفحة الواحدة','err'); return; }
     S[k]=v; if(k==='colorMode') savePrefs();
     syncUI();
