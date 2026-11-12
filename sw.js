@@ -24,7 +24,8 @@ self.addEventListener('install', function(e){
 self.addEventListener('activate', function(e){
   e.waitUntil(
     caches.keys().then(function(keys){
-      const old = keys.filter(function(k){ return k !== CACHE; });
+      /* تُحذف نسخ الجدول القديمة فقط — لا تُمس ذاكرة تطبيقات أخرى على نفس الموقع (مثل تطبيق الإدارة Daragat) */
+      const old = keys.filter(function(k){ return k !== CACHE && k.indexOf('jadwal-cache-') === 0; });
       return Promise.all(old.map(function(k){ return caches.delete(k); }))
         .then(function(){ return self.clients.claim(); })
         .then(function(){ if(old.length) return notifyUpdate(); });   /* ترقية من نسخة سابقة: البرنامج المفتوح يتحدّث فورًا */
