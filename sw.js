@@ -7,7 +7,7 @@
    • باقي الملفات: المحفوظ فورًا مع تحديث صامت.
    • البيانات والتفعيل محفوظة في المتصفح ولا يمسّها التحديث.
    ========================================================================= */
-const CACHE = 'jadwal-cache-2026-11-v64';
+const CACHE = 'jadwal-cache-2026-11-v67';
 const CORE = ['./', './index.html', './assets/teacher-app-phone.png', './app-icon-192.png', './app-icon-180.png', './app-icon-512.png'];
 const PAGE_KEY = './index.html';
 const FLAG_KEY = './__nb_update_pending';   /* علامة «وصلت نسخة أحدث» يقرؤها البرنامج حتى لو فاتته الرسالة */
@@ -24,8 +24,7 @@ self.addEventListener('install', function(e){
 self.addEventListener('activate', function(e){
   e.waitUntil(
     caches.keys().then(function(keys){
-      /* تُحذف نسخ الجدول القديمة فقط — لا تُمس ذاكرة تطبيقات أخرى على نفس الموقع (مثل تطبيق الإدارة Daragat) */
-      const old = keys.filter(function(k){ return k !== CACHE && k.indexOf('jadwal-cache-') === 0; });
+      const old = keys.filter(function(k){ return k !== CACHE; });
       return Promise.all(old.map(function(k){ return caches.delete(k); }))
         .then(function(){ return self.clients.claim(); })
         .then(function(){ if(old.length) return notifyUpdate(); });   /* ترقية من نسخة سابقة: البرنامج المفتوح يتحدّث فورًا */

@@ -21920,6 +21920,7 @@ function pexXlsxSheets(it){
       withSched.forEach(function(c){ pexXlsClassSheet(wb, c.key); });
       break;
     }
+    case 'by_day': nbPexXlsByDay(wb); break;
     case 'cls': pexXlsClassSheet(wb, it.key); break;
     case 'all_teachers': {
       if(!(DB.teachers||[]).length) return null;
@@ -21933,7 +21934,7 @@ function pexXlsxSheets(it){
 }
 function pexDownloadExcel(it){
   try{
-    if((it.act==='full'||it.act==='full_beside'||it.act==='cut'||it.act==='all_classes') && !pexHasSchedule()){ toast('لا يوجد جدول للتصدير — وزّع الحصص أولًا','err'); return; }
+    if((it.act==='full'||it.act==='full_beside'||it.act==='cut'||it.act==='all_classes'||it.act==='by_day') && !pexHasSchedule()){ toast('لا يوجد جدول للتصدير — وزّع الحصص أولًا','err'); return; }
     const wb=pexXlsxSheets(it);
     if(!wb||!wb.sheets.length){ toast('لا توجد بيانات للتصدير','err'); return; }
     const blob=pexXlsxBuild(wb);
@@ -22199,9 +22200,100 @@ function nbPexTeachersInSchedule(){
     return list.length?list:(DB.teachers||[]);
   }catch(e){ return DB.teachers||[]; }
 }
+/* ═════════ الجدول حسب اليوم: كل يوم في ورقة A4 أفقية (الشعب صفوف والحصص أعمدة) — تخطيط ثابت بالمليمتر ═════════ */
+function nbBuildByDayPages(paper){
+  paper = (String(paper || 'A4').toUpperCase() === 'A3') ? 'A3' : 'A4';
+  injectPrintPageStyle('landscape', paper);
+  const out = document.getElementById('print-output');
+  if(!out) return false;
+  ensureScheduleShape();
+  const days=(DB.settings&&DB.settings.days)||[], P=parseInt((DB.settings&&DB.settings.periodsPerDay)||0,10)||0;
+  const cls=allClasses();
+  if(!days.length || !P || !cls.length) return false;
+  const W = paper==='A3' ? 410 : 287, H = paper==='A3' ? 287 : 200;
+  const hideT = nbPexHideT();
+  const colorOn = (typeof getMasterColorSubjects==='function') && getMasterColorSubjects();
+  const n = cls.length;
+  /* حجم الخط محسوب من عدد الشعب حتى تملأ الصفوف الورقة دون قطع */
+  const bodyMm = H - 46, rowMm = bodyMm / (n + 1);
+  const fs = Math.max(6.5, Math.min(14, rowMm * (hideT ? 1.55 : 1.05)));
+  const fsT = Math.max(5.5, fs * 0.82);
+  const IMP='!important;';
+  const pageCss='position:relative'+IMP+'width:'+W+'mm'+IMP+'height:'+H+'mm'+IMP+'max-height:'+H+'mm'+IMP+'overflow:hidden'+IMP+'box-sizing:border-box'+IMP+'display:flex'+IMP+'flex-direction:column'+IMP+'gap:2mm'+IMP+'background:#fff'+IMP+'margin:0'+IMP+'padding:0'+IMP;
+  const headHtml = printHeaderHtml(), footHtml = printFooterHtml();
+  let html = '<style>'+
+    '#print-output table.nb-dayt{width:100%;height:100%;border-collapse:collapse;table-layout:fixed;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    '#print-output table.nb-dayt th{background:#1b2a4a;color:#fff;font-weight:900;font-size:'+(fs*0.95).toFixed(2)+'px;border:1.2px solid #1b2a4a;padding:2px}'+
+    '#print-output table.nb-dayt td{border:1.2px solid #5f5f5f;text-align:center;vertical-align:middle;padding:1px 2px;overflow:hidden;line-height:1.2}'+
+    '#print-output table.nb-dayt td.cl{background:#f0ebe0;color:#0e1f3d;font-weight:900;font-size:'+fs.toFixed(2)+'px;white-space:nowrap}'+
+    '#print-output table.nb-dayt td b{display:block;font-size:'+fs.toFixed(2)+'px;font-weight:900;color:#000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'+
+    '#print-output table.nb-dayt td span{display:block;font-size:'+fsT.toFixed(2)+'px;font-weight:700;color:#334;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'+
+    '#print-output table.nb-dayt td.off{background:#eee;color:#999}'+
+    '#print-output .nb-day-title{flex:0 0 auto;text-align:center;font-weight:900;font-size:17px;color:#0e1f3d;background:#f3efe3;border:1.5px solid #cfc6ac;border-radius:6px;padding:4px}'+
+    '</style>';
+  for(let d=0; d<days.length; d++){
+    let rows = '<thead><tr><th style="width:15%">الشعبة</th>';
+    for(let q=0;q<P;q++) rows += '<th>الحصة '+(q+1)+'</th>';
+    rows += '</tr></thead><tbody>';
+    cls.forEach(function(c){
+      rows += '<tr><td class="cl" title="'+esc(c.label)+'">'+esc(c.label)+'</td>';
+      const g = DB.schedule[c.key] && DB.schedule[c.key].grid;
+      for(let q=0;q<P;q++){
+        if(typeof slotOutsideDay==='function' && slotOutsideDay(DB,d,q)){ rows += '<td class="off">—</td>'; continue; }
+        const cell = g && g[d] ? g[d][q] : null;
+        if(!cell){ rows += '<td>—</td>'; continue; }
+        const sj = getSubject(cell.subjectId), tc = getTeacher(cell.teacherId);
+        let st = '';
+        if(colorOn){ const co = getSubjectPastelColor(cell.subjectId, DB); if(co) st = ' style="background:'+co.bg+';box-shadow:inset 0 -2.5px 0 '+co.border+'"'; }
+        rows += '<td'+st+'><b>'+esc(sj?sj.name:'—')+'</b>'+((!hideT && tc)?'<span>'+esc(getTeacherDisplayName(tc)||tc.name||'')+'</span>':'')+'</td>';
+      }
+      rows += '</tr>';
+    });
+    rows += '</tbody>';
+    html += '<div class="print-page nb-daypage" style="'+pageCss+'">'+
+      '<div style="flex:0 0 auto'+IMP+'">'+headHtml+'</div>'+
+      '<div class="nb-day-title">📅 جدول يوم '+esc(days[d])+'</div>'+
+      '<div class="print-body" style="flex:1 1 0'+IMP+'min-height:0'+IMP+'display:flex'+IMP+'flex-direction:column'+IMP+'overflow:hidden'+IMP+'"><table class="nb-dayt">'+rows+'</table></div>'+
+      '<div style="flex:0 0 auto'+IMP+'">'+footHtml+'</div>'+
+    '</div>';
+  }
+  out.innerHTML = html;
+  out.classList.add('printing');
+  /* علامة الاتجاه الأفقي (يقرؤها مُعدّ طباعة الأندرويد) */
+  const mk=document.createElement('i'); mk.className='orient-landscape'; mk.style.display='none'; out.appendChild(mk);
+  return true;
+}
+function nbPrintByDay(paper){
+  if(!nbBuildByDayPages(paper)){ toast('لا يوجد جدول للطباعة — وزّع الحصص أولًا','err'); return; }
+  const go = ()=> setTimeout(()=> window.print(), 120);
+  if(document.fonts && document.fonts.ready){ nbFontsGuard(2500).then(()=> setTimeout(go, 60)).catch(()=> setTimeout(go, 60)); } else setTimeout(go, 100);
+}
+async function nbPdfByDay(paper){
+  try{
+    if(!nbBuildByDayPages(paper)){ toast('لا يوجد جدول للتصدير — وزّع الحصص أولًا','err'); return; }
+    const A3=(String(paper||'A4').toUpperCase()==='A3');
+    await nibrasExportPrintOutputAsPDF({wmm:A3?410:287, hmm:A3?287:200}, 'الجدول_حسب_اليوم');
+  }catch(err){ toast('تعذّر إنشاء ملف PDF: '+((err&&err.message)||err),'err'); }
+}
+function nbPexXlsByDay(wb){
+  const days=(DB.settings&&DB.settings.days)||[], P=parseInt((DB.settings&&DB.settings.periodsPerDay)||0,10)||0;
+  const cls=allClasses();
+  days.forEach(function(dn, d){
+    const sh=pexSheetAdd(wb, 'يوم '+dn);
+    pexTitleRow(wb, sh, 1+P, ((DB.settings&&DB.settings.schoolName)||'المدرسة')+' — الجدول الأسبوعي');
+    pexSubTitleRow(wb, sh, 1+P, 'جدول يوم '+dn);
+    pexHeadRow(wb, sh, ['الشعبة'].concat(Array.from({length:P},function(_,q){ return 'الحصة '+(q+1); })));
+    sh.widths=[18].concat(Array.from({length:P},function(){ return 20; }));
+    cls.forEach(function(c){
+      const cells=[pexCell(wb, c.label, {fill:PEX_DAY, color:PEX_INK, bold:true, align:'center', border:true})];
+      for(let q=0;q<P;q++){ const x=pexSchedCellText(c.key,d,q); cells.push(pexTintedCell(wb, x.t, x.color)); }
+      pexRowAdd(sh, cells, 30);
+    });
+  });
+}
 function pexDoPrint(it){
   try{
-    if((it.act==='full'||it.act==='full_beside'||it.act==='cut'||it.act==='all_classes') && !pexHasSchedule()){ toast('لا يوجد جدول للطباعة — وزّع الحصص أولًا','err'); return; }
+    if((it.act==='full'||it.act==='full_beside'||it.act==='cut'||it.act==='all_classes'||it.act==='by_day') && !pexHasSchedule()){ toast('لا يوجد جدول للطباعة — وزّع الحصص أولًا','err'); return; }
     switch(it.act){
       case 'full': printMasterSchedule(it.paper, DB, it.orient); break;
       case 'full_beside': pexPrintMasterBeside(it.paper, false); break;
@@ -22222,6 +22314,7 @@ function pexDoPrint(it){
         else paginateAndPrintFit(ts, 2, 'col', 'portrait', it.paper||'A4');
         break;
       }
+      case 'by_day': nbPrintByDay(it.paper||'A4'); break;
       case 'all_teachers': {
         const ts=nbPexTeachersInSchedule().map(function(t){ return buildTeacherTableHtml(t.id); });
         /* مدرّسان في كل ورقة A4 لتوفير الورق (أو مدرّس واحد إن اختير ذلك من المعاينة) */
@@ -22243,7 +22336,7 @@ function pexDoPrint(it){
 }
 function pexDoPdf(it){
   try{
-    if((it.act==='full'||it.act==='full_beside'||it.act==='cut'||it.act==='all_classes') && !pexHasSchedule()){ toast('لا يوجد جدول للتصدير — وزّع الحصص أولًا','err'); return; }
+    if((it.act==='full'||it.act==='full_beside'||it.act==='cut'||it.act==='all_classes'||it.act==='by_day') && !pexHasSchedule()){ toast('لا يوجد جدول للتصدير — وزّع الحصص أولًا','err'); return; }
     switch(it.act){
       case 'full': { const z=pexSizeMm(it.paper, it.orient); pexArmPdf(z.wmm, z.hmm); printMasterSchedule(it.paper, DB, it.orient); break; }
       case 'full_beside': pexPrintMasterBeside(it.paper, true); break;
@@ -22265,6 +22358,7 @@ function pexDoPdf(it){
         }).map(function(c){ return buildClassTableHtml(c.key); });
         exportTableListAsPdf(ts, 'جداول_الشعب_المدرسية', 'A4', 'portrait', 2, 'col'); break;
       }
+      case 'by_day': nbPdfByDay(it.paper||'A4'); break;
       case 'all_teachers': {
         const ts=(DB.teachers||[]).map(function(t){ return buildTeacherTableHtml(t.id); });
         exportTableListAsPdf(ts, 'جداول_المعلمين', 'A4', 'portrait', 2, 'col'); break;
@@ -26038,6 +26132,7 @@ function nbPromoShow(){
     var L=[];
     L.push({group:'الجدول الكامل', sub:'كل الشعب في جدول واحد'});
     L.push({icon:'🗓️', name:'الجدول الكامل', sub:'الورقة والاتجاه والقص وموضع اسم المدرّس من المعاينة', act:'full', paper:'A4', orient:'landscape', fname:'الجدول_الكامل'});
+    L.push({icon:'📅', name:'الجدول حسب اليوم', sub:'كل يوم في ورقة A4 أفقية — الأحد في ورقة والاثنين في ورقة… دفعة واحدة', act:'by_day', paper:'A4', orient:'landscape', fname:'الجدول_حسب_اليوم'});
     var cls=classesWithLessons();
     L.push({group:'جداول الشعب', sub:'دفعة واحدة: كل شعبتين في ورقة — أو كل شعبة وحدها', count:cls.length});
     L.push({icon:'🏫', name:'طباعة جميع الشعب دفعة واحدة', sub:cls.length+' شعبة — كل شعبتين في ورقة A4', act:'all_classes', all:true, fname:'جداول_الشعب'});
@@ -26139,7 +26234,7 @@ function nbPromoShow(){
     var __origPexDoPrint=pexDoPrint;
     pexDoPrint=function(it){
       if(!it || it.__direct) return __origPexDoPrint.apply(this, arguments);
-      try{ if((it.act==='full'||it.act==='full_beside'||it.act==='cut'||it.act==='all_classes') && !pexHasSchedule()) return __origPexDoPrint.apply(this, arguments); }catch(e){}
+      try{ if((it.act==='full'||it.act==='full_beside'||it.act==='cut'||it.act==='all_classes'||it.act==='by_day') && !pexHasSchedule()) return __origPexDoPrint.apply(this, arguments); }catch(e){}
       armCapture(it, it.name||'');
       var r=__origPexDoPrint.apply(this, arguments);
       /* إن لم يصل أمر طباعة (مثلًا لا يوجد جدول) نلغي الالتقاط بعد مهلة */
@@ -26181,8 +26276,8 @@ function nbPromoShow(){
   })();
 
   /* ───────────── الحالة ───────────── */
-  var DEF={fontT:100, fontH:100, family:'', thBg:'', thFg:'', dayBg:'', dayFg:'', grid:'', gridW:0, subjFg:'', teachFg:'', headBg:'', headFg:'', colorMode:'orig', tint:30, subjColors:{}};
-  function loadPrefs(){ var p={}; try{ p=JSON.parse(lsGet(LS_PREFS)||'{}')||{}; }catch(e){ p={}; } var o={}; for(var k in DEF) o[k]=(p[k]!==undefined)?p[k]:(k==='subjColors'?{}:DEF[k]); if(typeof o.subjColors!=='object'||!o.subjColors) o.subjColors={}; return o; }
+  var DEF={fontT:100, fontH:100, family:'', thBg:'', thFg:'', dayBg:'', dayFg:'', grid:'', gridW:0, subjFg:'', teachFg:'', headBg:'', headFg:'', colorMode:'orig', tint:30, subjColors:{}, clsMode:'off', clsTint:22, clsColors:{}};
+  function loadPrefs(){ var p={}; try{ p=JSON.parse(lsGet(LS_PREFS)||'{}')||{}; }catch(e){ p={}; } var o={}; for(var k in DEF) o[k]=(p[k]!==undefined)?p[k]:((k==='subjColors'||k==='clsColors')?{}:DEF[k]); if(typeof o.subjColors!=='object'||!o.subjColors) o.subjColors={}; if(typeof o.clsColors!=='object'||!o.clsColors) o.clsColors={}; return o; }
   function savePrefs(){ var o={}; for(var k in DEF) o[k]=S[k]; lsSet(LS_PREFS, JSON.stringify(o)); }
   var S=null;              /* الحالة الحالية */
   var PV=null;             /* {root, frame, doc, win, it, name, kind, units, ...} */
@@ -26367,6 +26462,7 @@ function nbPromoShow(){
         '<button type="button" class="nbpv-tab" data-tab="font">🔤 الخط</button>'+
         '<button type="button" class="nbpv-tab" data-tab="colors">🎨 الألوان</button>'+
         '<button type="button" class="nbpv-tab" data-tab="subj">🌈 تلوين المواد</button>'+
+        '<button type="button" class="nbpv-tab" data-tab="cls">🏫 تلوين الشعب</button>'+
         '<button type="button" class="nbpv-tab" data-tab="dims">📐 الأعمدة والصفوف</button>'+
         '<button type="button" class="nbpv-tab" data-tab="text">✏️ الترويسة والنصوص</button>'+
         '<span class="nbpv-zoom"><button type="button" data-a="zout" title="تصغير">−</button><button type="button" data-a="zfit" data-r="zoom" title="ملاءمة الورقة">ملاءمة</button><button type="button" data-a="zin" title="تكبير">+</button></span>'+
@@ -26402,6 +26498,12 @@ function nbPromoShow(){
           grp('تلوين المواد','<span class="nbpv-seg" data-seg="colorMode"><button type="button" data-val="orig">كما هو</button><button type="button" data-val="none">⬜ بدون تلوين</button><button type="button" data-val="custom">🌈 تلوين المواد</button></span>')+
           grp('قوة اللون', rng('tint','',10,95,5,'%'))+
           grp('لون كل مادة (اضغط اللون لتغييره)','<div class="nbpv-subj" data-r="subj"></div>')+
+        '</div>'+
+        '<div class="nbpv-pane" data-pane="cls">'+
+          grp('تلوين الشعب','<span class="nbpv-seg" data-seg="clsMode"><button type="button" data-val="off">⬜ بدون</button><button type="button" data-val="on">🏫 لون لكل شعبة</button></span>')+
+          grp('قوة اللون', rng('clsTint','',8,90,2,'%'))+
+          grp('لون كل شعبة (اضغط اللون لتغييره)','<div class="nbpv-subj" data-r="clsl"></div>')+
+          grp('أدوات','<button type="button" class="nbpv-rb" data-a="clsreset">↺ الألوان التلقائية</button>')+
         '</div>'+
         '<div class="nbpv-pane" data-pane="dims">'+
           grp('طريقة الضبط','<span class="nbpv-seg" data-seg="mode"><button type="button" data-val="select">👆 تحديد خلية</button><button type="button" data-val="drag">↔️ سحب الحدود</button></span>')+
@@ -26445,7 +26547,7 @@ function nbPromoShow(){
   function setTab(t){ qa('.nbpv-tab').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-tab')===t); }); qa('.nbpv-pane').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-pane')===t); }); PV.tab=t; }
   function syncUI(){
     if(!PV) return;
-    var segVal={paper:S.paper, orient:S.orient, split:S.split, colorMode:S.colorMode, mode:S.mode, teach:(hideOn()?'hide':'show'), tlayout:(PV.it&&PV.it.act==='full_beside'?'beside':'under'), per:(PV.it&&PV.it.per===1?'1':'2')};
+    var segVal={paper:S.paper, orient:S.orient, split:S.split, colorMode:S.colorMode, clsMode:S.clsMode, mode:S.mode, teach:(hideOn()?'hide':'show'), tlayout:(PV.it&&PV.it.act==='full_beside'?'beside':'under'), per:(PV.it&&PV.it.per===1?'1':'2')};
     qa('[data-seg]').forEach(function(sg){ var k=sg.getAttribute('data-seg'); sg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-val')===String(segVal[k])); }); });
     qa('input[type=range][data-k]').forEach(function(r){ var k=r.getAttribute('data-k'); r.value=S[k]; var v=PV.root.querySelector('[data-v="'+k+'"]'); if(v) v.textContent=(k==='gridW'&&!S[k]?'الأصلي':S[k]+(v.getAttribute('data-u')||'')); });
     qa('select[data-k]').forEach(function(s){ s.value=S[s.getAttribute('data-k')]||''; });
@@ -26458,6 +26560,7 @@ function nbPromoShow(){
     var bt=q('[data-only="batch"]'); if(bt) bt.style.display=(PV.it&&(PV.it.act==='all_classes'||PV.it.act==='all_teachers'))?'':'none';
     if(PV.tab==='teach' && !isClassAct()) setTab('paper');
     renderSubjList();
+    renderClsList();
     renderSelInfo();
   }
   function defaultColorFor(k){ return ({thBg:'#1b2a4a',thFg:'#ffffff',dayBg:'#f0ebe0',dayFg:'#0e1f3d',subjFg:'#000000',teachFg:'#333344',grid:'#5f5f5f',headBg:'#152549',headFg:'#ffffff'})[k]||'#000000'; }
@@ -26479,6 +26582,10 @@ function nbPromoShow(){
       if(ps){ e.preventDefault(); var sn=ps.getAttribute('data-pick-subj');
         openPalette({title:'لون مادة: '+sn, current:S.subjColors[sn]||'', anchor:ps,
           onPick:function(hex){ if(hex) S.subjColors[sn]=hex; else delete S.subjColors[sn]; S.colorMode='custom'; savePrefs(); syncUI(); schedule(); } }); return; }
+      var pcl=t.closest && t.closest('[data-pick-cls]');
+      if(pcl){ e.preventDefault(); var ck=pcl.getAttribute('data-pick-cls'), cn=pcl.getAttribute('data-cname')||'';
+        openPalette({title:'لون الشعبة: '+cn, current:clsColorOf(ck), anchor:pcl,
+          onPick:function(hex){ if(hex) S.clsColors[ck]=hex; else delete S.clsColors[ck]; S.clsMode='on'; savePrefs(); syncUI(); schedule(); } }); return; }
       var pa=t.closest && t.closest('[data-pal],[data-ptg],.nbpv-pal .pg button,.nbpv-pal .pr button.c');
       if(pa){ e.preventDefault(); palClick(pa); return; }
       var cl=t.closest && t.closest('[data-clear]');
@@ -26489,7 +26596,7 @@ function nbPromoShow(){
     root.addEventListener('input', function(e){
       var t=e.target, k=t.getAttribute('data-k');
       if(t.getAttribute('data-r')==='palhex'){ var v=normHex(t.value); var pv=q('[data-r="palprev"]'); if(pv) pv.style.background=v||'transparent'; return; }
-      if(t.type==='range' && k){ S[k]=parseFloat(t.value); if(k in DEF) savePrefs(); var v=PV.root.querySelector('[data-v="'+k+'"]'); if(v) v.textContent=(k==='gridW'&&!S[k]?'الأصلي':S[k]+(v.getAttribute('data-u')||'')); if(k==='tint' && S.colorMode!=='custom'){ S.colorMode='custom'; savePrefs(); syncSegOnly(); } schedule(true); return; }
+      if(t.type==='range' && k){ S[k]=parseFloat(t.value); if(k in DEF) savePrefs(); var v=PV.root.querySelector('[data-v="'+k+'"]'); if(v) v.textContent=(k==='gridW'&&!S[k]?'الأصلي':S[k]+(v.getAttribute('data-u')||'')); if(k==='tint' && S.colorMode!=='custom'){ S.colorMode='custom'; savePrefs(); syncSegOnly(); } if(k==='clsTint' && S.clsMode!=='on'){ S.clsMode='on'; savePrefs(); syncUI(); } schedule(true); return; }
       if(t.type==='color' && k){ S[k]=t.value; savePrefs(); var w=t.closest('.nbpv-sw'); if(w) w.classList.remove('unset'); schedule(); return; }
       if(t.type==='color' && t.hasAttribute('data-subj')){ S.subjColors[t.getAttribute('data-subj')]=t.value; if(S.colorMode!=='custom') S.colorMode='custom'; savePrefs(); syncSegOnly(); schedule(); return; }
       if(t.hasAttribute('data-sel')) { selSet(t.getAttribute('data-sel'), parseFloat(t.value)); return; }
@@ -26505,7 +26612,7 @@ function nbPromoShow(){
     if(k==='mode'){ S.mode=v; syncUI(); applyModeClass(); return; }
     if(k==='per'){ var per=(v==='1')?1:2; if(PV.it && PV.it.per!==per && !(PV.it.per===undefined && per===2)){ S.split='none'; S.orient=(per===1&&PV.it.act==='all_classes')?'landscape':'portrait'; recapture({per:per}); syncUI(); } return; }
     if(k==='split' && v!=='none' && PV.units && PV.units.some(function(u){ return u.type==='flow'; })){ T('هذه الوثيقة متعددة الصفحات بطبيعتها — القص متاح للجداول ذات الصفحة الواحدة','err'); return; }
-    S[k]=v; if(k==='colorMode') savePrefs();
+    S[k]=v; if(k==='colorMode'||k==='clsMode') savePrefs();
     syncUI();
     /* الجدول الكامل: الورقة والاتجاه يُعاد بناؤهما بتخطيط الطباعة الأصلي لهذا القياس (ليس تكبيرًا فقط) */
     if((k==='paper'||k==='orient') && isFullAct()){
@@ -26530,10 +26637,11 @@ function nbPromoShow(){
     if(a==='edit'){ S.edit=!S.edit; if(S.edit) S.paint=false; applyModeClass(); syncUI(); if(!S.edit) schedule(true); return; }
     if(a==='eqcols'){ equalCols(); return; }
     if(a==='paint'){ S.paint=!S.paint; if(S.paint && S.edit){ S.edit=false; } applyModeClass(); syncUI(); if(S.paint) T('المس أي خلية أو نص في الورقة لاختيار لونه'); return; }
+    if(a==='clsreset'){ S.clsColors={}; S.clsMode='on'; savePrefs(); syncUI(); schedule(); T('أُعيدت ألوان الشعب التلقائية'); return; }
     if(a==='clearpaint'){ S.elColors=[]; schedule(); T('أُزيلت ألوان العناصر'); return; }
     if(a==='resetdim'){ S.colW={}; S.rowH={}; S.rowScale=100; PV.sel=null; syncUI(); schedule(true); return; }
     if(a==='resetall'){
-      for(var k in DEF) S[k]=(k==='subjColors')?{}:DEF[k];
+      for(var k in DEF) S[k]=(k==='subjColors'||k==='clsColors')?{}:DEF[k];
       S.split='none'; S.rowScale=100; S.colW={}; S.rowH={}; S.edit=false; S.paint=false; S.elColors=[]; PV.sel=null;
       savePrefs(); applyModeClass();
       if(PV.it0){ var o=PV.it0; S.paper=o.__p.paper; S.orient=o.__p.orient; S.margin=o.__p.margin; syncUI(); recapture(Object.assign({}, o)); return; }
@@ -26743,6 +26851,88 @@ function nbPromoShow(){
       });
     });
     PV.info=info;
+    try{ collectClsInfo(); }catch(e){ PV.info.cls=[]; PV.info.clsSeen={}; }
+  }
+  /* ───── تلوين الشعب: تمييز عناصر كل شعبة في الوثيقة (رؤوس الأعمدة/الصفوف، عنوان جدول الشعبة، خانات الشعبة في جدول المدرّس) ───── */
+  var CLS_PAL=['#2f80ed','#27ae60','#e67e22','#8e44ad','#e74c3c','#16a085','#d4a017','#c0392b','#2c3e50','#f06292','#00acc1','#7cb342','#5e35b1','#ff7043','#3949ab','#8d6e63','#43a047','#fb8c00','#00897b','#6d4c41'];
+  function clsList(){
+    var out=[]; try{ allClasses().forEach(function(c,i){
+      var names=[c.label]; try{ names.push(masterGradeCode(DB,c)); }catch(e){} try{ names.push(storeClassCode(DB,c)); }catch(e){}
+      names=names.map(function(x){ return String(x||'').replace(/\s+/g,' ').trim(); }).filter(Boolean);
+      out.push({key:c.key, label:c.label, names:names, i:i});
+    }); }catch(e){}
+    return out;
+  }
+  function clsColorOf(key){ if(S.clsColors[key]) return S.clsColors[key]; var L=clsList(); var c=L.find(function(x){ return x.key===key; }); return CLS_PAL[(c?c.i:0)%CLS_PAL.length]; }
+  function collectClsInfo(){
+    var L=clsList(), I=PV.info; I.cls=[]; I.clsSeen={};
+    if(!L.length) return;
+    var norm=function(x){ return String(x||'').replace(/[\u200f\u200e]/g,'').replace(/\s+/g,' ').trim(); };
+    var byName={}; L.forEach(function(c){ c.names.forEach(function(n){ if(!byName[n]) byName[n]=c; }); });
+    var find=function(el){ var t=el.getAttribute && el.getAttribute('title'); if(t && byName[norm(t)]) return byName[norm(t)]; var x=norm(el.textContent).replace(/^جدول\s*(الشعبة|شعبة)\s*[:：]?\s*/,''); return byName[x]||null; };
+    var add=function(c, head, cells){ I.clsSeen[c.key]=c; I.cls.push({c:c, head:head, cells:cells||[]}); };
+    I.tables.forEach(function(t){
+      if(!t.rows || !t.rows.length) return;
+      tableMap(t);
+      var hitCols=false;
+      /* 1) الشعب أعمدة: رؤوس th تحمل اسم الشعبة */
+      Array.prototype.forEach.call(t.querySelectorAll('th'), function(th){
+        var c=find(th); if(!c) return; hitCols=true;
+        var col=th.__nbc, cells=[];
+        Array.prototype.forEach.call(t.querySelectorAll('td'), function(td){ if(td.__nbc===col && (td.colSpan||1)===1 && I.day.indexOf(td)<0) cells.push(td); });
+        add(c, th, cells);
+      });
+      if(hitCols) return;
+      /* 2) الشعب صفوف: أول خلية في الصف اسم الشعبة */
+      var hitRows=false;
+      Array.prototype.forEach.call(t.rows, function(tr){
+        var first=tr.cells[0]; if(!first) return;
+        var c=find(first); if(!c && tr.cells[1] && I.day.indexOf(tr.cells[0])>=0) { c=find(tr.cells[1]); if(c) first=tr.cells[1]; }
+        if(!c) return; hitRows=true;
+        var cells=Array.prototype.filter.call(tr.cells, function(x){ return x!==first && I.day.indexOf(x)<0; });
+        add(c, first, cells);
+      });
+      if(hitRows) return;
+      /* 3) جدول المدرّس: خانات تحمل اسم الشعبة */
+      Array.prototype.forEach.call(t.querySelectorAll('td'), function(td){
+        if(I.day.indexOf(td)>=0) return;
+        var leaves=Array.prototype.filter.call(td.querySelectorAll('*'), function(x){ return !x.children.length && x.textContent.trim(); });
+        for(var k=0;k<leaves.length;k++){ var c=find(leaves[k]); if(c){ add(c, null, [td]); break; } }
+      });
+    });
+    /* 4) عنوان جدول الشعبة (.pt-title) والجدول الذي يليه */
+    PV.units.forEach(function(u){
+      Array.prototype.forEach.call(u.el.querySelectorAll('.pt-title, .ps-cap'), function(ti){
+        var c=find(ti); if(!c) return;
+        var wrap=ti.parentElement, tb=wrap && wrap.querySelector('table');
+        var cells=tb?Array.prototype.filter.call(tb.querySelectorAll('td'), function(td){ return I.day.indexOf(td)<0; }):[];
+        add(c, ti, cells);
+      });
+    });
+  }
+  function applyClsColors(){
+    var I=PV.info; if(!I || !I.cls || S.clsMode!=='on') return;
+    var a=Math.max(0.04,Math.min(0.9,(S.clsTint||22)/100)), subjOn=(S.colorMode==='custom');
+    I.cls.forEach(function(x){
+      var col=clsColorOf(x.c.key);
+      if(x.head){ setI(x.head,'background',col); setI(x.head,'background-image','none'); setI(x.head,'color','#ffffff');
+        Array.prototype.forEach.call(x.head.querySelectorAll('*'), function(k){ setI(k,'color','#ffffff'); });
+        setI(x.head,'-webkit-print-color-adjust','exact'); setI(x.head,'print-color-adjust','exact'); }
+      x.cells.forEach(function(td){
+        if(!subjOn){ setI(td,'background',mix(col,a)); setI(td,'background-image','none');
+          Array.prototype.forEach.call(td.querySelectorAll('*'), function(k){ var bg=PV.win.getComputedStyle(k).backgroundColor; if(bg && bg!=='rgba(0, 0, 0, 0)' && bg!=='transparent'){ setI(k,'background','transparent'); setI(k,'box-shadow','none'); } }); }
+        setI(td,'box-shadow','inset 3px 0 0 '+col+', inset -3px 0 0 '+col);
+        setI(td,'-webkit-print-color-adjust','exact'); setI(td,'print-color-adjust','exact');
+      });
+    });
+  }
+  function renderClsList(){
+    var box=q('[data-r="clsl"]'); if(!box) return;
+    var seen=(PV.info && PV.info.clsSeen)||{}, keys=Object.keys(seen);
+    var tab=q('[data-tab="cls"]'); if(tab) tab.style.display=keys.length?'':'none';
+    if(!keys.length){ box.innerHTML='<span class="nbpv-note">لا توجد شعب في هذه الوثيقة</span>'; if(PV.tab==='cls') setTab('paper'); return; }
+    var L=clsList(); keys.sort(function(a,b){ var A=L.find(function(x){ return x.key===a; }), B=L.find(function(x){ return x.key===b; }); return (A?A.i:0)-(B?B.i:0); });
+    box.innerHTML=keys.map(function(k){ var c=seen[k]; return '<button type="button" class="nbpv-sw" data-pick-cls="'+E(k)+'" data-cname="'+E(c.label)+'" title="اضغط لاختيار لون «'+E(c.label)+'»"><i class="dot" style="background:'+clsColorOf(k)+'"></i>'+E(c.label)+'</button>'; }).join('');
   }
 
   /* ───────────── تطبيق الحالة ───────────── */
@@ -26786,6 +26976,7 @@ function nbPromoShow(){
         setI(c.td,'-webkit-print-color-adjust','exact'); setI(c.td,'print-color-adjust','exact');
       });
     }
+    applyClsColors();
     (S.elColors||[]).forEach(function(en){
       if(!en.el || !PV.doc.contains(en.el)) return;
       if(en.bg){ setI(en.el,'background',en.bg); setI(en.el,'background-image','none'); setI(en.el,'-webkit-print-color-adjust','exact'); setI(en.el,'print-color-adjust','exact');
@@ -27722,6 +27913,482 @@ function nbPromoShow(){
   }
   try{ injectUI(); }catch(e){}
   window.__nbJoint={validate:function(){ return validate(DB); }, render:render, dbg:{validate:validate, pickSlots:pickSlots, transform:transform}};
+})();
+
+/* =========================================================================
+   «✍️ كتابة يدوية» — للمشتركين المفعّلين فقط
+   تفتح واجهة «الجدول الكامل» نفسها تمامًا (نفس الشكل والتحكمات: حجم الخط،
+   تحت/مقابل، إخفاء المدرّس، تلوين المواد، الثيم، الشعب صفوف) لكن على مسودة
+   منفصلة؛ المس أي خانة لتختار المادة ثم المدرّس.
+   - يحترم النصاب (لا تتجاوز حصص المادة المحددة للشعبة)
+   - يحترم التفريغ والحجب ويرفض التضارب برسالة تنبيه واضحة
+   - «حفظ واعتماد» يكتب المسودة في جدول البرنامج.
+   لا يغيّر الجدول المعتمد ولا أي دالة إلا أثناء رسم الواجهة في هذا الوضع
+   (تبديل مؤقت متزامن يُعاد فورًا)، ولا يمس التوليد التلقائي.
+   ========================================================================= */
+(function(){
+  'use strict';
+  var LS_DRAFT='nibras-manual-draft-v2';
+  var $=function(id){ return document.getElementById(id); };
+  var E=function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  var T=function(m,k){ try{ toast(m,k); }catch(e){} };
+  var activated=function(){ try{ return typeof nibrasIsActivated==='function' && nibrasIsActivated(); }catch(e){ return false; } };
+  var lsGet=function(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } };
+  var lsSet=function(k,v){ try{ localStorage.setItem(k,v); }catch(e){} };
+
+  var M={on:false, sch:null, undo:[], flash:null, entering:false};
+
+  /* ───────────── السياق ───────────── */
+  function C(){
+    var S=DB.settings||{};
+    var days=Array.isArray(S.days)?S.days:[];
+    var P=Math.max(0, parseInt(S.periodsPerDay,10)||0);
+    var cls=[]; try{ cls=allClasses(); }catch(e){ cls=[]; }
+    var subj={}; (DB.subjects||[]).forEach(function(s){ subj[s.id]=s; });
+    var tch={}; (DB.teachers||[]).forEach(function(t){ tch[t.id]=t; });
+    var byKey={}; cls.forEach(function(c){ byKey[c.key]=c; });
+    var asg={};
+    (DB.assignments||[]).forEach(function(a){
+      var n=parseInt(a.periodsPerWeek,10)||0; if(n<=0 || !subj[a.subjectId]) return;
+      var c=cls.find(function(x){ return x.stageId===a.stageId && x.sectionId===a.sectionId; }); if(!c) return;
+      (asg[c.key]=asg[c.key]||[]).push({a:a, s:a.subjectId, t:(a.teacherId && tch[a.teacherId])?a.teacherId:null, n:n});
+    });
+    return {D:days.length, P:P, days:days, cls:cls, byKey:byKey, subj:subj, tch:tch, asg:asg};
+  }
+  function tName(t){ if(!t) return ''; try{ return getTeacherDisplayName(t)||t.name||''; }catch(e){ return t.name||''; } }
+  function sName(s){ return s?(s.name||''):''; }
+  function outside(d,p){ try{ return slotOutsideDay(DB,d,p); }catch(e){ return false; } }
+  function cellAt(key,d,p){ var g=M.sch[key]&&M.sch[key].grid; return g&&g[d]?g[d][p]:null; }
+  function setCell(key,d,p,v){ M.sch[key].grid[d][p]=v; }
+
+  /* ───────────── المسودة (بنية جدول البرنامج نفسها) ───────────── */
+  function loadDraft(){
+    var c=C(), src=null;
+    try{ src=JSON.parse(lsGet(LS_DRAFT)||'null'); }catch(e){ src=null; }
+    var sch=(src && src.schedule && typeof src.schedule==='object')?src.schedule:{};
+    var out={};
+    c.cls.forEach(function(cl){
+      var okS={}, okT={};
+      (c.asg[cl.key]||[]).forEach(function(x){ okS[x.s]=1; okT[x.s+'|'+(x.t||'')]=x.a.id; });
+      var g=[], sg=sch[cl.key]&&sch[cl.key].grid;
+      for(var d=0;d<c.D;d++){ var r=[]; for(var p=0;p<c.P;p++){
+        var v=sg&&sg[d]?sg[d][p]:null, cell=null;
+        if(v && v.subjectId && okS[v.subjectId] && !outside(d,p)){
+          var tid=(v.teacherId && c.tch[v.teacherId] && okT[v.subjectId+'|'+v.teacherId])?v.teacherId:null;
+          cell={subjectId:v.subjectId, teacherId:tid, assignmentId:okT[v.subjectId+'|'+(tid||'')]||v.assignmentId||null};
+          if(v.jointId) cell.jointId=v.jointId;
+        }
+        r.push(cell);
+      } g.push(r); }
+      out[cl.key]={grid:g};
+    });
+    M.sch=out;
+  }
+  function saveDraft(){ if(M.sch) lsSet(LS_DRAFT, JSON.stringify({v:2, schedule:M.sch})); }
+  function pushUndo(){ try{ M.undo.push(JSON.stringify(M.sch)); if(M.undo.length>60) M.undo.shift(); }catch(e){} }
+  function doUndo(){ if(!M.undo.length){ T('لا يوجد ما يُتراجع عنه'); return; } M.sch=JSON.parse(M.undo.pop()); saveDraft(); redraw(); T('↶ تم التراجع'); }
+
+  /* ───────────── النصاب ───────────── */
+  function quota(c, key){
+    var q={}, order=[];
+    (c.asg[key]||[]).forEach(function(x){
+      if(!q[x.s]){ q[x.s]={s:x.s, need:0, placed:0, perT:{}, aid:{}, teachers:[]}; order.push(x.s); }
+      var tk=x.t||''; q[x.s].need+=x.n; q[x.s].perT[tk]=(q[x.s].perT[tk]||0)+x.n; q[x.s].aid[tk]=x.a.id;
+      if(q[x.s].teachers.indexOf(tk)<0) q[x.s].teachers.push(tk);
+    });
+    var placedT={};
+    for(var d=0;d<c.D;d++) for(var p=0;p<c.P;p++){ var v=cellAt(key,d,p); if(!v) continue; if(q[v.subjectId]) q[v.subjectId].placed++; var k=v.subjectId+'|'+(v.teacherId||''); placedT[k]=(placedT[k]||0)+1; }
+    return {q:q, order:order, placedT:placedT};
+  }
+  function totals(c){
+    var need=0, placed=0, done=0;
+    c.cls.forEach(function(cl){ var Q=quota(c,cl.key), n=0, pl=0; Q.order.forEach(function(s){ n+=Q.q[s].need; pl+=Math.min(Q.q[s].placed,Q.q[s].need); }); need+=n; placed+=pl; if(n && pl>=n) done++; });
+    return {need:need, placed:placed, done:done, cls:c.cls.length};
+  }
+
+  /* ───────────── الدمج والتضارب ───────────── */
+  function jointFor(tid, sid, keys){
+    try{
+      if(!(DB.settings && DB.settings.jointEnabled)) return null;
+      var L=DB.jointLessons||[];
+      for(var i=0;i<L.length;i++){ var j=L[i]; if(j.teacherId===tid && j.subjectId===sid && keys.every(function(k){ return (j.classKeys||[]).indexOf(k)>=0; })) return j; }
+    }catch(e){}
+    return null;
+  }
+  function busyWith(key,d,p,tid){
+    var o=[]; if(!tid) return o;
+    Object.keys(M.sch).forEach(function(k){ if(k===key) return; var v=cellAt(k,d,p); if(v && v.teacherId===tid) o.push({key:k, s:v.subjectId}); });
+    return o;
+  }
+  function check(c, key, d, p, sid, tid){
+    var r={hard:null, soft:[], joint:null};
+    var day=c.days[d]||('اليوم '+(d+1)), s=c.subj[sid], t=tid?c.tch[tid]:null;
+    if(outside(d,p)){ r.hard='هذه الحصة خارج دوام يوم '+day+'.'; return r; }
+    var Q=quota(c,key), q=Q.q[sid];
+    if(!q){ r.hard='مادة «'+sName(s)+'» غير موجودة في نصاب هذه الشعبة.'; return r; }
+    var cur=cellAt(key,d,p);
+    if(q.placed-((cur&&cur.subjectId===sid)?1:0)+1>q.need){ r.hard='اكتمل نصاب مادة «'+sName(s)+'» لهذه الشعبة: '+q.need+' من '+q.need+' حصة.\nلا يمكن إضافة حصة أخرى إلا بزيادة النصاب من «توزيع النصاب».'; return r; }
+    if(tid){
+      var have=(Q.placedT[sid+'|'+tid]||0)-((cur&&cur.subjectId===sid&&cur.teacherId===tid)?1:0), allow=q.perT[tid]||0;
+      if(!allow){ r.hard='المدرّس «'+tName(t)+'» غير مُسند لمادة «'+sName(s)+'» في هذه الشعبة.'; return r; }
+      if(have+1>allow){ r.hard='اكتمل نصاب «'+sName(s)+'» مع المدرّس «'+tName(t)+'»: '+allow+' من '+allow+' حصة.'; return r; }
+      /* الكتابة اليدوية حرّة: التفريغ والتضارب لا يمنعان الوضع — تنبيه فقط ويُؤشَّر بالأحمر */
+      var warns=[];
+      if((t.excludedDays||[]).map(Number).indexOf(d)>=0) warns.push('يوم '+day+' هو يوم تفريغ المدرّس «'+tName(t)+'».');
+      var bw=busyWith(key,d,p,tid);
+      if(bw.length){
+        var j=bw.every(function(x){ return x.s===sid; })?jointFor(tid,sid,[key].concat(bw.map(function(x){ return x.key; }))):null;
+        if(j){ r.joint=j.id; r.soft.push('🔗 حصة مدمجة مع '+bw.map(function(x){ return (c.byKey[x.key]||{}).label||x.key; }).join(' + ')); }
+        else warns.push('تضارب: المدرّس «'+tName(t)+'» لديه حصة في «'+bw.map(function(x){ return ((c.byKey[x.key]||{}).label||x.key)+' — '+sName(c.subj[x.s]); }).join('، ')+'» في الوقت نفسه ('+day+' — الحصة '+(p+1)+').');
+      }
+      if(warns.length) r.warn=warns.join('\n')+'\n\nوُضعت الحصة وتظهر باللون الأحمر — يمكنك تصحيحها لاحقًا أو حفظ الجدول كما هو.';
+    }
+    return r;
+  }
+  function hardConflicts(){
+    var list=[];
+    try{
+      collectConflictsFrom(Object.assign({}, DB, {schedule:M.sch})).forEach(function(x){
+        if(x.reason==='busy'||x.reason==='off') list.push(x);
+      });
+    }catch(e){}
+    return list;
+  }
+
+  /* ───────────── رسالة التنبيه ───────────── */
+  function alertBox(msg){
+    var old=$('nbmAlert'); if(old) old.remove();
+    var w=document.createElement('div'); w.id='nbmAlert'; w.className='nbm-alert'; w.setAttribute('role','alertdialog');
+    w.innerHTML='<div class="nbm-alert-box"><div class="ic">⚠️</div><div class="tx">'+E(msg).replace(/\n/g,'<br>')+'</div><button type="button" class="btn btn-gold" data-x>حسنًا</button></div>';
+    document.body.appendChild(w);
+    w.addEventListener('click', function(e){ if(e.target===w || (e.target.closest && e.target.closest('[data-x]'))) w.remove(); });
+    try{ w.querySelector('[data-x]').focus(); }catch(e){}
+  }
+  function ask(title,msg){ try{ return Promise.resolve(confirmDialog(title,msg)); }catch(e){ return Promise.resolve(window.confirm(title+' — '+msg)); } }
+
+  /* ───────────── الأنماط ───────────── */
+  function injectCss(){
+    if($('nbm-style')) return;
+    var st=document.createElement('style'); st.id='nbm-style';
+    st.textContent=''+
+      'html.trial-mode #buildSubTabs [data-build="manual"],html:not(.nb-act-on) #buildSubTabs [data-build="manual"]{display:none!important}'+
+      '@media print{.nbm-bar,.nbm-pop,.nbm-alert{display:none!important}}'+
+      /* في وضع الكتابة اليدوية: أزرار تعمل على الجدول المعتمد تُخفى (التراجع وتبديل المدرّس) */
+      'html.nb-manual-mode #fullMasterWrap .btn-undo-full,html.nb-manual-mode #fullMasterWrap .btn-swap-teach,html.nb-manual-mode #fullMasterWrap .full-edit-bar{display:none!important}'+
+      'html.nb-manual-mode #fullMasterWrap td.m-slot,html.nb-manual-mode #fullMasterWrap .bc-line{cursor:pointer}'+
+      'html.nb-manual-mode #fullMasterWrap td.m-slot:hover .m-cell,html.nb-manual-mode #fullMasterWrap .bc-line:hover{outline:2px dashed #c9a227;outline-offset:-3px}'+
+      'html.nb-manual-mode #fullMasterWrap .nbm-pick .m-cell,html.nb-manual-mode #fullMasterWrap .bc-line.nbm-pick{outline:3px solid #c9a227!important;outline-offset:-3px;box-shadow:0 0 0 3px rgba(201,162,39,.35) inset}'+
+      'html.nb-manual-mode #fullMasterWrap .nbm-flash .m-cell,html.nb-manual-mode #fullMasterWrap .bc-line.nbm-flash{animation:nbmFlash 1s ease}'+
+      '@keyframes nbmFlash{0%{background:rgba(201,162,39,.55)}100%{background:transparent}}'+
+      '.nbm-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 8px;padding:9px 12px;border-radius:14px;background:linear-gradient(135deg,#3a1458,#1b0a2b);color:#fff;box-shadow:0 6px 18px rgba(27,10,43,.22),inset 0 0 0 1.5px rgba(201,162,39,.55)}'+
+      '.nbm-bar .ttl{font-weight:900;font-size:14.5px;white-space:nowrap}'+
+      '.nbm-bar .ttl small{display:block;font-size:11px;font-weight:700;opacity:.8}'+
+      '.nbm-bar .st{display:flex;gap:6px;flex-wrap:wrap;flex:1 1 auto}'+
+      '.nbm-bar .st span{padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.12);font-size:12px;font-weight:900;white-space:nowrap}'+
+      '.nbm-bar .st span.ok{background:rgba(52,199,123,.28)}.nbm-bar .st span.bad{background:rgba(231,76,60,.45)}'+
+      '.nbm-bar .acts{display:flex;gap:6px;flex-wrap:wrap}'+
+      '.nbm-bar .acts button{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:10px;padding:7px 11px;font:inherit;font-size:12.5px;font-weight:900;cursor:pointer;white-space:nowrap}'+
+      '.nbm-bar .acts button:disabled{opacity:.45;cursor:default}'+
+      '.nbm-bar .acts button.save{background:linear-gradient(135deg,#ecca67,#c99d38);color:#26160a;border-color:transparent;padding:8px 16px;font-size:13.5px}'+
+      '.nbm-bar .acts button.exit{background:rgba(231,76,60,.25)}'+
+      '.nbm-pop{position:fixed;z-index:99990;width:min(360px,calc(100vw - 20px));max-height:min(78vh,560px);overflow:auto;background:var(--paper-2,#fff);color:var(--ink,#1b2a4a);border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.32);border:1px solid rgba(201,162,39,.5);padding:10px 12px 12px;direction:rtl}'+
+      '.nbm-pop .hd{display:flex;align-items:center;gap:8px;margin-bottom:8px}'+
+      '.nbm-pop .hd b{flex:1;font-size:14px;font-weight:900;line-height:1.4}'+
+      '.nbm-pop .hd button{width:30px;height:30px;border-radius:10px;border:1px solid var(--line,#ddd);background:transparent;color:inherit;font-size:16px;cursor:pointer}'+
+      '.nbm-pop .sec{font-size:12px;font-weight:900;opacity:.75;margin:8px 2px 5px}'+
+      '.nbm-pop .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:6px}'+
+      '.nbm-pop .opt{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:44px;padding:5px 6px;border-radius:11px;border:1.5px solid var(--line,#ddd);background:var(--input-bg,#fff);color:inherit;font:inherit;cursor:pointer;line-height:1.25;text-align:center}'+
+      '.nbm-pop .opt b{font-size:13px;font-weight:900}.nbm-pop .opt small{font-size:10.5px;font-weight:800;opacity:.7}'+
+      '.nbm-pop .opt.on{border-color:#c9a227;box-shadow:0 0 0 2px rgba(201,162,39,.35);background:linear-gradient(160deg,#fff8e1,#fdf0c4);color:#3a2a00}'+
+      '.nbm-pop .opt.full{opacity:.55}'+
+      '.nbm-pop .opt.no{border-color:rgba(192,57,43,.55)}.nbm-pop .opt.no small{color:var(--danger,#c0392b);opacity:1}'+
+      '.nbm-pop .ft{display:flex;gap:6px;margin-top:10px}'+
+      '.nbm-pop .ft button{flex:1;border-radius:10px;padding:8px;font:inherit;font-weight:900;font-size:12.5px;cursor:pointer;border:1px solid var(--line,#ddd);background:transparent;color:inherit}'+
+      '.nbm-pop .ft button.clr{border-color:rgba(192,57,43,.45);color:var(--danger,#c0392b)}'+
+      '.nbm-pop .empty{font-size:12.5px;font-weight:800;opacity:.8;padding:6px 2px;line-height:1.8}'+
+      '@media (max-width:600px){.nbm-pop{left:10px!important;right:10px!important;width:auto;top:auto!important;bottom:10px!important;max-height:70vh}}'+
+      '.nbm-alert{position:fixed;top:0;right:0;bottom:0;left:0;z-index:100000;background:rgba(15,8,24,.55);display:flex;align-items:center;justify-content:center;padding:16px}'+
+      '.nbm-alert-box{max-width:440px;width:100%;background:var(--paper-2,#fff);color:var(--ink,#1b2a4a);border-radius:18px;padding:20px 18px 16px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.35);border-top:5px solid #e0a800}'+
+      '.nbm-alert-box .ic{font-size:34px;line-height:1}.nbm-alert-box .tx{font-weight:800;font-size:15px;line-height:1.9;margin:10px 0 14px}'+
+      '.nbm-alert-box .btn{min-width:120px}';
+    document.head.appendChild(st);
+  }
+
+  /* ───────────── الدخول والخروج من الوضع ───────────── */
+  function enter(){
+    if(!activated()){ try{ showActivateGate(); }catch(e){} return; }
+    var c=C();
+    if(!c.cls.length || !c.D || !c.P){ alertBox('أضف المراحل والشعب ووزّع النصاب أولًا، ثم اكتب الجدول يدويًا.'); return; }
+    loadDraft();
+    M.undo=[];
+    try{ selectedCell=null; conflictTargets=[]; highlightSubjectId=null; highlightTeacherId=null; hideConflictBanner(); }catch(e){}
+    M.on=true;
+    document.documentElement.classList.add('nb-manual-mode');
+    M.entering=true;
+    try{ showView('full'); } finally { M.entering=false; }
+    T('✍️ وضع الكتابة اليدوية — المس أي خانة لاختيار المادة والمدرّس');
+  }
+  function leave(toBuild){
+    closePop();
+    if(!M.on) return;
+    M.on=false;
+    document.documentElement.classList.remove('nb-manual-mode');
+    try{ refreshConflictCache(DB); }catch(e){}
+    if(toBuild){ try{ showView('build'); setBuildSubTab('stages'); }catch(e){} }
+    else { try{ if(currentViewName==='full') renderFullMasterTab(); }catch(e){} }
+  }
+
+  /* ───────────── الرسم: نفس دالة «الجدول الكامل» على المسودة ───────────── */
+  var origRender=null;
+  function manualRender(){
+    var real=DB.schedule, realSel=null;
+    try{ realSel=selectedCell; selectedCell=null; }catch(e){}
+    DB.schedule=M.sch;
+    var origRef=refreshConflictCache;
+    /* في الكتابة اليدوية يُؤشَّر بالأحمر التضارب والتفريغ فقط (لا قيود أخرى) */
+    refreshConflictCache=function(st){ cachedConflicts=collectConflictsFrom(st||DB).filter(function(x){ return x.reason==='busy'||x.reason==='off'; }); };
+    try{ origRender(); }
+    finally{
+      refreshConflictCache=origRef;
+      DB.schedule=real;
+      try{ selectedCell=realSel; }catch(e){}
+      try{ refreshConflictCache(DB); }catch(e){}
+    }
+    decorate();
+  }
+  function redraw(){ if(M.on){ try{ renderFullMasterTab(); }catch(e){} } }
+
+  function decorate(){
+    var wrap=$('fullMasterWrap'); if(!wrap) return;
+    var stage=wrap.querySelector('.full-master-stage')||wrap;
+    var c=C(), t=totals(c), hc=hardConflicts().length;
+    var bar=document.createElement('div'); bar.className='nbm-bar no-print';
+    bar.innerHTML='<div class="ttl">✍️ الكتابة اليدوية<small>المس أي خانة لاختيار المادة والمدرّس</small></div>'+
+      '<div class="st"><span class="'+(t.need&&t.placed>=t.need?'ok':'')+'">📊 '+t.placed+' / '+t.need+' حصة</span>'+
+      '<span class="'+(t.done===t.cls?'ok':'')+'">🏫 '+t.done+' / '+t.cls+' شعبة مكتملة</span>'+
+      '<span class="'+(hc?'bad':'ok')+'">'+(hc?'⚠️ '+hc+' خانة تضارب/تفريغ':'✅ بلا تضارب')+'</span>'+'</div>'+
+      '<div class="acts">'+
+        '<button type="button" data-m="undo"'+(M.undo.length?'':' disabled')+'>↶ تراجع</button>'+
+        '<button type="button" data-m="import">📥 تحميل الجدول الحالي</button>'+
+        '<button type="button" data-m="clear">🗑️ مسح الكل</button>'+
+        '<button type="button" data-m="exit" class="exit">✖ خروج</button>'+
+        '<button type="button" data-m="save" class="save">💾 حفظ واعتماد الجدول</button>'+
+      '</div>';
+    stage.insertBefore(bar, stage.firstChild);
+    if(M.flash){
+      var f=M.flash; M.flash=null;
+      var el=wrap.querySelector('td.m-slot[data-key="'+f.key+'"][data-d="'+f.d+'"][data-p="'+f.p+'"]')||wrap.querySelector('.bc-line[data-key="'+f.key+'"][data-d="'+f.d+'"][data-p="'+f.p+'"]');
+      if(el) el.classList.add('nbm-flash');
+    }
+  }
+
+  /* ───────────── لوحة الاختيار (المادة ثم المدرّس) ───────────── */
+  var POP=null;
+  function closePop(){
+    if(POP){ try{ POP.el.remove(); }catch(e){} if(POP.anchor) POP.anchor.classList.remove('nbm-pick'); POP=null; }
+  }
+  function openPop(anchor, key, d, p, focusTeacher){
+    closePop();
+    var c=C(), cl=c.byKey[key]; if(!cl) return;
+    if(outside(d,p)){ alertBox('هذه الحصة خارج دوام يوم '+(c.days[d]||'')+'.'); return; }
+    var el=document.createElement('div'); el.className='nbm-pop'; el.setAttribute('role','dialog');
+    document.body.appendChild(el);
+    POP={el:el, anchor:anchor, key:key, d:d, p:p, sid:null};
+    anchor.classList.add('nbm-pick');
+    var cur=cellAt(key,d,p); POP.sid=cur?cur.subjectId:null;
+    drawPop(c);
+    place(el, anchor);
+    el.addEventListener('click', onPopClick);
+  }
+  function place(el, anchor){
+    if(window.innerWidth<=600) return;
+    var r=anchor.getBoundingClientRect(), w=el.offsetWidth, h=el.offsetHeight, vw=window.innerWidth, vh=window.innerHeight;
+    var left=Math.min(Math.max(8, r.left+r.width/2-w/2), vw-w-8);
+    var top=r.bottom+6; if(top+h>vh-8) top=Math.max(8, r.top-h-6);
+    el.style.left=left+'px'; el.style.top=top+'px';
+  }
+  function drawPop(c){
+    var key=POP.key, d=POP.d, p=POP.p, cl=c.byKey[key], cur=cellAt(key,d,p), Q=quota(c,key);
+    var h='<div class="hd"><b>'+E(cl.label)+' · '+E(c.days[d]||'')+' · الحصة '+(p+1)+'</b><button type="button" data-x aria-label="إغلاق">✕</button></div>';
+    h+='<div class="sec">📘 المادة</div>';
+    if(!Q.order.length) h+='<div class="empty">لا يوجد نصاب لهذه الشعبة — وزّع المواد من «توزيع النصاب» أولًا.</div>';
+    else {
+      h+='<div class="grid">';
+      Q.order.forEach(function(sid){
+        var q=Q.q[sid], mine=(cur&&cur.subjectId===sid), left=q.need-q.placed+(mine?1:0);
+        h+='<button type="button" class="opt'+(POP.sid===sid?' on':'')+(left<=0&&!mine?' full':'')+'" data-s="'+E(sid)+'"><b>'+E(sName(c.subj[sid]))+'</b><small>'+(mine?'الحالية · ':'')+(left>0?'باقي '+left+' من '+q.need:'✔ مكتمل '+q.need)+'</small></button>';
+      });
+      h+='</div>';
+    }
+    if(POP.sid && Q.q[POP.sid]){
+      var q=Q.q[POP.sid], real=q.teachers.filter(Boolean);
+      h+='<div class="sec">👤 المدرّس</div>';
+      if(!real.length) h+='<div class="empty">لا يوجد مدرّس مُسند لهذه المادة في الشعبة — تُوضع الحصة بدون مدرّس.</div>';
+      else {
+        h+='<div class="grid">';
+        real.forEach(function(tk){
+          var t=c.tch[tk], mark='', isCur=(cur&&cur.subjectId===POP.sid&&cur.teacherId===tk);
+          if(!isCur){
+            if((t.excludedDays||[]).map(Number).indexOf(d)>=0) mark='⚠️ يوم تفريغه';
+            else { var bw=busyWith(key,d,p,tk); if(bw.length){ var jj=bw.every(function(x){ return x.s===POP.sid; })&&jointFor(tk,POP.sid,[key].concat(bw.map(function(x){ return x.key; }))); mark=jj?'🔗 دمج':'⚠️ مشغول: '+((c.byKey[bw[0].key]||{}).label||''); } }
+          }
+          var used=Q.placedT[POP.sid+'|'+tk]||0, allow=q.perT[tk]||0;
+          h+='<button type="button" class="opt'+(isCur?' on':'')+(mark.indexOf('⚠️')===0?' no':'')+'" data-t="'+E(tk)+'"><b>'+E(tName(t))+'</b><small>'+(mark||(used+' / '+allow+' حصة'))+'</small></button>';
+        });
+        h+='</div>';
+      }
+    }
+    h+='<div class="ft">'+(cur?'<button type="button" class="clr" data-clr>🧹 إفراغ الخانة</button>':'')+'<button type="button" data-x>إغلاق</button></div>';
+    POP.el.innerHTML=h;
+  }
+  function apply(c, sid, tid){
+    var key=POP.key, d=POP.d, p=POP.p, cur=cellAt(key,d,p);
+    var r=check(c,key,d,p,sid,tid);
+    if(r.hard){ alertBox(r.hard); return false; }
+    pushUndo();
+    var Q=quota(c,key), q=Q.q[sid];
+    var cell={subjectId:sid, teacherId:tid||null, assignmentId:(q&&q.aid[tid||''])||(q&&q.aid[Object.keys(q.aid)[0]])||null};
+    if(r.joint){
+      cell.jointId=r.joint;
+      busyWith(key,d,p,tid).forEach(function(x){ var o=cellAt(x.key,d,p); if(o && !o.jointId) o.jointId=r.joint; });
+    }
+    setCell(key,d,p,cell);
+    saveDraft();
+    if(r.soft.length) T(r.soft.join(' — '));
+    if(r.warn) setTimeout(function(){ alertBox(r.warn); }, 60);
+    M.flash={key:key,d:d,p:p};
+    return true;
+  }
+  function onPopClick(e){
+    var b=e.target.closest && e.target.closest('button'); if(!b || !POP) return;
+    e.stopPropagation();
+    var c=C();
+    if(b.hasAttribute('data-x')){ closePop(); return; }
+    if(b.hasAttribute('data-clr')){
+      pushUndo(); var key=POP.key, d=POP.d, p=POP.p, cur=cellAt(key,d,p);
+      if(cur && cur.jointId){ Object.keys(M.sch).forEach(function(k){ var o=cellAt(k,d,p); if(o && o.jointId===cur.jointId && k!==key){ var others=Object.keys(M.sch).filter(function(k2){ var o2=cellAt(k2,d,p); return k2!==key && o2 && o2.jointId===cur.jointId; }); if(others.length<2) delete o.jointId; } }); }
+      setCell(key,d,p,null); saveDraft(); M.flash={key:key,d:d,p:p}; closePop(); redraw(); return;
+    }
+    if(b.hasAttribute('data-s')){
+      var sid=b.getAttribute('data-s'), Q=quota(c,POP.key), q=Q.q[sid];
+      var cur2=cellAt(POP.key,POP.d,POP.p);
+      if(cur2 && cur2.subjectId===sid){ POP.sid=sid; drawPop(c); return; }
+      /* مدرّس تلقائي: الوحيد، أو أول مدرّس لم يكتمل نصابه */
+      var real=q?q.teachers.filter(Boolean):[], tid=null;
+      if(real.length===1) tid=real[0];
+      else if(real.length>1){
+        /* أكثر من مدرّس: نختار المادة أولًا ثم يظهر المدرّسون */
+        var r0=check(c,POP.key,POP.d,POP.p,sid,null);
+        if(r0.hard){ alertBox(r0.hard); return; }
+        POP.sid=sid; drawPop(c); return;
+      }
+      if(apply(c, sid, tid)){ closePop(); redraw(); }
+      return;
+    }
+    if(b.hasAttribute('data-t')){
+      var tk=b.getAttribute('data-t');
+      if(apply(c, POP.sid, tk)){ closePop(); redraw(); }
+      return;
+    }
+  }
+
+  /* ───────────── شريط الكتابة اليدوية ───────────── */
+  function onBar(a){
+    if(a==='undo'){ doUndo(); return; }
+    if(a==='exit'){ leave(true); return; }
+    if(a==='clear'){ ask('مسح كل الكتابة اليدوية؟','ستُفرَّغ كل خانات المسودة. الجدول المعتمد في البرنامج لا يتأثر.').then(function(ok){ if(!ok) return; pushUndo(); Object.keys(M.sch).forEach(function(k){ M.sch[k].grid=M.sch[k].grid.map(function(r){ return r.map(function(){ return null; }); }); }); saveDraft(); redraw(); }); return; }
+    if(a==='import'){
+      var has=false; try{ has=Object.keys(DB.schedule||{}).some(function(k){ var g=DB.schedule[k]&&DB.schedule[k].grid; return g&&g.some(function(r){ return r.some(Boolean); }); }); }catch(e){}
+      if(!has){ alertBox('لا يوجد جدول معتمد في البرنامج بعد لتحميله.'); return; }
+      ask('تحميل الجدول الحالي؟','ستُستبدل المسودة بنسخة من الجدول المعتمد لتعدّل عليها يدويًا.').then(function(ok){
+        if(!ok) return; pushUndo();
+        lsSet(LS_DRAFT, JSON.stringify({v:2, schedule:JSON.parse(JSON.stringify(DB.schedule||{}))}));
+        var u=M.undo; loadDraft(); M.undo=u; saveDraft(); redraw(); T('تم تحميل الجدول الحالي إلى الكتابة اليدوية','ok');
+      });
+      return;
+    }
+    if(a==='save'){ doSave(); return; }
+  }
+  function doSave(){
+    if(!activated()){ try{ showActivateGate(); }catch(e){} return; }
+    var c=C(), hc=hardConflicts();
+    var t=totals(c);
+    if(!t.placed){ alertBox('الجدول فارغ — املأ بعض الحصص أولًا.'); return; }
+    var hasOld=false; try{ hasOld=Object.keys(DB.schedule||{}).some(function(k){ var g=DB.schedule[k]&&DB.schedule[k].grid; return g&&g.some(function(r){ return r.some(Boolean); }); }); }catch(e){}
+    var msg=(t.placed<t.need?'⚠️ الجدول غير مكتمل: '+t.placed+' من '+t.need+' حصة (باقي '+(t.need-t.placed)+'). ':'✅ الجدول مكتمل: '+t.placed+' حصة. ')+
+            (hc.length?'⚠️ يحتوي '+hc.length+' خانة تضارب/تفريغ (بالأحمر) وسيُحفظ كما هو. ':'')+
+            (hasOld?'سيُستبدل الجدول المعتمد الحالي بهذا الجدول.':'سيُعتمد هذا الجدول في البرنامج.');
+    ask('حفظ واعتماد الجدول؟', msg).then(function(ok){
+      if(!ok) return;
+      try{
+        try{ ensureScheduleShape(); }catch(e){}
+        var copy=JSON.parse(JSON.stringify(M.sch));
+        Object.keys(copy).forEach(function(k){ DB.schedule[k]=copy[k]; });
+        try{ savedClearCurrentId(); }catch(e){}
+        saveDB();
+        try{ refreshConflictCache(); }catch(e){}
+        saveDraft();
+        leave(false);
+        T('✅ تم حفظ الجدول واعتماده — هذا هو الجدول الكامل الآن','ok');
+        setTimeout(function(){ try{ openSaveScheduleModal(); }catch(e){} }, 400);
+      }catch(err){ alertBox('تعذّر حفظ الجدول: '+((err&&err.message)||err)); }
+    });
+  }
+
+  /* ───────────── الربط ───────────── */
+  function syncAccess(){
+    try{
+      var on=activated();
+      document.querySelectorAll('#buildSubTabs [data-build="manual"]').forEach(function(b){
+        if(!on){ if(b.style.getPropertyValue('display')!=='none') b.style.setProperty('display','none','important'); }
+        else if(b.style.getPropertyValue('display')==='none') b.style.removeProperty('display');
+      });
+      if(!on && M.on) leave(false);
+    }catch(e){}
+  }
+  function hook(){
+    var tabs=$('buildSubTabs'); if(!tabs || tabs.querySelector('[data-build="manual"]')) return;
+    injectCss();
+    var btn=document.createElement('button'); btn.type='button'; btn.className='demo-mode-btn'; btn.setAttribute('data-build','manual');
+    btn.innerHTML='✍️ كتابة يدوية';
+    var gen=tabs.querySelector('[data-build="gen"]');
+    if(gen && gen.nextSibling) tabs.insertBefore(btn, gen.nextSibling); else tabs.appendChild(btn);
+    tabs.addEventListener('click', function(e){ var b=e.target.closest && e.target.closest('[data-build="manual"]'); if(b){ e.preventDefault(); e.stopImmediatePropagation(); enter(); } }, true);
+
+    /* رسم «الجدول الكامل» على المسودة أثناء الوضع اليدوي فقط */
+    origRender=renderFullMasterTab;
+    renderFullMasterTab=function(){ if(M.on) return manualRender(); return origRender.apply(this, arguments); };
+    /* أي انتقال إلى شاشة أخرى (أو ضغط «الجدول الكامل» من القائمة) يُنهي الوضع اليدوي ويعرض الجدول المعتمد */
+    var origShow=showView;
+    showView=function(name){
+      if(M.on && !M.entering){ M.on=false; document.documentElement.classList.remove('nb-manual-mode'); closePop(); try{ refreshConflictCache(DB); }catch(e){} }
+      return origShow.apply(this, arguments);
+    };
+    /* لمس الخانات في الوضع اليدوي: يفتح لوحة الاختيار بدل النقل/التبديل */
+    document.addEventListener('click', function(e){
+      if(!M.on) return;
+      var wrap=$('fullMasterWrap'); if(!wrap || !wrap.contains(e.target)) return;
+      var bb=e.target.closest && e.target.closest('.nbm-bar [data-m]');
+      if(bb){ e.preventDefault(); e.stopPropagation(); onBar(bb.getAttribute('data-m')); return; }
+      var cell=e.target.closest && (e.target.closest('td.m-slot[data-key]')||e.target.closest('.bc-line[data-key]'));
+      if(!cell) return;
+      e.preventDefault(); e.stopPropagation();
+      openPop(cell, cell.getAttribute('data-key'), +cell.getAttribute('data-d'), +cell.getAttribute('data-p'), !!(e.target.closest('.teach-hit,.bc-t')));
+    }, true);
+    document.addEventListener('pointerdown', function(e){ if(POP && !POP.el.contains(e.target) && !(POP.anchor && POP.anchor.contains(e.target)) && !(e.target.closest && e.target.closest('.nbm-alert'))) closePop(); }, true);
+    document.addEventListener('keydown', function(e){
+      if(!M.on) return;
+      if(e.key==='Escape' && (POP || $('nbmAlert'))){ e.preventDefault(); e.stopImmediatePropagation(); var al=$('nbmAlert'); if(al) al.remove(); else closePop(); return; }
+      if((e.ctrlKey||e.metaKey) && !e.shiftKey && (e.key==='z'||e.key==='Z')){ e.preventDefault(); e.stopImmediatePropagation(); doUndo(); }
+    }, true);
+    window.addEventListener('resize', function(){ if(POP) place(POP.el, POP.anchor); });
+    /* الوصول إلى التبويب من setBuildSubTab('manual') */
+    var origTab=setBuildSubTab;
+    setBuildSubTab=function(tab){ if(tab==='manual'){ enter(); return; } return origTab.apply(this, arguments); };
+    syncAccess(); setInterval(syncAccess, 1500);
+  }
+  window.__nbManual={enter:enter, leave:leave, check:function(key,d,p,s,t){ return check(C(),key,d,p,s,t); }, sch:function(){ return M.sch; }, on:function(){ return M.on; }, save:doSave};
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', hook); else hook();
 })();
 
 init();
