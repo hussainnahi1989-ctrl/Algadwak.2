@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="جدول الحصص">
 <meta name="application-name" content="جدول الحصص">
-<meta name="theme-color" content="#3a1259">
+<meta name="theme-color" content="#142d75">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Reem+Kufi:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <script id="nibras-theme-boot">
@@ -50,19 +50,19 @@
 <style id="nb-side-boot-css">
 html.nb-side-boot .topbar .tabs{display:none!important}
 html.nb-side-boot:not(.nb-side-drawer) body::before{content:"";position:fixed;top:var(--nb-side-top,70px);right:0;bottom:0;width:190px;z-index:44;
-  background:linear-gradient(180deg,#380d56 0%,#1c052c 100%);border-left:1px solid rgba(228,197,106,.35)}
+  background:linear-gradient(180deg,#10245d 0%,#07112f 100%);border-left:1px solid rgba(228,197,106,.35)}
 html.nb-side-boot.nb-side-compact:not(.nb-side-drawer) body::before{width:58px}
 html[data-theme="night"].nb-side-boot:not(.nb-side-drawer) body::before{background:linear-gradient(180deg,#0b1a33 0%,#060e1f 100%)}
 </style>
 <style>
 :root{
-  --ink:#11041a;
-  --ink-2:#270a3b;
-  --ink-soft:#3b1654;
+  --ink:#050b1c;
+  --ink-2:#0c1940;
+  --ink-soft:#1a2a5b;
   --gold:#c4a04a;
   --gold-light:#e4c56a;
-  --paper:#d3c5dd;
-  --paper-2:#fbf8fd;
+  --paper:#c7ccdb;
+  --paper-2:#f9fafc;
   --line:#b59fc5;
   --line-2:#a28ab3;
   --danger:#b23b3b;
@@ -72,27 +72,27 @@ html[data-theme="night"].nb-side-boot:not(.nb-side-drawer) body::before{backgrou
   --warn:#9a6b12;
   --warn-bg:#fff6e0;
   --radius:14px;
-  --shadow:0 10px 28px rgba(28,5,44,.18), 0 1px 0 rgba(255,255,255,.65) inset;
-  --topbar-1:#1c052c;
-  --topbar-2:#380d56;
+  --shadow:0 10px 28px rgba(7,17,47,.18), 0 1px 0 rgba(255,255,255,.65) inset;
+  --topbar-1:#07112f;
+  --topbar-2:#10245d;
   --topbar-text:#ffffff;
-  --topbar-muted:#e2cef0;
+  --topbar-muted:#d1d8ed;
   --input-bg:#ffffff;
-  --chip-bg:#d4c0e2;
-  --overlay:rgba(17,4,26,.58);
-  --sched-th:#2d0a45;
-  --sched-day:#ddcee7;
-  --empty-cell:#c6b4d3;
-  --focus-ring:rgba(56,13,86,.32);
+  --chip-bg:#c3cadf;
+  --overlay:rgba(5,11,28,.58);
+  --sched-th:#0d1c4a;
+  --sched-day:#d1d6e4;
+  --empty-cell:#b7bdd0;
+  --focus-ring:rgba(16,36,93,.32);
   --theme-toggle-bg:rgba(255,255,255,.14);
   --theme-toggle-border:rgba(228,197,106,.40);
-  --card-glow:0 0 0 1px rgba(56,13,86,.08);
-  --demo-card-bg:linear-gradient(180deg,#fbf8fd,#ffffff);
+  --card-glow:0 0 0 1px rgba(16,36,93,.08);
+  --demo-card-bg:linear-gradient(180deg,#f9fafc,#ffffff);
   --elevated:#ffffff;
-  --hairline:rgba(28,5,44,.08);
-  --surface-hover:rgba(56,13,86,.05);
+  --hairline:rgba(7,17,47,.08);
+  --surface-hover:rgba(16,36,93,.05);
   --gold-glow:0 8px 22px rgba(196,160,74,.16);
-  --glass:rgba(251,248,253,.85);
+  --glass:rgba(249,250,252,.85);
 }
 
 /* ===== Night mode — modern professional ===== */
@@ -168,21 +168,21 @@ body{
 }
 html:not([data-theme="night"]) body{
   background:
-    radial-gradient(950px 420px at 100% -8%, rgba(56,13,86,.24), transparent 60%),
-    radial-gradient(800px 400px at 0% 100%, rgba(56,13,86,.18), transparent 55%),
-    linear-gradient(180deg, #d3c5dd 0%, #bda8cc 50%, #a78eb9 100%);
+    radial-gradient(950px 420px at 100% -8%, rgba(16,36,93,.24), transparent 60%),
+    radial-gradient(800px 400px at 0% 100%, rgba(16,36,93,.18), transparent 55%),
+    linear-gradient(180deg, #c7ccdb 0%, #acb3c8 50%, #a78eb9 100%);
 }
 html:not([data-theme="night"]) .card,
 html:not([data-theme="night"]) .dash-card{
-  background:linear-gradient(180deg,#ffffff 0%, #f3edf8 100%);
-  border:1.5px solid rgba(56,13,86,.22);
+  background:linear-gradient(180deg,#ffffff 0%, #eef0f7 100%);
+  border:1.5px solid rgba(16,36,93,.22);
   border-radius:18px;
-  box-shadow:0 14px 34px rgba(28,5,44,.16), 0 1px 0 rgba(255,255,255,.98) inset;
+  box-shadow:0 14px 34px rgba(7,17,47,.16), 0 1px 0 rgba(255,255,255,.98) inset;
 }
 html:not([data-theme="night"]) .card h2{
   padding-bottom:10px;margin-bottom:8px;
-  border-bottom:1px solid rgba(56,13,86,.16);
-  color:#11041a;
+  border-bottom:1px solid rgba(16,36,93,.16);
+  color:#050b1c;
 }
 html:not([data-theme="night"]) .set-nav-btn{
   background:#fff;
@@ -190,38 +190,38 @@ html:not([data-theme="night"]) .set-nav-btn{
   box-shadow:0 8px 18px rgba(74,18,56,.06);
 }
 html:not([data-theme="night"]) .set-nav-btn.active{
-  background:linear-gradient(180deg,#410f64,#1c052c);
+  background:linear-gradient(180deg,#132a6c,#07112f);
   color:#fff;
   border-color:#c4a04a;
-  box-shadow:0 10px 22px rgba(28,5,44,.25);
+  box-shadow:0 10px 22px rgba(7,17,47,.25);
 }
-html:not([data-theme="night"]) .set-nav-btn.active small{color:#e2cef0}
+html:not([data-theme="night"]) .set-nav-btn.active small{color:#d1d8ed}
 html:not([data-theme="night"]) .tab-btn{
   background:rgba(255,255,255,.12);
   border-color:rgba(255,255,255,.26);
 }
 html:not([data-theme="night"]) .tab-btn.active{
   background:linear-gradient(180deg,#f0d78c,#c9a227);
-  color:#11041a;
+  color:#050b1c;
   border-color:#e4c56a;
   box-shadow:0 4px 14px rgba(196,160,74,.30);
 }
 html:not([data-theme="night"]) .demo-mode-toggle{
   background:#fff;
-  border:1.5px solid rgba(56,13,86,.14);
-  box-shadow:0 6px 14px rgba(28,5,44,.06);
+  border:1.5px solid rgba(16,36,93,.14);
+  box-shadow:0 6px 14px rgba(7,17,47,.06);
 }
 html:not([data-theme="night"]) .demo-mode-btn.active{
-  background:linear-gradient(180deg,#410f64,#1c052c);
+  background:linear-gradient(180deg,#132a6c,#07112f);
   color:#fff;
-  box-shadow:0 6px 14px rgba(28,5,44,.22);
+  box-shadow:0 6px 14px rgba(7,17,47,.22);
 }
 html:not([data-theme="night"]) .class-pill{
   background:#fff;
-  border:1.5px solid rgba(56,13,86,.15);
+  border:1.5px solid rgba(16,36,93,.15);
 }
 html:not([data-theme="night"]) .class-pill.active{
-  background:linear-gradient(180deg,#410f64,#1c052c);
+  background:linear-gradient(180deg,#132a6c,#07112f);
   color:#fff;
   border-color:#c4a04a;
 }
@@ -280,7 +280,7 @@ input,select,textarea{font-family:inherit}
   font-size:20px;flex:none;background:rgba(255,255,255,.06);
   overflow:hidden;
 }
-.brand-mark img{width:100%;height:100%;object-fit:cover}
+.brand-mark img{width:100%;height:100%;object-fit:contain;padding:3px;box-sizing:border-box;background:transparent}
 .brand-text{flex:1;min-width:0;overflow:hidden}
 .brand-text b{display:block;font-size:16px;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .brand-text span{display:block;font-size:11.5px;color:var(--topbar-muted);margin-top:1px}
@@ -799,6 +799,7 @@ main{max-width:1100px;margin:0 auto;padding:16px 14px 90px}
   overflow:hidden;
 }
 .img-preview img{max-width:100%;max-height:100%;object-fit:contain;background:transparent}
+.img-preview:not(.empty){background:repeating-conic-gradient(#e9edf3 0 25%,#ffffff 0 50%) 0 0/14px 14px}
 .img-preview.empty{color:var(--ink-soft);font-size:11px;font-weight:700}
 html[data-theme="night"] .img-preview{
   background-color:#0e1e3d;
@@ -1059,7 +1060,7 @@ table.sched td.slot{padding:0;height:68px;min-width:96px}
 .rotate-hint-card .rotc-close:active{transform:scale(.96)}
 @keyframes rotcIn{from{opacity:0;transform:translateY(-20px) scale(.95)}to{opacity:1;transform:none}}
 @keyframes rotcTilt{0%,52%,100%{transform:rotate(0)}68%,84%{transform:rotate(90deg)}}
-html[data-theme="night"] .rotate-hint-card{background:linear-gradient(135deg,#241031,#3d1b52);border-color:rgba(255,255,255,.14)}
+html[data-theme="night"] .rotate-hint-card{background:linear-gradient(135deg,#131b35,#1f2e59);border-color:rgba(255,255,255,.14)}
 @media print{.rotate-hint-card{display:none !important}}
 
 .edit-help{
@@ -1821,7 +1822,7 @@ table.dash-today td.sec{font-weight:800;white-space:nowrap;background:var(--sche
 #dashRoot .dash-now.now::before{background:linear-gradient(90deg,transparent 5%,#2ecc71 50%,transparent 95%);opacity:.95}
 #dashRoot .dash-now.break::before{background:linear-gradient(90deg,transparent 5%,var(--gold,#c9a227) 55%,#e67e22 95%);opacity:.95}
 #dashRoot .dash-clock .d-date{display:inline-block;padding:4px 12px;border-radius:999px;background:var(--chip-bg);border:1px solid var(--line);font-size:13px;margin-bottom:12px}
-#dashRoot .dash-clock .d-time{font-size:46px;text-shadow:0 2px 14px rgba(28,5,44,.10)}
+#dashRoot .dash-clock .d-time{font-size:46px;text-shadow:0 2px 14px rgba(7,17,47,.10)}
 .dash-status-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.3px;margin-bottom:8px;background:var(--chip-bg);border:1px solid var(--line);color:var(--ink-2)}
 .dash-status-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--ink-soft);flex:0 0 auto}
 .dash-status-chip.live{background:rgba(46,204,113,.12);border-color:rgba(46,204,113,.5);color:#1e8449}
@@ -1838,7 +1839,7 @@ table.dash-today td.sec{font-weight:800;white-space:nowrap;background:var(--sche
 #dashRoot .dash-today-wrap{box-shadow:var(--shadow);border-radius:14px}
 #dashRoot table.dash-today th{background:linear-gradient(180deg,#2d4373,#1b2a4a);font-size:12.5px;padding:9px 4px;letter-spacing:.3px}
 #dashRoot table.dash-today td{padding:8px 4px;font-weight:700}
-#dashRoot table.dash-today tbody tr:nth-child(even) td{background:rgba(56,13,86,.045)}
+#dashRoot table.dash-today tbody tr:nth-child(even) td{background:rgba(16,36,93,.045)}
 #dashRoot table.dash-today tbody tr:hover td{background:rgba(201,162,39,.10)}
 #dashRoot table.dash-today td b{font-size:12.5px}
 #dashRoot .card h2{position:relative;padding-right:14px}
@@ -1859,12 +1860,12 @@ html[data-theme="night"] #dashRoot table.dash-today tbody tr:hover td{background
 table.dash-tp{border-collapse:collapse;width:100%;min-width:560px;background:var(--paper-2);font-size:13px}
 table.dash-tp th,table.dash-tp td{border:1px solid var(--line);padding:9px 10px;vertical-align:middle}
 table.dash-tp th{background:linear-gradient(180deg,#2d4373,#1b2a4a);color:#fff;font-weight:800;font-size:12.5px;text-align:center;letter-spacing:.3px}
-table.dash-tp th.g2{background:linear-gradient(180deg,#410f64,#2a0941)}
+table.dash-tp th.g2{background:linear-gradient(180deg,#132a6c,#0b1a46)}
 table.dash-tp th:nth-child(3),table.dash-tp td:nth-child(3){border-inline-start:2.5px solid rgba(201,162,39,.65)}
 table.dash-tp td.name{font-weight:800;text-align:right}
 table.dash-tp td.cnt{text-align:center}
 table.dash-tp .cnt-pill{display:inline-block;min-width:36px;padding:3px 12px;border-radius:999px;background:rgba(201,162,39,.15);border:1px solid rgba(201,162,39,.4);color:#8a6a14;font-weight:900;font-size:13px;font-variant-numeric:tabular-nums}
-table.dash-tp tbody tr:nth-child(even) td{background:rgba(56,13,86,.045)}
+table.dash-tp tbody tr:nth-child(even) td{background:rgba(16,36,93,.045)}
 table.dash-tp tbody tr:hover td{background:rgba(201,162,39,.10)}
 table.dash-tp td.empty{color:var(--ink-soft);text-align:center}
 html[data-theme="night"] table.dash-tp th{background:linear-gradient(180deg,#172d57,#13264b)}
@@ -1878,7 +1879,7 @@ table.dash-tp td[data-tid]:active{background:rgba(30,111,255,.12)!important}
 /* بطاقة تفاصيل حصص المعلم */
 .ta-card{max-width:580px;width:calc(100% - 24px)}
 .ta-head{display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:2px solid rgba(201,162,39,.35);margin-bottom:12px}
-.ta-av{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;background:linear-gradient(135deg,#2d4373,#410f64);box-shadow:0 6px 18px rgba(45,67,115,.35);flex:0 0 auto}
+.ta-av{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;background:linear-gradient(135deg,#2d4373,#132a6c);box-shadow:0 6px 18px rgba(45,67,115,.35);flex:0 0 auto}
 .ta-id{flex:1 1 auto;min-width:0}
 .ta-name{font-size:19px;font-weight:900;color:var(--ink);line-height:1.3}
 .ta-sub{font-size:12px;color:var(--ink-soft);font-weight:700;margin-top:3px}
@@ -1887,7 +1888,7 @@ table.dash-tp td[data-tid]:active{background:rgba(30,111,255,.12)!important}
 .ta-total span{display:block;font-size:10.5px;font-weight:800;color:var(--ink-soft);margin-top:3px}
 .ta-group{padding:10px 12px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper);margin-bottom:10px}
 .ta-ghead{display:flex;align-items:center;gap:8px;margin-bottom:9px}
-.ta-gcode{font-size:11.5px;font-weight:900;color:#fff;background:linear-gradient(135deg,#2d4373,#410f64);padding:3px 9px;border-radius:8px;flex:0 0 auto}
+.ta-gcode{font-size:11.5px;font-weight:900;color:#fff;background:linear-gradient(135deg,#2d4373,#132a6c);padding:3px 9px;border-radius:8px;flex:0 0 auto}
 .ta-gname{flex:1 1 auto;min-width:0;font-size:14.5px;font-weight:900;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ta-gcount{font-size:11px;font-weight:800;color:#8a6a14;background:rgba(201,162,39,.14);border:1px solid rgba(201,162,39,.4);padding:2px 9px;border-radius:999px;white-space:nowrap;flex:0 0 auto}
 .ta-chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -1993,7 +1994,7 @@ html[data-theme="night"] table.timing tr.t-now td{outline-color:var(--gold-light
 /* عدد حصص المعلم في الأسبوع */
 .tname-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .tname-line b{display:inline-block;font-size:14.5px}
-.ppw-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;background:rgba(151,55,218,.14);color:#5a118d;border:1px solid rgba(151,55,218,.4);white-space:nowrap}
+.ppw-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;background:rgba(59,99,214,.14);color:#163798;border:1px solid rgba(59,99,214,.4);white-space:nowrap}
 html[data-theme="night"] .ppw-badge{background:rgba(51,209,222,.2);color:#7fefff;border-color:rgba(51,209,222,.55)}
 
 /* زر المساعدة العائم */
@@ -2038,11 +2039,11 @@ html[data-theme="night"] .help-fab{background:#ffd76a}
 .release-note-bg.is-open{opacity:1}
 .release-note-card{position:relative;max-width:520px;padding:0;overflow:hidden;border-radius:22px!important;background:var(--paper-2);box-shadow:0 24px 70px rgba(10,25,52,.38);transform:translateY(10px) scale(.985);transition:transform .18s ease}
 .release-note-bg.is-open .release-note-card{transform:translateY(0) scale(1)}
-.release-note-hero{position:relative;padding:24px 22px 20px;color:#fff;background:linear-gradient(135deg,#102b57 0%,#1b4b88 58%,#591b84 100%);overflow:hidden}
+.release-note-hero{position:relative;padding:24px 22px 20px;color:#fff;background:linear-gradient(135deg,#102b57 0%,#1b4b88 58%,#213d8e 100%);overflow:hidden}
 .release-note-hero:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;left:-70px;top:-92px;background:rgba(255,255,255,.09);box-shadow:120px 125px 0 rgba(255,255,255,.06)}
 .release-note-top{position:relative;z-index:1;display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .release-note-mark{width:38px;height:38px;border-radius:13px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.32);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 5px 16px rgba(0,0,0,.13)}
-.release-note-kicker{font-size:11.5px;font-weight:900;letter-spacing:.15px;color:#efdafe}
+.release-note-kicker{font-size:11.5px;font-weight:900;letter-spacing:.15px;color:#e2e7f6}
 .release-note-version{margin-right:auto;font-size:10.5px;font-weight:800;color:#fff;background:rgba(0,0,0,.20);border:1px solid rgba(255,255,255,.22);padding:4px 8px;border-radius:999px}
 .release-note-hero h3{position:relative;z-index:1;margin:0 0 7px;font-size:20px;line-height:1.35;color:#fff}
 .release-note-hero p{position:relative;z-index:1;margin:0;line-height:1.75;color:#e4f5ff;font-size:13px}
@@ -2053,7 +2054,7 @@ html[data-theme="night"] .help-fab{background:#ffd76a}
 .release-note-item .rni-icon{flex:0 0 30px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:#e8f3ff;font-size:16px}
 .release-note-item:nth-child(2) .rni-icon{background:#e8f8ef}
 .release-note-item:nth-child(3) .rni-icon{background:#fff3d9}
-.release-note-item:nth-child(4) .rni-icon{background:#f1ebff}
+.release-note-item:nth-child(4) .rni-icon{background:#eff2fa}
 .release-note-item:nth-child(5) .rni-icon{background:#ffeef0}
 .release-note-item:nth-child(6) .rni-icon{background:#e9f7f7}
 .release-note-card{max-height:calc(100vh - 24px);display:flex;flex-direction:column}
@@ -2061,8 +2062,8 @@ html[data-theme="night"] .help-fab{background:#ffd76a}
 .release-note-hero,.release-note-actions{flex:0 0 auto}
 .release-note-item b{display:block;font-size:13px;color:var(--ink);margin:1px 0 2px}
 .release-note-item span{display:block;font-size:11.7px;color:var(--ink-soft);line-height:1.6}
-.release-note-tip{margin-top:14px;padding:10px 11px;border-radius:11px;border:1px solid rgba(89,28,132,.28);background:rgba(89,28,132,.08);font-size:12px;line-height:1.7;color:var(--ink)}
-.release-note-tip b{color:#46136a}
+.release-note-tip{margin-top:14px;padding:10px 11px;border-radius:11px;border:1px solid rgba(34,61,142,.28);background:rgba(34,61,142,.08);font-size:12px;line-height:1.7;color:var(--ink)}
+.release-note-tip b{color:#172f72}
 .release-note-actions{padding:0 20px 20px;margin:0}
 .release-note-actions .btn{min-height:42px}
 .release-note-close{position:absolute;z-index:2;top:10px;left:10px;border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.15);color:#fff;width:31px;height:31px;border-radius:50%;cursor:pointer;font-size:19px;line-height:1;padding:0}
@@ -2072,7 +2073,7 @@ html[data-theme="night"] .release-note-item{background:rgba(255,255,255,.045);bo
 html[data-theme="night"] .release-note-item .rni-icon{background:rgba(79,183,255,.17)}
 html[data-theme="night"] .release-note-item:nth-child(2) .rni-icon{background:rgba(57,201,121,.15)}
 html[data-theme="night"] .release-note-item:nth-child(3) .rni-icon{background:rgba(244,188,58,.15)}
-html[data-theme="night"] .release-note-item:nth-child(4) .rni-icon{background:rgba(165,128,255,.16)}
+html[data-theme="night"] .release-note-item:nth-child(4) .rni-icon{background:rgba(153,173,230,.16)}
 html[data-theme="night"] .release-note-item:nth-child(5) .rni-icon{background:rgba(255,120,140,.15)}
 html[data-theme="night"] .release-note-item:nth-child(6) .rni-icon{background:rgba(60,200,200,.15)}
 html[data-theme="night"] .release-note-tip{background:rgba(71,205,216,.10);border-color:rgba(71,205,216,.30)}
@@ -2201,6 +2202,7 @@ html[data-theme="night"] .theme-preview-day{border-color:rgba(126,196,255,.08)}
 }
 .print-head .logo-box{background:transparent}
 .print-head .logo-box img{width:100%;height:100%;object-fit:contain;background:transparent}
+.print-head .logo-box.has-img{width:32px;height:32px;border:0;border-radius:0;box-shadow:none;overflow:visible;background:transparent}
 .print-head .brand-side .school{
   font-size:12px;font-weight:900;color:#fff;line-height:1.2;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
@@ -2807,7 +2809,7 @@ html.activate-open #activateGate{display:flex}
 }
 .act-trial:active{transform:scale(.98)}
 .act-wa{
-  display:block;text-align:center;margin-top:10px;font-weight:800;font-size:13px;color:#591589;text-decoration:none;
+  display:block;text-align:center;margin-top:10px;font-weight:800;font-size:13px;color:#1a3994;text-decoration:none;
 }
 .act-copy-mini{
   display:block;text-align:center;margin:6px 0 0;border:none;background:none;
@@ -2817,8 +2819,8 @@ html.activate-open #activateGate{display:flex}
   display:flex;align-items:center;justify-content:center;gap:8px;
   width:100%;margin-top:12px;padding:14px 12px;border:none;border-radius:16px;
   font:inherit;font-weight:900;font-size:15px;color:#fff;text-decoration:none;cursor:pointer;
-  background:linear-gradient(180deg,#25d366,#591589);
-  box-shadow:0 10px 22px rgba(89,21,137,.28);
+  background:linear-gradient(180deg,#25d366,#1a3994);
+  box-shadow:0 10px 22px rgba(26,57,148,.28);
 }
 .act-request:active{transform:scale(.98)}
 
@@ -2827,9 +2829,9 @@ html.activate-open #activateGate{display:flex}
   align-items:center; justify-content:center;
   overflow:hidden; padding:22px;
   background:
-    radial-gradient(900px 500px at 50% 0%, rgba(80,16,124,.38), transparent 55%),
+    radial-gradient(900px 500px at 50% 0%, rgba(21,49,133,.38), transparent 55%),
     radial-gradient(700px 400px at 110% 90%, rgba(201,162,39,.18), transparent 50%),
-    linear-gradient(165deg, #100815 0%, #220c32 38%, #1b2a4a 100%);
+    linear-gradient(165deg, #090d17 0%, #0e1836 38%, #1b2a4a 100%);
 }
 html.splash-open #splashGate{display:flex}
 html.splash-open .topbar, html.splash-open main{visibility:hidden}
@@ -2915,12 +2917,12 @@ html.exit-open #exitGate{display:flex}
 .exit-emblem{
   width:52px;height:52px;margin:2px auto 10px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(180deg,#380d56,#1c052c);
+  background:linear-gradient(180deg,#10245d,#07112f);
   color:#f0d78c;font-size:24px;
-  box-shadow:0 8px 18px rgba(28,5,44,.30), inset 0 0 0 2px rgba(201,162,39,.42);
+  box-shadow:0 8px 18px rgba(7,17,47,.30), inset 0 0 0 2px rgba(201,162,39,.42);
 }
 .exit-card h2{margin:0 0 6px;font-size:17px;font-weight:900;letter-spacing:.2px}
-.exit-card p{margin:0 0 14px;font-size:12.5px;color:#380d56;font-weight:700;line-height:1.55}
+.exit-card p{margin:0 0 14px;font-size:12.5px;color:#10245d;font-weight:700;line-height:1.55}
 .exit-actions{display:flex;gap:8px}
 .exit-actions button{
   flex:1;border-radius:14px;padding:11px 8px;font-weight:900;font-size:13.5px;
@@ -3086,7 +3088,7 @@ html.need-landscape body{
 img, video, canvas{
   max-width:100%;
 }
-.brand-mark img{width:100%;height:100%;object-fit:cover}
+.brand-mark img{width:100%;height:100%;object-fit:contain;padding:3px;box-sizing:border-box;background:transparent}
 .view, .card, .dash-card, main, section, .row, .hint{
   max-width:100%;
   min-width:0;
@@ -3459,42 +3461,42 @@ html[data-theme="night"] #generateProgress{
   /* --- خلفية البرنامج في الوضع النهاري - أغمق قليلاً مع حماية تباين ونقاء البطاقات والنصوص بدقة --- */
   html:not([data-theme="night"]) body{
     background:
-      radial-gradient(950px 420px at 100% -8%, rgba(56,13,86,.24), transparent 60%),
-      radial-gradient(800px 400px at 0% 100%, rgba(56,13,86,.18), transparent 55%),
-      linear-gradient(180deg, #d3c5dd 0%, #bda8cc 50%, #a78eb9 100%) !important;
+      radial-gradient(950px 420px at 100% -8%, rgba(16,36,93,.24), transparent 60%),
+      radial-gradient(800px 400px at 0% 100%, rgba(16,36,93,.18), transparent 55%),
+      linear-gradient(180deg, #c7ccdb 0%, #acb3c8 50%, #a78eb9 100%) !important;
   }
   html:not([data-theme="night"]) .card,
   html:not([data-theme="night"]) .dash-card{
-    background: linear-gradient(180deg, #ffffff 0%, #f3edf8 100%) !important;
-    border: 1.5px solid rgba(56,13,86,.22) !important;
-    box-shadow: 0 14px 34px rgba(28,5,44,.16), 0 1px 0 rgba(255,255,255,.98) inset !important;
+    background: linear-gradient(180deg, #ffffff 0%, #eef0f7 100%) !important;
+    border: 1.5px solid rgba(16,36,93,.22) !important;
+    box-shadow: 0 14px 34px rgba(7,17,47,.16), 0 1px 0 rgba(255,255,255,.98) inset !important;
   }
   html:not([data-theme="night"]) .card h2{
-    color: #11041a !important;
+    color: #050b1c !important;
     font-weight: 900 !important;
-    border-bottom-color: rgba(56,13,86,.16) !important;
+    border-bottom-color: rgba(16,36,93,.16) !important;
   }
   html:not([data-theme="night"]) .hint,
   html:not([data-theme="night"]) p.hint{
-    color: #3b1654 !important;
+    color: #1a2a5b !important;
     font-weight: 700 !important;
   }
   html:not([data-theme="night"]) label{
-    color: #11041a !important;
+    color: #050b1c !important;
     font-weight: 800 !important;
   }
   html:not([data-theme="night"]) .empty-hint{
-    background: linear-gradient(180deg, #fbf8fd 0%, #f3edf8 100%) !important;
-    border-color: rgba(56,13,86,.22) !important;
-    color: #270a3b !important;
+    background: linear-gradient(180deg, #f9fafc 0%, #eef0f7 100%) !important;
+    border-color: rgba(16,36,93,.22) !important;
+    color: #0c1940 !important;
   }
   html:not([data-theme="night"]) .stage-block{
-    background: linear-gradient(180deg, #fbf8fd 0%, #f3edf8 100%) !important;
+    background: linear-gradient(180deg, #f9fafc 0%, #eef0f7 100%) !important;
   }
   html:not([data-theme="night"]) .full-font-bar{
-    background: linear-gradient(180deg, #fbf8fd 0%, #f3edf8 100%) !important;
-    color: #11041a !important;
-    border-bottom: 1.5px solid rgba(56,13,86,.18) !important;
+    background: linear-gradient(180deg, #f9fafc 0%, #eef0f7 100%) !important;
+    color: #050b1c !important;
+    border-bottom: 1.5px solid rgba(16,36,93,.18) !important;
   }
 
   /* --- قاعدة موحدة: بطاقات بلون تركوازي غامق جداً فخم متطابق مع الشريط العلوي --- */
@@ -3509,7 +3511,7 @@ html[data-theme="night"] #generateProgress{
     color: var(--topbar-text) !important;
     border: 1.5px solid rgba(228,197,106,.38) !important;
     border-radius: 14px !important;
-    box-shadow: 0 10px 22px rgba(28,5,44,.18), inset 0 1px 0 rgba(255,255,255,.20) !important;
+    box-shadow: 0 10px 22px rgba(7,17,47,.18), inset 0 1px 0 rgba(255,255,255,.20) !important;
     position: relative !important;
     overflow: hidden !important;
     border-bottom: 1.5px solid rgba(228,197,106,.38) !important;
@@ -3762,17 +3764,17 @@ html[data-theme="night"] #generateProgress{
 /* ===== تبويب تطبيقات أخرى ===== */
 .apps-card{padding:18px}
 .apps-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.apps-hero-icon{font-size:30px;width:56px;height:56px;flex:none;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--topbar-1),var(--topbar-2));border-radius:16px;box-shadow:0 4px 14px rgba(28,5,44,.25)}
+.apps-hero-icon{font-size:30px;width:56px;height:56px;flex:none;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--topbar-1),var(--topbar-2));border-radius:16px;box-shadow:0 4px 14px rgba(7,17,47,.25)}
 .apps-title{font-size:20px;font-weight:900;color:var(--ink);margin:0}
 .apps-sub{font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:4px 0 0;line-height:1.55}
 .apps-table-wrap{overflow-x:auto}
 .apps-table{width:100%;border-collapse:collapse;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;min-width:540px;background:var(--paper-2)}
 .apps-table th{background:linear-gradient(180deg,var(--topbar-2),var(--topbar-1));color:#fff;font-size:13px;font-weight:900;padding:10px 12px;text-align:center}
 .apps-table td{padding:13px 10px;border-top:1px solid var(--line);text-align:center;vertical-align:middle;background:var(--paper-2)}
-.apps-row:nth-child(even) td{background:#f3eef7}
+.apps-row:nth-child(even) td{background:#eff1f6}
 .apps-name{display:flex;align-items:center;justify-content:center;gap:8px;font-size:14.5px;font-weight:900;color:var(--ink)}
 .apps-name-ico{font-size:20px}
-.apps-link a{display:inline-block;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#1c052c;font-size:12.5px;font-weight:900;padding:8px 16px;border-radius:9px;text-decoration:none;box-shadow:0 3px 8px rgba(196,160,74,.35);white-space:nowrap}
+.apps-link a{display:inline-block;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#07112f;font-size:12.5px;font-weight:900;padding:8px 16px;border-radius:9px;text-decoration:none;box-shadow:0 3px 8px rgba(196,160,74,.35);white-space:nowrap}
 .apps-link a:active{transform:translateY(1px)}
 .apps-req-btn{background:linear-gradient(135deg,#1fa855,#37c877);color:#fff;border:none;font-size:12.5px;font-weight:900;padding:9px 16px;border-radius:10px;cursor:pointer;box-shadow:0 3px 10px rgba(31,168,85,.35);font-family:inherit;white-space:nowrap}
 .apps-req-btn:active{transform:translateY(1px)}
@@ -3815,7 +3817,7 @@ html[data-theme="night"] #generateProgress{
   color: #ffffff;
   padding: 6px 14px;
   border-radius: 30px;
-  box-shadow: 0 4px 14px rgba(56,13,86, 0.32);
+  box-shadow: 0 4px 14px rgba(16,36,93, 0.32);
   border: 1px solid rgba(255, 255, 255, 0.3);
   user-select: none;
 }
@@ -4000,15 +4002,15 @@ html[data-theme="night"] .about-subtab-btn.active {
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 .about-btn-wa {
-  background: linear-gradient(135deg, #25D366 0%, #591589 100%);
+  background: linear-gradient(135deg, #25D366 0%, #1a3994 100%);
   color: #ffffff !important;
   box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.25);
 }
 .about-btn-tg {
-  background: linear-gradient(135deg, #8d27d4 0%, #7705c7 100%);
+  background: linear-gradient(135deg, #3d65d7 0%, #1945c8 100%);
   color: #ffffff !important;
-  box-shadow: 0 4px 14px rgba(141,39,212, 0.35);
+  box-shadow: 0 4px 14px rgba(61,101,215, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
@@ -4273,6 +4275,7 @@ html[data-theme="night"] .teacher-ban-head{background:linear-gradient(135deg,rgb
     <button class="tab-btn" data-view="full">📋 الجدول الكامل</button>
     <button class="tab-btn" data-view="att">🧑‍🏫 حضور الملاك</button>
     <button class="tab-btn" data-view="pex">🖨️ طباعة وتصدير</button>
+    <button class="tab-btn" data-view="dist">📑 جدول التربية</button>
     <button class="tab-btn" data-view="schedule">📅 الجداول</button>
     <button class="tab-btn" data-view="timings">⏰ تواقيت الدروس</button>
     <button class="tab-btn" data-view="apps">🚀 تطبيقات أخرى</button>
@@ -5033,6 +5036,7 @@ html[data-theme="night"] .teacher-ban-head{background:linear-gradient(135deg,rgb
   </section>
 
   <!-- TIMINGS -->
+  <section class="view" id="view-dist"></section>
   <section class="view" id="view-pex">
   <style id="pex-css">
     .pex-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0 10px}
@@ -5044,7 +5048,7 @@ html[data-theme="night"] .teacher-ban-head{background:linear-gradient(135deg,rgb
     .pex thead th:first-child{text-align:right;padding-inline-start:14px}
     .pex td{padding:9px 10px;border-top:1px solid var(--line,#e8edf7);vertical-align:middle}
     .pex tr.pex-group td{background:linear-gradient(90deg,#152549,#1e3a75 60%,#2a4d94);color:#f0d78c;font-weight:900;font-size:13.5px;padding:9px 14px;letter-spacing:.2px;border-top:none}
-    .pex tr.pex-group td small{color:#e2cef0;font-weight:700;font-size:11px;margin-inline-start:8px}
+    .pex tr.pex-group td small{color:#d1d8ed;font-weight:700;font-size:11px;margin-inline-start:8px}
     .pex-item{display:flex;align-items:center;gap:10px;min-width:0}
     .pex-ico{flex:none;width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:21px;background:linear-gradient(135deg,#eef3ff,#e0eaff);box-shadow:inset 0 0 0 1px rgba(27,42,74,.08)}
     html[data-theme="night"] .pex-ico{background:linear-gradient(135deg,#101d36,#0d1730)}
@@ -5060,16 +5064,16 @@ html[data-theme="night"] .teacher-ban-head{background:linear-gradient(135deg,rgb
     .pex-btn small{font-weight:800;opacity:.95}
     .pex-note{margin-top:10px;font-size:11.5px;color:var(--ink-soft,#5b6a8f);font-weight:700;line-height:1.9}
     /* بطاقات ربط جهاز المعلم: قسم مستقل أعلى مركز الطباعة والتصدير. */
-    .pex-qr-hub{position:relative;overflow:hidden;margin:8px 0 18px;border-radius:20px;color:#fff;background:linear-gradient(130deg,#0c244a 0%,#164982 52%,#4b0b77 100%);box-shadow:0 14px 34px rgba(10,42,83,.24);border:1px solid rgba(255,255,255,.14)}
+    .pex-qr-hub{position:relative;overflow:hidden;margin:8px 0 18px;border-radius:20px;color:#fff;background:linear-gradient(130deg,#0c244a 0%,#164982 52%,#102c7f 100%);box-shadow:0 14px 34px rgba(10,42,83,.24);border:1px solid rgba(255,255,255,.14)}
     .pex-qr-hub:before,.pex-qr-hub:after{content:"";position:absolute;z-index:0;border-radius:50%;pointer-events:none}.pex-qr-hub:before{width:310px;height:310px;left:-112px;bottom:-195px;background:rgba(255,255,255,.075)}.pex-qr-hub:after{width:210px;height:210px;right:-78px;top:-118px;background:rgba(244,207,111,.13)}
     .pex-qr-inner{position:relative;z-index:1;padding:20px 21px 18px}.pex-qr-top{display:flex;align-items:flex-start;gap:13px}.pex-qr-icon{flex:none;width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);box-shadow:0 8px 18px rgba(0,0,0,.16)}
-    .pex-qr-title{flex:1;min-width:0}.pex-qr-kicker{font-size:11px;font-weight:900;color:#ead7f7;letter-spacing:.2px}.pex-qr-title h3{margin:2px 0 4px;font-size:18px;line-height:1.4;color:#fff}.pex-qr-title p{margin:0;max-width:740px;font-size:12.5px;line-height:1.75;color:#f3e4fe}.pex-qr-count{flex:none;display:inline-flex;align-items:center;gap:5px;padding:6px 9px;border:1px solid rgba(255,255,255,.24);border-radius:999px;background:rgba(0,0,0,.16);font-size:11px;font-weight:900;white-space:nowrap}
+    .pex-qr-title{flex:1;min-width:0}.pex-qr-kicker{font-size:11px;font-weight:900;color:#dbe1f3;letter-spacing:.2px}.pex-qr-title h3{margin:2px 0 4px;font-size:18px;line-height:1.4;color:#fff}.pex-qr-title p{margin:0;max-width:740px;font-size:12.5px;line-height:1.75;color:#e9edf9}.pex-qr-count{flex:none;display:inline-flex;align-items:center;gap:5px;padding:6px 9px;border:1px solid rgba(255,255,255,.24);border-radius:999px;background:rgba(0,0,0,.16);font-size:11px;font-weight:900;white-space:nowrap}
     .pex-qr-status{display:inline-flex;align-items:center;gap:6px;margin:15px 0 11px;padding:7px 10px;border-radius:10px;font-size:12px;font-weight:900;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22)}.pex-qr-status.ok{background:rgba(62,213,153,.17);border-color:rgba(135,255,206,.38);color:#e5fff4}.pex-qr-status.lock{background:rgba(255,208,92,.15);border-color:rgba(255,222,143,.38);color:#fff2c8}
-    .pex-qr-points{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 14px}.pex-qr-point{min-width:0;padding:9px 10px;border-radius:11px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);font-size:11.5px;line-height:1.55}.pex-qr-point b{display:block;font-size:12px;color:#fff;margin-bottom:1px}.pex-qr-point span{color:#eadaf5}
-    .pex-qr-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.pex-qr-info-list{display:flex;flex-direction:column;gap:8px}.pex-qr-info-list>div{border:1px solid var(--line,#d8e2ee);border-radius:10px;padding:9px 10px;background:var(--paper,#fff)}.pex-qr-info-list b{display:block;color:var(--ink,#10284b);font-size:13px;margin-bottom:2px}.pex-qr-info-list span{display:block;color:var(--ink-soft,#61718b);font-size:12px;line-height:1.65}.pex-qr-btn{border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:10px 12px;font-family:inherit;font-size:12px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;transition:.15s;color:#fff;background:rgba(255,255,255,.11)}.pex-qr-btn:hover{transform:translateY(-1px);filter:brightness(1.08)}.pex-qr-btn:active{transform:scale(.97)}.pex-qr-btn.primary{color:#27093c;background:linear-gradient(135deg,#f4d173,#fff0b8);border-color:#ffebad}.pex-qr-btn.pdf{background:rgba(218,61,57,.85);border-color:rgba(255,211,211,.5)}.pex-qr-btn.download{background:rgba(111,18,175,.88);border-color:rgba(228,193,253,.42)}.pex-qr-btn.info{margin-inline-start:auto}.pex-qr-btn[disabled]{cursor:not-allowed;opacity:.48;filter:grayscale(.2);transform:none}
+    .pex-qr-points{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 14px}.pex-qr-point{min-width:0;padding:9px 10px;border-radius:11px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);font-size:11.5px;line-height:1.55}.pex-qr-point b{display:block;font-size:12px;color:#fff;margin-bottom:1px}.pex-qr-point span{color:#dde3f2}
+    .pex-qr-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.pex-qr-info-list{display:flex;flex-direction:column;gap:8px}.pex-qr-info-list>div{border:1px solid var(--line,#d8e2ee);border-radius:10px;padding:9px 10px;background:var(--paper,#fff)}.pex-qr-info-list b{display:block;color:var(--ink,#10284b);font-size:13px;margin-bottom:2px}.pex-qr-info-list span{display:block;color:var(--ink-soft,#61718b);font-size:12px;line-height:1.65}.pex-qr-btn{border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:10px 12px;font-family:inherit;font-size:12px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;transition:.15s;color:#fff;background:rgba(255,255,255,.11)}.pex-qr-btn:hover{transform:translateY(-1px);filter:brightness(1.08)}.pex-qr-btn:active{transform:scale(.97)}.pex-qr-btn.primary{color:#0b1941;background:linear-gradient(135deg,#f4d173,#fff0b8);border-color:#ffebad}.pex-qr-btn.pdf{background:rgba(218,61,57,.85);border-color:rgba(255,211,211,.5)}.pex-qr-btn.download{background:rgba(24,66,188,.88);border-color:rgba(204,214,242,.42)}.pex-qr-btn.info{margin-inline-start:auto}.pex-qr-btn[disabled]{cursor:not-allowed;opacity:.48;filter:grayscale(.2);transform:none}
     /* التصميم المختصر للبطاقة: عنوان + العدد + الأدوات + صورة التطبيق فقط. */
     .pex-qr-inner.pex-qr-minimal{display:grid;grid-template-columns:minmax(0,1fr) 174px;gap:14px;align-items:center;padding:16px 18px 16px 20px;min-height:198px}
-    .pex-qr-minimal .pex-qr-content{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:13px}.pex-qr-minimal .pex-qr-title h3{margin:0;color:#fff;font-size:21px;letter-spacing:.1px}.pex-qr-minimal .pex-qr-count{margin:0;align-self:flex-start;background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28);font-size:12px;padding:7px 11px}.pex-qr-minimal .pex-qr-actions{gap:7px}.pex-qr-minimal .pex-qr-btn{min-height:40px;padding:9px 11px}.pex-qr-phone{height:166px;align-self:stretch;overflow:hidden;border-radius:15px;border:1px solid rgba(255,255,255,.25);background:#240738;box-shadow:0 12px 22px rgba(0,0,0,.24)}.pex-qr-phone img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 48%}
+    .pex-qr-minimal .pex-qr-content{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:13px}.pex-qr-minimal .pex-qr-title h3{margin:0;color:#fff;font-size:21px;letter-spacing:.1px}.pex-qr-minimal .pex-qr-count{margin:0;align-self:flex-start;background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28);font-size:12px;padding:7px 11px}.pex-qr-minimal .pex-qr-actions{gap:7px}.pex-qr-minimal .pex-qr-btn{min-height:40px;padding:9px 11px}.pex-qr-phone{height:166px;align-self:stretch;overflow:hidden;border-radius:15px;border:1px solid rgba(255,255,255,.25);background:#09163c;box-shadow:0 12px 22px rgba(0,0,0,.24)}.pex-qr-phone img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 48%}
     @media (max-width:720px){.pex-qr-points{grid-template-columns:1fr}.pex-qr-count{display:none}.pex-qr-btn.info{margin-inline-start:0}.pex-qr-top{gap:10px}.pex-qr-inner{padding:17px 15px}.pex-qr-icon{width:46px;height:46px;font-size:24px}.pex-qr-inner.pex-qr-minimal{grid-template-columns:1fr 118px;gap:10px;padding:13px}.pex-qr-minimal .pex-qr-title h3{font-size:17px}.pex-qr-phone{height:150px;border-radius:13px}.pex-qr-minimal .pex-qr-actions{gap:6px}.pex-qr-minimal .pex-qr-btn{font-size:11px;padding:8px 9px;min-height:36px}}
     @media (max-width:620px){ .pex-btn{padding:8px 9px;font-size:11px} .pex-name small{display:none} .pex-qr-actions .pex-qr-btn{flex:1 1 calc(50% - 6px)} .pex-qr-actions .pex-qr-btn.info{flex-basis:100%} }
   </style>
@@ -7042,7 +7046,7 @@ async function downloadDirectFullSchedulePdfCore(isDemo, paper){
 
     // Professional Luxury Gradient Header: ultra-clear text with rich deep turquoise gradient
     const logoHtml = schoolLogo
-      ? `<div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:#ffffff;border-radius:8px;padding:2px;box-sizing:border-box;box-shadow:0 1px 4px rgba(0,0,0,0.3);"><img src="${schoolLogo}" style="max-width:100%;max-height:100%;object-fit:contain;" alt=""></div>`
+      ? `<div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:transparent;border-radius:0;padding:0;box-sizing:border-box;"><img src="${schoolLogo}" style="max-width:100%;max-height:100%;object-fit:contain;" alt=""></div>`
       : `<div style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.35);color:#fff;border-radius:10px;font-size:22px;">🏫</div>`;
 
     const headHtml = `
@@ -8038,7 +8042,7 @@ async function shareTeacherSchedule(teacherId){
     if(!h){
       h=document.createElement('div'); h.id='nbPrintHint'; h.className='no-print';
       h.setAttribute('role','alert');
-      h.style.cssText='position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:2147483646;max-width:min(560px,92vw);background:#1b0a2b;color:#fff;border:1.5px solid #c9a227;border-radius:16px;padding:12px 14px;box-shadow:0 14px 40px rgba(0,0,0,.4);font:inherit;font-size:13.5px;font-weight:800;line-height:1.7;direction:rtl;text-align:right;display:flex;gap:10px;align-items:center;flex-wrap:wrap';
+      h.style.cssText='position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:2147483646;max-width:min(560px,92vw);background:#0d1a46;color:#fff;border:1.5px solid #c9a227;border-radius:16px;padding:12px 14px;box-shadow:0 14px 40px rgba(0,0,0,.4);font:inherit;font-size:13.5px;font-weight:800;line-height:1.7;direction:rtl;text-align:right;display:flex;gap:10px;align-items:center;flex-wrap:wrap';
       h.innerHTML='<span style="flex:1 1 260px">🖨️ لم تُفتح نافذة الطباعة — يبدو أن هذا المتصفح لا يدعم الطباعة المباشرة. استعمل زر <b>PDF</b> ثم اطبع الملف، أو افتح البرنامج من متصفح Chrome.</span><button type="button" style="border:0;border-radius:10px;padding:7px 14px;background:#c9a227;color:#1a1404;font:inherit;font-weight:900;cursor:pointer">رجوع</button>';
       h.querySelector('button').addEventListener('click', function(){ try{ nibrasHidePrintOverlay(); }catch(e){} h.remove(); });
       document.documentElement.appendChild(h);
@@ -9265,7 +9269,7 @@ function makeGrid(days, periods, fill){
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ============================= NAV ============================= */
-const views = ['dash','demo','settings','teachers','subjects','build','full','att','pex','schedule','saved','timings','apps','about'];
+const views = ['dash','demo','settings','teachers','subjects','build','full','att','pex','dist','schedule','saved','timings','apps','about'];
 let currentViewName = 'dash';
 let viewStack = [];
 function isMobilePortrait(){
@@ -9357,6 +9361,7 @@ function showView(name, fromBack){
   if(name==='timings') renderTimingsTab();
   if(name==='att') renderAttendanceTab();
   if(name==='pex') renderPexTab();
+  if(name==='dist'){ try{ if(typeof window.nbDistRender==='function') window.nbDistRender(); }catch(e){} }
   if(name==='settings'){ setSettingsSubTab(settingsSubTab); }
   if(name==='teachers'){ renderDayExcludeChecks(); renderTeachersList(); setTeacherSubTab(teacherSubTab); }
   if(name==='subjects') renderSubjectsList();
@@ -11047,9 +11052,40 @@ function readImageKeepAlpha(file, done){
   if(!file) return;
   if(file.size > 3500000){ toast('الصورة كبيرة — اختر ملفًا أصغر من 3.5 م.ب','err'); return; }
   const reader = new FileReader();
-  reader.onload = function(){ done(reader.result); };
+  reader.onload = function(){ nbTrimLogoAlpha(reader.result, file.type, done); };
   reader.readAsDataURL(file);
 }
+/* الشعار الشفاف/المفرّغ: تبقى الشفافية كما هي (PNG)، وتُقصّ الحواف الشفافة الفارغة حول الشعار
+   حتى لا يظهر صغيرًا داخل مساحته. الصور غير الشفافة (JPG) تبقى كما هي دون أي تغيير. */
+function nbTrimLogoAlpha(dataUrl, type, done){
+  try{
+    if(/svg/i.test(type||'') || !/^data:image\/(png|webp|gif|avif)/i.test(dataUrl)){ done(dataUrl); return; }
+    const img = new Image();
+    img.onload = function(){
+      try{
+        const W0=img.naturalWidth||img.width, H0=img.naturalHeight||img.height;
+        if(!W0 || !H0){ done(dataUrl); return; }
+        const k=Math.min(1, 900/Math.max(W0,H0)), W=Math.max(1,Math.round(W0*k)), H=Math.max(1,Math.round(H0*k));
+        const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+        const cx=cv.getContext('2d'); cx.clearRect(0,0,W,H); cx.drawImage(img,0,0,W,H);
+        const px=cx.getImageData(0,0,W,H).data;
+        let x0=W, y0=H, x1=-1, y1=-1, transparent=0;
+        for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const a=px[(y*W+x)*4+3]; if(a>10){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } else transparent++; }
+        if(x1<0 || transparent<W*H*0.02){ done(dataUrl); return; }
+        const pad=Math.round(Math.max(x1-x0,y1-y0)*0.03);
+        x0=Math.max(0,x0-pad); y0=Math.max(0,y0-pad); x1=Math.min(W-1,x1+pad); y1=Math.min(H-1,y1+pad);
+        const w=x1-x0+1, h=y1-y0+1;
+        if(w>=W*0.97 && h>=H*0.97 && k===1){ done(dataUrl); return; }
+        const out=document.createElement('canvas'); out.width=w; out.height=h;
+        out.getContext('2d').drawImage(cv, x0,y0,w,h, 0,0,w,h);
+        done(out.toDataURL('image/png'));
+      }catch(e){ done(dataUrl); }
+    };
+    img.onerror = function(){ done(dataUrl); };
+    img.src = dataUrl;
+  }catch(e){ done(dataUrl); }
+}
+window.nbPrepLogo=function(file, done){ readImageKeepAlpha(file, done); };
 document.getElementById('inpLogo').addEventListener('change', e=>{
   const f = e.target.files[0]; if(!f) return;
   readImageKeepAlpha(f, function(data){
@@ -16664,7 +16700,7 @@ function buildTeacherTableHtml(teacherId){
 
 function printHeaderHtml(){
   const logo = DB.settings.logo
-    ? `<div class="logo-box"><img src="${DB.settings.logo}" alt=""></div>`
+    ? `<div class="logo-box has-img"><img src="${DB.settings.logo}" alt=""></div>`
     : `<div class="logo-box">🏫</div>`;
   const school = esc(DB.settings.schoolName || 'مدرستي');
   const title = esc(DB.settings.docTitle || 'الجدول الأسبوعي للدروس');
@@ -22315,6 +22351,7 @@ function pexDoPrint(it){
         break;
       }
       case 'by_day': nbPrintByDay(it.paper||'A4'); break;
+      case 'dist_form': if(typeof window.nbDistOpenPrint==='function') window.nbDistOpenPrint(); break;
       case 'all_teachers': {
         const ts=nbPexTeachersInSchedule().map(function(t){ return buildTeacherTableHtml(t.id); });
         /* مدرّسان في كل ورقة A4 لتوفير الورق (أو مدرّس واحد إن اختير ذلك من المعاينة) */
@@ -25036,7 +25073,7 @@ function nbPromoShow(){
     const st=document.createElement('style'); st.id='nbscan-style';
     st.textContent=[
       '#build-scan .nbs-hero{display:flex;gap:14px;align-items:flex-start}',
-      '#build-scan .nbs-hero .ico{flex:0 0 56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;background:linear-gradient(160deg,#3a1458,#1b0a2b);box-shadow:0 8px 20px rgba(27,10,43,.25),inset 0 0 0 2px rgba(201,162,39,.5)}',
+      '#build-scan .nbs-hero .ico{flex:0 0 56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;background:linear-gradient(160deg,#182a5f,#0c152e);box-shadow:0 8px 20px rgba(12,21,46,.25),inset 0 0 0 2px rgba(201,162,39,.5)}',
       '#build-scan .nbs-steps{display:grid;gap:12px}',
       '#build-scan .nbs-step{border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--paper-2)}',
       '#build-scan .nbs-step h3{margin:0 0 8px;font-size:15px;display:flex;align-items:center;gap:8px}',
@@ -25062,7 +25099,7 @@ function nbPromoShow(){
       '#build-scan .nbs-prev{overflow:auto;border:1px solid var(--line);border-radius:12px;margin-top:8px}',
       '#build-scan .nbs-prev table{border-collapse:collapse;width:100%;min-width:520px;font-size:12px}',
       '#build-scan .nbs-prev th,#build-scan .nbs-prev td{border:1px solid var(--line);padding:5px 4px;text-align:center}',
-      '#build-scan .nbs-prev th{background:#2a0f40;color:#fff}',
+      '#build-scan .nbs-prev th{background:#121f45;color:#fff}',
       '#build-scan .nbs-prev td b{display:block;font-size:12px}',
       '#build-scan .nbs-prev td span{display:block;font-size:10.5px;opacity:.75}',
       '#build-scan .nbs-prev td.clash{background:#fde2e2}',
@@ -26445,7 +26482,7 @@ function nbPromoShow(){
     injectUiCss();
     S=loadPrefs();
     var pg=parsePage(html);
-    S.paper=pg.paper; S.orient=pg.orient; S.margin=pg.margin; S.split='none'; S.rowScale=100; S.colW={}; S.rowH={}; S.mode='select'; S.edit=false; S.zoom=0; S.paint=false; S.elColors=[];
+    S.paper=pg.paper; S.orient=pg.orient; S.margin=pg.margin; S.split='none'; S.headH=100; S.footH=100; S.rowScale=100; S.colW={}; S.rowH={}; S.mode='select'; S.edit=false; S.zoom=0; S.paint=false; S.elColors=[];
     var root=document.createElement('div'); root.id='nbPvRoot'; root.setAttribute('role','dialog'); root.setAttribute('aria-label','معاينة قبل الطباعة');
     root.innerHTML=
       '<div class="nbpv-top">'+
@@ -26474,7 +26511,7 @@ function nbPromoShow(){
           grp('الاتجاه','<span class="nbpv-seg" data-seg="orient"><button type="button" data-val="portrait">▯ عمودي</button><button type="button" data-val="landscape">▭ أفقي</button></span>')+
           grp('الهوامش', rng('margin','',0,15,0.5,'مم'))+
           grp('قسمة الجدول على ورقتين','<span class="nbpv-seg" data-seg="split"><button type="button" data-val="none">بدون قص</button><button type="button" data-val="v">✂️ قص عمودي ⇆</button><button type="button" data-val="h">✂️ قص أفقي ⇅</button></span>')+
-          grp('ملاحظة','<span class="nbpv-note">القص العمودي: نصف أيمن وأيسر — الأفقي: علوي وسفلي. تُلصق الورقتان لتكوين جدول كبير.</span>')+
+          grp('ملاحظة','<span class="nbpv-note">القص يكون عند حدود عمود (أو صف) كامل — لا ينقسم أي عمود بين الورقتين. تُلصق الورقتان لتكوين جدول كبير.</span>')+
         '</div>'+
         '<div class="nbpv-pane" data-pane="teach">'+
           grp('اسم المدرّس','<span class="nbpv-seg" data-seg="teach"><button type="button" data-val="show">👁️ إظهار</button><button type="button" data-val="hide">🚫 إخفاء</button></span>')+
@@ -26513,6 +26550,8 @@ function nbPromoShow(){
         '</div>'+
         '<div class="nbpv-pane" data-pane="text">'+
           grp('تحرير مباشر','<button type="button" class="nbpv-rb" data-a="edit">✏️ تحرير النصوص</button>')+
+          grp('ارتفاع الترويسة (رأس الورقة)', rng('headH','',40,260,5,'%'))+
+          grp('ارتفاع الذيل (التوقيعات)', rng('footH','',40,260,5,'%'))+
           grp('ألوان الترويسة', sw('headBg','خلفية')+sw('headFg','نص'))+
           grp('ملاحظة','<span class="nbpv-note">المس أي نص في الورقة (الترويسة، العناوين، المواد، التوقيعات) وعدّله. التعديل للطباعة وPDF والإكسل فقط.</span>')+
         '</div>'+
@@ -26642,7 +26681,7 @@ function nbPromoShow(){
     if(a==='resetdim'){ S.colW={}; S.rowH={}; S.rowScale=100; PV.sel=null; syncUI(); schedule(true); return; }
     if(a==='resetall'){
       for(var k in DEF) S[k]=(k==='subjColors'||k==='clsColors')?{}:DEF[k];
-      S.split='none'; S.rowScale=100; S.colW={}; S.rowH={}; S.edit=false; S.paint=false; S.elColors=[]; PV.sel=null;
+      S.split='none'; S.headH=100; S.footH=100; S.rowScale=100; S.colW={}; S.rowH={}; S.edit=false; S.paint=false; S.elColors=[]; PV.sel=null;
       savePrefs(); applyModeClass();
       if(PV.it0){ var o=PV.it0; S.paper=o.__p.paper; S.orient=o.__p.orient; S.margin=o.__p.margin; syncUI(); recapture(Object.assign({}, o)); return; }
       syncUI(); if(PV.html) loadDoc(PV.html, PV.kind, false);
@@ -26850,6 +26889,13 @@ function nbPromoShow(){
         }
       });
     });
+    /* رأس الورقة وذيلها (للتحكم بالارتفاع) */
+    info.pheads=[]; info.pfeet=[];
+    PV.units.forEach(function(u){
+      var pick=function(sel, arr){ Array.prototype.forEach.call(u.el.querySelectorAll(sel), function(x){ if(x.closest('table')) return; for(var i=0;i<arr.length;i++){ if(arr[i].el.contains(x)||x.contains(arr[i].el)) return; } arr.push({el:x, h:x.offsetHeight}); }); };
+      pick('.master-abs-head, .print-head, .print-header, .hd, .ps-head, .dpage.first .info', info.pheads);
+      pick('.master-abs-foot, .print-foot, .print-footer, .ft, .ps-foot, .foot', info.pfeet);
+    });
     PV.info=info;
     try{ collectClsInfo(); }catch(e){ PV.info.cls=[]; PV.info.clsSeen={}; }
   }
@@ -26954,6 +27000,8 @@ function nbPromoShow(){
     var css='';
     if(S.family){ css+='#nbpvZoom .nbpv-sheet *{font-family:"'+S.family.replace(/"/g,'')+'",Tahoma,Arial,sans-serif!important}'; }
     dyn.textContent=css;
+    var hf=function(list, k){ if(!list || k===100) return; list.forEach(function(x){ if(!x.h) x.h=x.el.offsetHeight; if(!x.h) return; var h=(x.h*k/100).toFixed(1)+'px'; setI(x.el,'height',h); setI(x.el,'min-height',h); setI(x.el,'max-height',h); setI(x.el,'box-sizing','border-box'); setI(x.el,'flex','0 0 auto'); if(k<100) setI(x.el,'overflow','hidden'); }); };
+    hf(I.pheads, S.headH||100); hf(I.pfeet, S.footH||100);
     if(S.fontT!==100) I.textT.forEach(function(x){ setI(x.el,'font-size',(x.fs*S.fontT/100).toFixed(2)+'px'); });
     if(S.fontH!==100) I.textH.forEach(function(x){ setI(x.el,'font-size',(x.fs*S.fontH/100).toFixed(2)+'px'); });
     if(S.thBg) I.th.forEach(function(x){ setI(x,'background',S.thBg); });
@@ -27037,7 +27085,7 @@ function nbPromoShow(){
     zoom.innerHTML='';
     var paperChanged=(S.paper!==PV.orig.paper || S.orient!==PV.orig.orient || split!=='none' || S.margin!==PV.orig.margin);
     var boxW=(d.W-2*d.m)*MM, boxH=(d.H-2*d.m)*MM;
-    var vW=boxW*(split==='v'?2:1), vH=boxH*(split==='h'?2:1);
+    var vW=boxW*(split==='v'?((PV.cut&&PV.cut.ax==='v')?PV.cut.mul:2):1), vH=boxH*(split==='h'?((PV.cut&&PV.cut.ax==='h')?PV.cut.mul:2):1);
     PV.sheets=[];
     var fits=[];
     PV.units.forEach(function(u, ui){
@@ -27077,26 +27125,94 @@ function nbPromoShow(){
         var s=Math.min(vW/nw, vH/nh); if(!paperChanged) s=Math.min(1, s);
         u.fitEl.style.width=nw+'px'; u.fitEl.style.height=nh+'px';
         u.fitEl.style.transform='scale('+s+')';
-        u.fitEl.style.right=Math.max(0,(vW-nw*s)/2)+'px';
-        u.fitEl.style.top=(split!=='none'?Math.max(0,(vH-nh*s)/2):0)+'px';
+        u.fitEl.style.right=(split==='v'&&PV.cut)?'0px':(Math.max(0,(vW-nw*s)/2)+'px');
+        u.fitEl.style.top=(split==='h'&&PV.cut)?'0px':((split!=='none'?Math.max(0,(vH-nh*s)/2):0)+'px');
       }
     });
+  }
+  /* القص عند حدود عمود (قص عمودي) أو صف (قص أفقي) كامل: لا تنقسم خلية بين الورقتين.
+     1) نقيس حدود الأعمدة/الصفوف في الجدول الرئيسي ونختار الحد الأقرب لمنتصف المحتوى.
+     2) نعيد الملاءمة بعرض افتراضي يجعل الجزأين كلٌّ منهما بعرض ورقة كحد أقصى.
+     3) الورقة الأولى تُخفى فيها بقية الأعمدة بعد الحد، والثانية تبدأ من الحد نفسه. */
+  function cutEdges(sh, ax){
+    var virt=sh.virt||sh.el.querySelector('.nbpv-virt'); if(!virt) return null;
+    var vr=virt.getBoundingClientRect(); if(!vr.width || !vr.height) return null;
+    var tables=Array.prototype.slice.call(virt.querySelectorAll('table')); if(!tables.length) return null;
+    var best=null, ba=0; tables.forEach(function(t){ var r=t.getBoundingClientRect(), a=r.width*r.height; if(a>ba){ ba=a; best=t; } });
+    if(!best) return null;
+    var tr=best.getBoundingClientRect();
+    /* حدود المحتوى كله (الجدول + الترويسة) لنسب القص */
+    var kids=Array.prototype.slice.call(virt.querySelectorAll('*')).filter(function(x){ return x.offsetWidth||x.offsetHeight; });
+    var cL=tr.left, cR=tr.right, cT=tr.top, cB=tr.bottom;
+    kids.forEach(function(x){ var r=x.getBoundingClientRect(); if(!r.width||!r.height) return; if(r.left<cL) cL=r.left; if(r.right>cR) cR=r.right; if(r.top<cT) cT=r.top; if(r.bottom>cB) cB=r.bottom; });
+    cL=Math.max(cL, vr.left); cR=Math.min(cR, vr.right); cT=Math.max(cT, vr.top); cB=Math.min(cB, vr.bottom);
+    var edges=[];
+    if(ax==='v'){
+      Array.prototype.forEach.call(best.rows, function(row){ Array.prototype.forEach.call(row.cells, function(c){ var r=c.getBoundingClientRect(); if(r.width) edges.push(r.left); }); });
+    } else {
+      Array.prototype.forEach.call(best.rows, function(row){ var r=row.getBoundingClientRect(); if(r.height) edges.push(r.bottom); });
+    }
+    return {vr:vr, cL:cL, cR:cR, cT:cT, cB:cB, edges:edges, z:vr.width/(virt.offsetWidth||vr.width)};
+  }
+  function pickCut(m, ax){
+    var size=ax==='v'?(m.cR-m.cL):(m.cB-m.cT); if(size<=0) return null;
+    var bestF=null, bestD=9;
+    m.edges.forEach(function(e){
+      var f=ax==='v'?(m.cR-e)/size:(e-m.cT)/size;   /* نسبة الجزء الأول (الأيمن/العلوي) */
+      if(f<0.2 || f>0.8) return;
+      var dd=Math.abs(f-0.5); if(dd<bestD-1e-6){ bestD=dd; bestF=f; }
+    });
+    return bestF;
   }
   function applySplitClones(){
     var split=PV.units.some(function(u){ return u.type==='flow'; })?'none':S.split;
     if(split==='none') return;
     var d=sheetDims(), doc=PV.doc, zoom=PV.zoomEl;
+    var boxW=(d.W-2*d.m)*MM, boxH=(d.H-2*d.m)*MM;
+    /* الخطوة ١–٢: إيجاد حد القص وإعادة الملاءمة مرة واحدة */
+    try{
+      var m0=PV.sheets[0] && cutEdges(PV.sheets[0], split), f0=m0 && pickCut(m0, split);
+      if(f0){
+        PV.cut={ax:split, f:f0, mul:Math.max(1, Math.min(2, 1/Math.max(f0, 1-f0)))};
+        applyLayout(); applyStyles(); markSel();
+      }
+    }catch(e){ PV.cut=null; }
     var list=PV.sheets.slice(); PV.sheets=[];
     list.forEach(function(sh){
+      /* موضع القص الفعلي بعد إعادة الملاءمة (بوحدات الورقة غير المكبّرة) */
+      var cutPx=null;
+      try{
+        if(PV.cut){
+          var m=cutEdges(sh, split), f=m && pickCut(m, split);
+          if(m && f){
+            var vr=m.vr, z=m.z||1;
+            cutPx = split==='v' ? (vr.right-(m.cR-f*(m.cR-m.cL)))/z : ((m.cT+f*(m.cB-m.cT))-vr.top)/z;
+            /* نلتقط الحد الحقيقي الأقرب (لا النسبة التقريبية) */
+            var exact=null, dmin=1e9;
+            m.edges.forEach(function(e){ var px=split==='v'?(vr.right-e)/z:(e-vr.top)/z; var dd=Math.abs(px-cutPx); if(dd<dmin){ dmin=dd; exact=px; } });
+            if(exact!=null) cutPx=exact;
+            var lim=split==='v'?boxW:boxH; if(cutPx>lim+0.5 || cutPx<lim*0.2) cutPx=null;
+          }
+        }
+      }catch(e){ cutPx=null; }
       var b=sh.el.cloneNode(true);
       Array.prototype.forEach.call(b.querySelectorAll('[id]'), function(x){ x.setAttribute('data-nbpv-id', x.id); });
       b.classList.add('nbpv-clone');
       var bv=b.querySelector('.nbpv-virt');
-      if(split==='v'){ bv.style.right=(-(d.W-2*d.m))+'mm'; }
-      else { bv.style.top=(-(d.H-2*d.m))+'mm'; }
+      if(split==='v'){ bv.style.right=(cutPx!=null?(-cutPx)+'px':(-(d.W-2*d.m))+'mm'); }
+      else { bv.style.top=(cutPx!=null?(-cutPx)+'px':(-(d.H-2*d.m))+'mm'); }
       zoom.insertBefore(b, sh.el.nextSibling);
-      var ba=doc.createElement('div'); ba.className='nbpv-badge'; ba.textContent=split==='v'?'الورقة ١ — النصف الأيمن':'الورقة ١ — النصف العلوي'; sh.el.appendChild(ba);
-      var bb=doc.createElement('div'); bb.className='nbpv-badge'; bb.textContent=split==='v'?'الورقة ٢ — النصف الأيسر':'الورقة ٢ — النصف السفلي'; b.appendChild(bb);
+      /* الورقة الأولى: إخفاء ما بعد حد القص حتى لا يظهر جزء من العمود التالي */
+      if(cutPx!=null){
+        var box=sh.el.querySelector('.nbpv-box');
+        if(box){
+          var mk=doc.createElement('div'); mk.className='nbpv-cutmask';
+          mk.style.cssText='position:absolute;background:#fff;z-index:5;-webkit-print-color-adjust:exact;print-color-adjust:exact;'+(split==='v'?('top:0;bottom:0;left:0;width:'+Math.max(0,boxW-cutPx)+'px'):('left:0;right:0;bottom:0;height:'+Math.max(0,boxH-cutPx)+'px'));
+          box.appendChild(mk);
+        }
+      }
+      var ba=doc.createElement('div'); ba.className='nbpv-badge'; ba.textContent=split==='v'?'الورقة ١ — الجزء الأيمن':'الورقة ١ — الجزء العلوي'; sh.el.appendChild(ba);
+      var bb=doc.createElement('div'); bb.className='nbpv-badge'; bb.textContent=split==='v'?'الورقة ٢ — الجزء الأيسر':'الورقة ٢ — الجزء السفلي'; b.appendChild(bb);
       PV.sheets.push(sh, {el:b, unit:sh.unit, clone:true});
     });
   }
@@ -27108,6 +27224,7 @@ function nbPromoShow(){
     var hasFlow=PV.units.some(function(u){ return u.type==='flow'; });
     var pst=PV.doc.getElementById('nbpv-page');
     if(pst) pst.textContent='@page{size:'+d.W+'mm '+d.H+'mm;margin:'+(hasFlow?d.m:0)+'mm}'+(hasFlow?'@media print{.nbpv-sheet.flow{width:auto!important;padding:0!important;min-height:0!important}}':'@media print{.nbpv-sheet{height:'+(d.H-0.6)+'mm!important}}');
+    PV.cut=null;
     applyStyles();
     applyDims();
     applyLayout();
@@ -27750,7 +27867,7 @@ function nbPromoShow(){
     var st=document.createElement('style'); st.id='nbjoint-style';
     st.textContent=
       '#build-joint .nbj-head{display:flex;gap:14px;align-items:center;flex-wrap:wrap}'+
-      '#build-joint .nbj-ico{flex:0 0 52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:26px;background:linear-gradient(160deg,#3a1458,#1b0a2b);border:1.5px solid rgba(201,162,39,.6);box-shadow:0 8px 20px rgba(27,10,43,.25)}'+
+      '#build-joint .nbj-ico{flex:0 0 52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:26px;background:linear-gradient(160deg,#182a5f,#0c152e);border:1.5px solid rgba(201,162,39,.6);box-shadow:0 8px 20px rgba(12,21,46,.25)}'+
       '#build-joint .nbj-ttl{flex:1 1 260px;min-width:0}#build-joint .nbj-ttl h2{margin:0 0 3px}'+
       '#build-joint .nbj-note{font-size:12.5px;line-height:1.85;opacity:.85}'+
       '#build-joint .nbj-seg{display:inline-flex;background:rgba(0,0,0,.07);border-radius:999px;padding:3px;gap:3px}'+
@@ -27765,19 +27882,19 @@ function nbPromoShow(){
       'html[data-theme="night"] #build-joint .nbj-badge.g{color:#7fe0a8}'+
       '#build-joint .nbj-tbl{width:100%;border-collapse:separate;border-spacing:0 8px}'+
       '#build-joint .nbj-tbl th{font-size:12.5px;font-weight:900;text-align:right;padding:2px 12px;opacity:.75}'+
-      '#build-joint .nbj-tbl td{background:var(--input-bg,#fff);padding:11px 12px;border-top:1px solid var(--line,#e3dbea);border-bottom:1px solid var(--line,#e3dbea);vertical-align:middle}'+
-      '#build-joint .nbj-tbl td:first-child{border-right:1px solid var(--line,#e3dbea);border-radius:0 14px 14px 0}'+
-      '#build-joint .nbj-tbl td:last-child{border-left:1px solid var(--line,#e3dbea);border-radius:14px 0 0 14px}'+
+      '#build-joint .nbj-tbl td{background:var(--input-bg,#fff);padding:11px 12px;border-top:1px solid var(--line,#dde0e8);border-bottom:1px solid var(--line,#dde0e8);vertical-align:middle}'+
+      '#build-joint .nbj-tbl td:first-child{border-right:1px solid var(--line,#dde0e8);border-radius:0 14px 14px 0}'+
+      '#build-joint .nbj-tbl td:last-child{border-left:1px solid var(--line,#dde0e8);border-radius:14px 0 0 14px}'+
       '#build-joint .nbj-tbl tr.on td{background:linear-gradient(90deg,rgba(39,174,96,.06),rgba(39,174,96,.13));border-color:rgba(39,174,96,.45)}'+
       '#build-joint .nbj-tbl tr.bad td{border-color:var(--danger,#b23b3b)}'+
       '#build-joint .nbj-t{display:flex;align-items:center;gap:10px;min-width:150px}'+
-      '#build-joint .nbj-av{flex:0 0 38px;height:38px;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:16px;color:#fff;background:linear-gradient(150deg,#5a2a8c,#2a0e47);box-shadow:inset 0 0 0 1.5px rgba(230,198,101,.6)}'+
+      '#build-joint .nbj-av{flex:0 0 38px;height:38px;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:16px;color:#fff;background:linear-gradient(150deg,#314b97,#11204d);box-shadow:inset 0 0 0 1.5px rgba(230,198,101,.6)}'+
       '#build-joint .nbj-t b{display:block;font-size:14.5px}#build-joint .nbj-t small{display:block;font-size:11.5px;opacity:.7;font-weight:800}'+
       '#build-joint .nbj-subj{display:inline-flex;flex-direction:column;gap:2px}#build-joint .nbj-subj b{font-size:14px}'+
-      '#build-joint .nbj-stg{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:900;background:rgba(90,42,140,.10);color:#4b2378}'+
-      'html[data-theme="night"] #build-joint .nbj-stg{background:rgba(180,150,255,.14);color:#d2c2ff}'+
+      '#build-joint .nbj-stg{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:900;background:rgba(49,75,151,.10);color:#294082}'+
+      'html[data-theme="night"] #build-joint .nbj-stg{background:rgba(171,187,234,.14);color:#d0d8f1}'+
       '#build-joint .nbj-secs{display:flex;gap:8px;flex-wrap:wrap}'+
-      '#build-joint .nbj-sec{position:relative;min-width:50px;height:50px;padding:0 8px;border-radius:14px;border:2px solid var(--line,#d8cce6);background:var(--input-bg,#fff);color:inherit;font:inherit;font-weight:900;font-size:19px;cursor:pointer;display:grid;place-items:center;transition:transform .1s, background .15s, border-color .15s;line-height:1}'+
+      '#build-joint .nbj-sec{position:relative;min-width:50px;height:50px;padding:0 8px;border-radius:14px;border:2px solid var(--line,#cfd4e3);background:var(--input-bg,#fff);color:inherit;font:inherit;font-weight:900;font-size:19px;cursor:pointer;display:grid;place-items:center;transition:transform .1s, background .15s, border-color .15s;line-height:1}'+
       '#build-joint .nbj-sec small{position:absolute;bottom:3px;left:0;right:0;font-size:9.5px;font-weight:800;opacity:.65}'+
       '#build-joint .nbj-sec:active{transform:scale(.95)}'+
       '#build-joint .nbj-sec.on{background:linear-gradient(160deg,#34c77b,#1f9d5c);border-color:#1b8a50;color:#fff;box-shadow:0 6px 16px rgba(31,157,92,.35)}'+
@@ -27791,7 +27908,7 @@ function nbPromoShow(){
       '#build-joint .nbj-empty{text-align:center;padding:26px 12px;opacity:.8;font-weight:800;line-height:2}'+
       '#build-joint .nbj-off{opacity:.5;pointer-events:none;filter:grayscale(.35)}'+
       '@media (max-width:760px){#build-joint .nbj-tbl thead{display:none}#build-joint .nbj-tbl,#build-joint .nbj-tbl tbody,#build-joint .nbj-tbl tr,#build-joint .nbj-tbl td{display:block;width:100%}'+
-      '#build-joint .nbj-tbl tr{margin-bottom:10px;border:1px solid var(--line,#e3dbea);border-radius:14px;overflow:hidden}'+
+      '#build-joint .nbj-tbl tr{margin-bottom:10px;border:1px solid var(--line,#dde0e8);border-radius:14px;overflow:hidden}'+
       '#build-joint .nbj-tbl td{border:0!important;border-radius:0!important;padding:8px 12px}}'+
       '';
     document.head.appendChild(st);
@@ -28080,7 +28197,7 @@ function nbPromoShow(){
       'html.nb-manual-mode #fullMasterWrap .nbm-pick .m-cell,html.nb-manual-mode #fullMasterWrap .bc-line.nbm-pick{outline:3px solid #c9a227!important;outline-offset:-3px;box-shadow:0 0 0 3px rgba(201,162,39,.35) inset}'+
       'html.nb-manual-mode #fullMasterWrap .nbm-flash .m-cell,html.nb-manual-mode #fullMasterWrap .bc-line.nbm-flash{animation:nbmFlash 1s ease}'+
       '@keyframes nbmFlash{0%{background:rgba(201,162,39,.55)}100%{background:transparent}}'+
-      '.nbm-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 8px;padding:9px 12px;border-radius:14px;background:linear-gradient(135deg,#3a1458,#1b0a2b);color:#fff;box-shadow:0 6px 18px rgba(27,10,43,.22),inset 0 0 0 1.5px rgba(201,162,39,.55)}'+
+      '.nbm-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 8px;padding:9px 12px;border-radius:14px;background:linear-gradient(135deg,#182a5f,#0c152e);color:#fff;box-shadow:0 6px 18px rgba(12,21,46,.22),inset 0 0 0 1.5px rgba(201,162,39,.55)}'+
       '.nbm-bar .ttl{font-weight:900;font-size:14.5px;white-space:nowrap}'+
       '.nbm-bar .ttl small{display:block;font-size:11px;font-weight:700;opacity:.8}'+
       '.nbm-bar .st{display:flex;gap:6px;flex-wrap:wrap;flex:1 1 auto}'+
@@ -28107,7 +28224,7 @@ function nbPromoShow(){
       '.nbm-pop .ft button.clr{border-color:rgba(192,57,43,.45);color:var(--danger,#c0392b)}'+
       '.nbm-pop .empty{font-size:12.5px;font-weight:800;opacity:.8;padding:6px 2px;line-height:1.8}'+
       '@media (max-width:600px){.nbm-pop{left:10px!important;right:10px!important;width:auto;top:auto!important;bottom:10px!important;max-height:70vh}}'+
-      '.nbm-alert{position:fixed;top:0;right:0;bottom:0;left:0;z-index:100000;background:rgba(15,8,24,.55);display:flex;align-items:center;justify-content:center;padding:16px}'+
+      '.nbm-alert{position:fixed;top:0;right:0;bottom:0;left:0;z-index:100000;background:rgba(9,14,26,.55);display:flex;align-items:center;justify-content:center;padding:16px}'+
       '.nbm-alert-box{max-width:440px;width:100%;background:var(--paper-2,#fff);color:var(--ink,#1b2a4a);border-radius:18px;padding:20px 18px 16px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.35);border-top:5px solid #e0a800}'+
       '.nbm-alert-box .ic{font-size:34px;line-height:1}.nbm-alert-box .tx{font-weight:800;font-size:15px;line-height:1.9;margin:10px 0 14px}'+
       '.nbm-alert-box .btn{min-width:120px}';
@@ -28391,6 +28508,748 @@ function nbPromoShow(){
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', hook); else hook();
 })();
 
+/* =========================================================================
+   قسم «📑 جدول توزيع الحصص» — نسخة طبق الأصل من الاستمارة الرسمية
+   - الترويسة: ثلاث شعارات + حقول المديرية والمدرسة والدوام والعام الدراسي
+   - الجدول: التسلسل، الاسم، العنوان الوظيفي، الاختصاص، المواد التي يدرسها،
+     ثم أعمدة «الصف والشعبة» بكتابة عمودية مختصرة (خامس أ، سادس ب…)
+     وفي كل خانة عدد حصص المدرّس للشعبة (من النصاب) + عمود المجموع + سطر مجموع الحصص
+   - الجانب: الملاحظات، ملاك المدرسة، مجموع الحصص لكل مادة، الصفوف/الشعب/التلاميذ
+   - الذيل: يعمل بموجبه اعتبارًا من… والأسباب الموجبة للتغيير ومدير المدرسة
+   الحقول قابلة للكتابة على الشاشة وتُحفظ في DB.distForm (لا تُنشأ إلا عند أول تعديل).
+   الطباعة/PDF عبر واجهة المعاينة. لا يغيّر أي بيانات أخرى ولا التوليد.
+   ========================================================================= */
+(function(){
+  'use strict';
+  var $=function(id){ return document.getElementById(id); };
+  var E=function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  var T=function(m,k){ try{ toast(m,k); }catch(e){} };
+
+  /* ───────────── البيانات ───────────── */
+  function F(){ return (DB && DB.distForm && typeof DB.distForm==='object') ? DB.distForm : {}; }
+  function ensureF(){ if(!DB.distForm || typeof DB.distForm!=='object') DB.distForm={f:{}, t:{}, st:{}, logos:{}, digits:''}; ['f','t','st','logos'].forEach(function(k){ if(!DB.distForm[k] || typeof DB.distForm[k]!=='object') DB.distForm[k]={}; }); return DB.distForm; }
+  var saveTimer=0;
+  function saveSoon(){ clearTimeout(saveTimer); saveTimer=setTimeout(function(){ try{ saveDB(); }catch(e){} }, 400); }
+  function digitsMode(){ var d=F().digits; if(d==='en'||d==='ar') return d; return 'ar'; }
+  function num(n){
+    var s=String(n==null?'':n);
+    if(digitsMode()==='ar') s=s.replace(/[0-9]/g,function(c){ return '٠١٢٣٤٥٦٧٨٩'[+c]; });
+    else s=s.replace(/[٠-٩]/g,function(c){ return String('٠١٢٣٤٥٦٧٨٩'.indexOf(c)); });
+    return s;
+  }
+  function toInt(v){ var s=String(v==null?'':v).replace(/[٠-٩]/g,function(c){ return String('٠١٢٣٤٥٦٧٨٩'.indexOf(c)); }).replace(/[^\d]/g,''); return s?parseInt(s,10):0; }
+  function term(){ try{ var t=schoolTerms(); return (t && t.one) ? String(t.one).replace(/^ال/,'') : 'معلم'; }catch(e){ return 'معلم'; } }
+  function moeLogo(){ try{ var im=document.querySelector('#splashGate .splash-moe'); return (im && im.getAttribute('src'))||''; }catch(e){ return ''; } }
+  function defaultYear(){ var y=String((DB.settings&&DB.settings.academicYear)||'').match(/\d{4}/g); if(y && y.length>=2) return y[0]+' – '+y[1]; if(y && y.length===1) return y[0]+' – '+(+y[0]+1); var n=new Date().getFullYear(); return n+' – '+(n+1); }
+  function timingsText(){
+    try{ var tg=DB.timings||{}, m=(tg.shiftMode==='evening'?tg.evening:tg.morning)||{}; if(m.firstStart) return 'يبدأ الساعة '+m.firstStart; }catch(e){}
+    return '';
+  }
+  function shiftText(){
+    try{ var md=(DB.timings||{}).shiftMode; return md==='evening'?'مسائي':(md==='both'?'صباحي ومسائي':'صباحي'); }catch(e){ return ''; }
+  }
+  /* اختصار اسم الصف والشعبة: «خامس أ»، وعند تشابه المراحل «رابع ع أ» */
+  function shortStage(stage, all){
+    /* «الرابع العلمي» ← «رابع علمي»، «السادس الأدبي» ← «سادس أدبي»، «الخامس» ← «خامس»، «الأول المتوسط» ← «أول» */
+    var LEVEL={'ابتدائي':1,'الابتدائي':1,'متوسط':1,'المتوسط':1,'اعدادي':1,'الاعدادي':1,'إعدادي':1,'الإعدادي':1,'ثانوي':1,'الثانوي':1};
+    var w=String(stage.name||'').trim().split(/\s+/);
+    var out=(w[0]||'').replace(/^ال/,'');
+    for(var i=1;i<w.length;i++){ if(LEVEL[w[i]]) continue; out+=' '+w[i].replace(/^ال/,''); }
+    return out;
+  }
+  function model(){
+    var stages=DB.stages||[], cls=[];
+    stages.forEach(function(st){ var sh=shortStage(st, stages); (st.sections||[]).forEach(function(sec){ cls.push({key:classKeyOf(st.id,sec.id), stageId:st.id, sectionId:sec.id, short:sh+' '+String(sec.name||'').trim(), label:st.name+' / '+sec.name}); }); });
+    var subj={}; (DB.subjects||[]).forEach(function(s){ subj[s.id]=s; });
+    var byT={}, order=[];
+    (DB.teachers||[]).forEach(function(t){ byT[t.id]={t:t, subs:[], subMap:{}, total:0}; order.push(t.id); });
+    var colTot={}, subjTot={}, grand=0;
+    (DB.assignments||[]).forEach(function(a){
+      var n=parseInt(a.periodsPerWeek,10)||0; if(n<=0 || !a.teacherId || !byT[a.teacherId] || !subj[a.subjectId]) return;
+      var k=classKeyOf(a.stageId,a.sectionId); if(!cls.some(function(c){ return c.key===k; })) return;
+      var T0=byT[a.teacherId];
+      if(!T0.subMap[a.subjectId]){ T0.subMap[a.subjectId]={sid:a.subjectId, name:subj[a.subjectId].name, per:{}, total:0}; T0.subs.push(T0.subMap[a.subjectId]); }
+      var S0=T0.subMap[a.subjectId]; S0.per[k]=(S0.per[k]||0)+n; S0.total+=n; T0.total+=n;
+      colTot[k]=(colTot[k]||0)+n; subjTot[a.subjectId]=(subjTot[a.subjectId]||0)+n; grand+=n;
+    });
+    var rows=order.map(function(id){ return byT[id]; });
+    return {cls:cls, rows:rows, byT:byT, colTot:colTot, subjTot:subjTot, grand:grand, subj:subj};
+  }
+
+  /* ───────────── الحقول القابلة للكتابة ───────────── */
+  var EDIT=false;
+  function fv(key, def){ var f=F().f||{}; return (f[key]!=null && f[key]!=='') ? f[key] : (def||''); }
+  function fld(key, def, cls){
+    var v=fv(key, def);
+    if(EDIT) return '<span class="ed '+(cls||'')+'" contenteditable="true" data-f="'+E(key)+'" spellcheck="false">'+E(v)+'</span>';
+    return '<span class="ed '+(cls||'')+(v?'':' dots')+'">'+(v?E(v):'')+'</span>';
+  }
+  function tfield(tid, k, def){
+    var t=(F().t||{})[tid]||{}, v=(t[k]!=null && t[k]!=='')?t[k]:def;
+    if(EDIT) return '<span class="ed" contenteditable="true" data-t="'+E(tid)+'" data-tk="'+k+'" spellcheck="false">'+E(v)+'</span>';
+    return E(v);
+  }
+  function nfield(key, def){
+    var v=fv(key, def==null?'':String(def));
+    if(EDIT) return '<span class="ed n" contenteditable="true" data-f="'+E(key)+'" data-num="1" spellcheck="false">'+E(v===''?'':num(v))+'</span>';
+    return v===''?'':num(v);
+  }
+  function logoSlot(pos, def){
+    var src=(F().logos||{})[pos]||def||'';
+    var img=src?'<img src="'+E(src)+'" alt="">':'';
+    if(EDIT) return '<div class="lg lg-'+pos+(src?'':' empty')+'"><label title="اضغط لاختيار الشعار" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;cursor:pointer">'+(img||'<span>＋ شعار</span>')+'<input type="file" accept="image/*" data-logo="'+pos+'" hidden></label>'+(src?'<button type="button" class="lg-x" data-logo-x="'+pos+'" title="إزالة الشعار" style="top:0;left:0">×</button>':'')+'</div>';
+    return '<div class="lg lg-'+pos+'">'+img+'</div>';
+  }
+
+  /* ───────────── بناء الورقة (نفس البناء للشاشة والطباعة) — مطابق للاستمارة الرسمية ─────────────
+     • 14 عمودًا على الأقل تحت «الصف والشعبة» (أبيض/أزرق بالتناوب) والأسماء عمودية مختصرة
+     • لكل مدرّس كتلة من 4 أسطر (أو أكثر إذا كانت مواده أكثر): مادة في كل سطر وأرقامها مقابلها
+     • 10 كتل في الصفحة الأولى، وتُكمَّل الأسطر الفارغة كما في الاستمارة
+     • «مجموع الحصص» في الأسفل، والمجموع الكلي في الخانة المدمجة لآخر عمودين */
+  var LINES=4, FIRST_LINES=40, NEXT_LINES=50, MIN_COLS=14;
+  function pagesHtml(){
+    var M=model(), C=M.cls, nC=C.length, settings=DB.settings||{};
+    var cols=Math.max(MIN_COLS, nC+2);
+    /* المدرّسون كلهم من قسم المدرّسين (بترتيبهم) */
+    var rows=(DB.teachers||[]).map(function(t){ return M.byT[t.id]; }).filter(Boolean);
+    var linesOf=function(r){ return Math.max(1, r.subs.length); };
+    /* توزيع الكتل على الصفحات حسب عدد الأسطر */
+    var pages=[], cur=[], used=0, cap=FIRST_LINES;
+    rows.forEach(function(r){ var l=linesOf(r); if(cur.length && used+l>cap){ pages.push({list:cur, cap:cap, used:used}); cur=[]; used=0; cap=NEXT_LINES; } cur.push(r); used+=l; });
+    pages.push({list:cur, cap:cap, used:used});
+    /* الصفحة الأخيرة تحتاج مكانًا لسطر المجموع والتذييل: ننقل آخر مدرّس إلى صفحة جديدة إذا ضاقت */
+    (function(){
+      var lp=pages[pages.length-1], room=lp.cap-7;
+      if(lp.used>room && lp.list.length>1){
+        var mv=[], u=lp.used;
+        while(u>room && lp.list.length>1){ var r=lp.list.pop(); u-=linesOf(r); mv.unshift(r); }
+        lp.used=u; pages.push({list:mv, cap:NEXT_LINES, used:mv.reduce(function(a,r){ return a+linesOf(r); },0)});
+      }
+    })();
+    /* ارتفاع أسطر الجداول الجانبية بحيث تتسع في الورقة الأولى دائمًا */
+    var nS=(DB.subjects||[]).filter(function(x){ return M.subjTot[x.id]; }).length, nSt=(DB.stages||[]).length;
+    var sideAvail=(pages.length===1?188:212)-57, sideRows=11+nS+1+nSt+1;
+    var SR=Math.max(3.1, Math.min(4.6, sideAvail/sideRows)).toFixed(2)+'mm';
+    /* عرض الأعمدة (مم) من قياس الاستمارة؛ عند كثرة الشعب تُضغط الأعمدة اليمنى */
+    var MAINW=146.5, right={seq:5, name:30, title:14.5, spec:14.5, subj:12};
+    var rightSum=function(){ return right.seq+right.name+right.title+right.spec+right.subj; };
+    var colW=(MAINW-rightSum())/cols;
+    if(colW<3.4){ var need=cols*3.4, k=Math.max(0.55,(MAINW-need)/rightSum()); Object.keys(right).forEach(function(x){ right[x]*=k; }); colW=(MAINW-rightSum())/cols; }
+    var seq=0, out='';
+    var colgroup=function(){
+      var h='<colgroup><col style="width:'+right.seq.toFixed(2)+'mm"><col style="width:'+right.name.toFixed(2)+'mm"><col style="width:'+right.title.toFixed(2)+'mm"><col style="width:'+right.spec.toFixed(2)+'mm"><col style="width:'+right.subj.toFixed(2)+'mm">';
+      for(var i=0;i<cols;i++) h+='<col style="width:'+colW.toFixed(3)+'mm">';
+      return h+'</colgroup>';
+    };
+    var bl=function(i){ return (i%2===0)?' b':''; };   /* أول عمود (الأيمن) أزرق ثم بالتناوب */
+    var thead=function(){
+      var h='<thead><tr class="h1"><th rowspan="2" class="v seq"><span>التّسلسل</span></th><th rowspan="2" class="nmh">الاســــــم</th><th rowspan="2">العنوان<br>الـوظيفي</th><th rowspan="2" class="v"><span>الإختصاص</span></th><th rowspan="2" class="sjh">المواد<br>الّتي<br>يدرسها</th>'+
+        '<th colspan="'+cols+'" class="cs">الصّـف و الشّـعبــة</th></tr><tr class="h2">';
+      for(var i=0;i<cols;i++){ var c=C[i]; h+='<th class="v cl'+bl(i)+'"'+(c?' title="'+E(c.label)+'"':'')+'><span>'+(c?E(c.short):'')+'</span></th>'; }
+      return h+'</tr></thead>';
+    };
+    var block=function(r){
+      var n=r?linesOf(r):1, h='';
+      var nmLen=r?String(getTeacherDisplayName(r.t)||r.t.name||'').length:0;
+      var nmCls=(n===1?' one':'')+(nmLen>24?' xs':(nmLen>16?' sm':''));
+      if(r) seq++;
+      for(var i=0;i<n;i++){
+        var s=r?r.subs[i]:null;
+        h+='<tr class="ln'+(i===0?' tb':'')+'">';
+        if(i===0){
+          h+='<td rowspan="'+n+'" class="seq">'+(r?num(seq):'')+'</td>'+
+             '<td rowspan="'+n+'" class="nm'+nmCls+'">'+(r?E(getTeacherDisplayName(r.t)||r.t.name||''):'')+'</td>'+
+             '<td rowspan="'+n+'" class="tt'+(n===1?' one':'')+'">'+(r?tfield(r.t.id,'title',''):'')+'</td>'+
+             '<td rowspan="'+n+'" class="sp'+(n===1?' one':'')+'">'+(r?tfield(r.t.id,'spec',''):'')+'</td>';
+        }
+        h+='<td class="sj'+(s&&s.name.length>9?' xs':(s&&s.name.length>7?' sm':''))+'">'+(s?E(s.name):'')+'</td>';
+        for(var j=0;j<cols;j++){ var c=C[j], v=(s&&c)?s.per[c.key]:0; h+='<td class="nv'+bl(j)+'">'+(v?num(v):'')+'</td>'; }
+        h+='</tr>';
+      }
+      return h;
+    };
+    var totRow=function(){
+      var h='<tr class="sum"><td colspan="5" class="sumlbl">مجمـوع الحصـص</td>';
+      for(var j=0;j<cols-2;j++){ var c=C[j]; h+='<td class="nv'+bl(j)+'">'+((c&&M.colTot[c.key])?num(M.colTot[c.key]):'')+'</td>'; }
+      return h+'<td colspan="2" class="nv gt" title="المجموع الكلي">'+(M.grand?num(M.grand):'')+'</td></tr>';
+    };
+    var side=function(){
+      var sv=function(k){ return toInt(fv(k,'')); };
+      var nTeach=(DB.teachers||[]).length;
+      var mgr=sv('st_mgr'), ast=sv('st_ast'), tch=toInt(fv('st_tch', String(nTeach)));
+      var leaves=[['lv_sick','إجازة مرضية'],['lv_birth','إجازة ولادة'],['lv_mat','إجازة أمومة'],['lv_study','إجازة دراسية'],['lv_assign',term()+' منسب إلى'],['lv_other','حالات أخرى']];
+      var lvSum=leaves.reduce(function(a,x){ return a+sv(x[0]); },0);
+      var h='<div class="sbox top"><div class="notes-pill">المـلاحظـات</div>';
+      h+='<table class="box staff"><colgroup><col style="width:7mm"><col><col style="width:30%"></colgroup>'+
+        '<tr><th colspan="3" class="bh">مـلاك المـدرسـة</th></tr>'+
+        '<tr><td rowspan="4" class="v act"><span>الفعلي</span></td><td class="lb">مـديـر</td><td class="vl">'+nfield('st_mgr','')+'</td></tr>'+
+        '<tr><td class="lb">معـاون</td><td class="vl">'+nfield('st_ast','')+'</td></tr>'+
+        '<tr><td class="lb">'+E(term())+'</td><td class="vl">'+nfield('st_tch',nTeach)+'</td></tr>'+
+        '<tr class="sep"><td class="lb">المجموع</td><td class="vl b">'+((mgr+ast+tch)?num(mgr+ast+tch):'')+'</td></tr>';
+      leaves.forEach(function(x){ h+='<tr><td colspan="2" class="lb">'+E(x[1])+'</td><td class="vl">'+nfield(x[0],'')+'</td></tr>'; });
+      h+='<tr class="tot"><td colspan="2" class="lb">المجموع الكلي</td><td class="vl b">'+(lvSum?num(lvSum):'')+'</td></tr></table></div>';
+      /* مجموع الحصص لكل مادة (من توزيع النصاب، وقابل للتعديل) */
+      var sids=(DB.subjects||[]).map(function(s){ return s.id; }).filter(function(id){ return M.subjTot[id]; });
+      var sSum=0;
+      h+='<div class="sbox"><table class="box subj"><colgroup><col><col style="width:34%"></colgroup><tr><th colspan="2" class="bh">مجموع الحصص لكل مادة</th></tr>';
+      sids.forEach(function(id){ var v=toInt(fv('sj_'+id, String(M.subjTot[id]))); sSum+=v; h+='<tr><td class="lb">'+E(M.subj[id].name)+'</td><td class="vl">'+nfield('sj_'+id, M.subjTot[id])+'</td></tr>'; });
+      h+='<tr class="tot"><td class="lb">المجموع الكلي</td><td class="vl b">'+(sSum?num(sSum):'')+'</td></tr></table></div>';
+      /* الصفوف — عدد الشعب — عدد التلاميذ */
+      h+='<div class="sbox bot"><table class="box grades"><colgroup><col><col style="width:28%"><col style="width:28%"></colgroup><tr class="gh"><th class="g1">الصّفوف</th><th>عـدد<br>الشُعب</th><th>عـدد<br>التّلاميذ</th></tr>';
+      var secT=0, stuT=0;
+      (DB.stages||[]).forEach(function(st){
+        var ns=(st.sections||[]).length; secT+=ns;
+        var stu=toInt(((F().st||{})[st.id])||''); stuT+=stu;
+        var stuCell=EDIT?'<span class="ed n" contenteditable="true" data-st="'+E(st.id)+'" spellcheck="false">'+(stu?num(stu):'')+'</span>':(stu?num(stu):'');
+        h+='<tr><td class="lb">'+E(st.name)+'</td><td class="vl">'+num(ns)+'</td><td class="vl">'+stuCell+'</td></tr>';
+      });
+      h+='<tr class="tot"><td class="lb">المجموع</td><td class="vl b">'+num(secT)+'</td><td class="vl b">'+(stuT?num(stuT):'')+'</td></tr></table></div>';
+      return h;
+    };
+    var head=function(){
+      var yr=fv('year', defaultYear()).split(/\s*[–—-]\s*/);
+      return '<div class="hlogos"><div>'+logoSlot('r', moeLogo())+'</div><div>'+logoSlot('c', (DB.settings&&DB.settings.logo)||'')+'</div><div>'+logoSlot('l','')+'</div></div>'+
+        '<div class="hdr">'+
+          '<div class="col r">'+
+            '<div class="ln"><b>المديرية العامة لتربية</b>'+fld('dir','','fill')+'</div>'+
+            '<div class="ln"><b>قسـم تربية</b>'+fld('dep','','fill')+'</div>'+
+            '<div class="ln"><b>إدارة مدرسـة :</b>'+fld('school', settings.schoolName||'','fill')+'</div>'+
+            '<div class="ln"><b>موقـع المدرسة :</b>'+fld('loc','','fill')+'</div>'+
+          '</div>'+
+          '<div class="col c">'+
+            '<div class="ln ttl"><b>جدول توزيع الحصص رقم (</b>'+fld('no','','no')+'<b>)</b></div>'+
+            '<div class="ln"><b>للعام الدّراسي :</b>'+(EDIT?fld('year', defaultYear(),'yr'):'<span class="ed yr">'+E(num(yr[0]||''))+(yr[1]?' – '+E(num(yr[1])):'')+'</span>')+'</div>'+
+          '</div>'+
+          '<div class="col l">'+
+            '<div class="ln"><b>نــوع الـدّوام :</b>'+fld('shift',shiftText(),'fill')+'</div>'+
+            '<div class="ln"><b>أوقات الـدّوام :</b>'+fld('hours', timingsText(),'fill')+'</div>'+
+            '<div class="ln"><b>المدارس المزدوجة معها :</b>'+fld('dual','','fill')+'</div>'+
+            '<div class="ln"><b>الرّقم الإحصائي للمدرسة :</b>'+fld('stat','','fill')+'</div>'+
+            '<div class="ln"><b>الرّقم الإمتحاني للمدرسة :</b>'+fld('exam','','fill')+'</div>'+
+          '</div>'+
+        '</div>';
+    };
+    var foot=function(){
+      return '<div class="foot">'+
+        '<div class="ln"><b>يعمل بمـوجبه اعتـبـاراً من يوم</b>'+fld('fday','','fill s')+'<b>المـوافـق</b>'+fld('fdate','','fill s')+'</div>'+
+        '<div class="ln"><b>الأسباب الموجبة للتـغـيـير :</b>'+fld('why','','fill w')+'</div>'+
+        '<div class="sign"><b>مدير المدرسة</b><span>'+(EDIT?fld('mgr', settings.principal||''):E(fv('mgr', settings.principal||'')))+'</span></div>'+
+      '</div>';
+    };
+    pages.forEach(function(pg, pi){
+      var first=pi===0, last=pi===pages.length-1;
+      var body=''; pg.list.forEach(function(r){ body+=block(r); });
+      /* إكمال الأسطر الفارغة حتى نهاية الصفحة كما في الاستمارة */
+      if(last) body+=totRow();
+      out+='<div class="dpage'+(first?' first':' next')+'">';
+      if(first) out+=head();
+      else out+='<div class="cont">تابع — جدول توزيع الحصص'+(fv('no','')?' رقم ('+E(fv('no',''))+')':'')+' — الصفحة '+num(pi+1)+'</div>';
+      var rh=Math.max(4.45, Math.min(6.2, (pg.cap-(last?7:0))*4.45/Math.max(1,pg.used)));
+      out+='<div class="bodyx"><div class="mainx"><table class="dt" style="--rh:'+rh.toFixed(2)+'mm">'+colgroup()+thead()+'<tbody>'+body+'</tbody></table></div>';
+      out+='<div class="sidex" style="--sr:'+SR+'">'+(first?side():'')+'</div></div>';
+      if(last) out+=foot();
+      out+='</div>';
+    });
+    return out;
+  }
+
+  /* ───────────── الأنماط (مطابقة للاستمارة: إطار أحمر، شبكة رمادية، أعمدة زرقاء بالتناوب) ───────────── */
+  function css(screen){
+    var R='#b3262d', G='#7f8a99', HB='#dbe3ef', CB='#dde5f1';
+    return ''+
+    '.dwrap *{box-sizing:border-box}'+
+    '.dpage{width:210mm;height:297mm;padding:6mm 7mm 5mm;background:#fff;color:#111;font-family:"Tajawal","Segoe UI",Tahoma,Arial,sans-serif;direction:rtl;position:relative;display:flex;flex-direction:column;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact;page-break-after:always;break-after:page}'+
+    '.dpage:last-child{page-break-after:auto;break-after:auto}'+
+    /* الترويسة: كل عمود فوقه شعاره */
+    '.hdr{display:grid;grid-template-columns:1fr .78fr 1fr;column-gap:4mm;flex:none;margin-bottom:2.5mm;font-size:9.4pt;align-items:end}'+
+    '.hdr .col{display:flex;flex-direction:column;gap:.6mm}'+
+    '.hdr .col.c{align-items:center;text-align:center}'+
+    '.hlogos{display:grid;grid-template-columns:1fr .78fr 1fr;column-gap:4mm;flex:none;margin-bottom:1mm}'+
+    '.hlogos>div{display:flex;justify-content:center;align-items:center}'+
+    '.lg{width:22mm;height:20mm;display:flex;align-items:center;justify-content:center;position:relative}'+
+    '.lg img{max-width:100%;max-height:100%;object-fit:contain;background:transparent}'+
+    '.hdr .ln{display:flex;align-items:baseline;gap:1.2mm;min-height:4.6mm;white-space:nowrap}'+
+    '.hdr .ln b{font-weight:800}'+
+    '.hdr .col.c .ln{justify-content:center}.hdr .ttl b{font-size:10pt}'+
+    '.ed{display:inline-block;min-width:4mm;outline:none}'+
+    '.ed.fill{flex:1;min-width:12mm;border-bottom:1.1px dotted #444;padding:0 1mm;font-weight:700;color:#0b2a6a}'+
+    '.ed.no{min-width:9mm;text-align:center;font-weight:800;color:#0b2a6a}'+
+    '.ed.yr{min-width:24mm;text-align:center;font-weight:800;color:#0b2a6a}'+
+    /* الجسم: الجدول يمينًا والجداول الصغيرة يسارًا */
+    '.bodyx{flex:none;display:flex;gap:3.5mm;align-items:stretch}'+
+    '.mainx{flex:0 0 146.5mm;min-width:0;align-self:flex-start}'+
+    '.sidex{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:5mm}'+
+    'table.dt{width:100%;border-collapse:collapse;table-layout:fixed;border:1.8px solid '+R+';font-size:7.6pt}'+
+    'table.dt th,table.dt td{border:.8px solid '+G+';text-align:center;vertical-align:middle;padding:0 .4mm;overflow:hidden;white-space:nowrap}'+
+    'table.dt thead th{background:#fff;font-weight:700;font-size:8.4pt;border:1.4px solid '+R+';line-height:1.3}'+
+    'table.dt thead tr.h1 th{height:5.5mm}'+
+    'table.dt thead tr.h2 th{height:15mm}'+
+    'table.dt th.cs{background:'+HB+';color:'+R+';font-size:10pt;letter-spacing:.4px;border-bottom:1.4px solid '+R+'}'+
+    'table.dt .v span{writing-mode:vertical-rl;transform:rotate(180deg);display:inline-block;white-space:nowrap;line-height:1.05}'+
+    'table.dt th.cl{font-size:6.8pt;font-weight:800;padding:.5mm 0;border:.8px solid '+G+';border-top:1.4px solid '+R+'}'+
+    'table.dt th.cl.b,table.dt td.nv.b{background:'+CB+'}'+
+    'table.dt th.cl:first-of-type{border-right:1.4px solid '+R+'}'+
+    'table.dt tbody tr.ln td{height:var(--rh,4.45mm);line-height:1.15}'+
+    'table.dt tbody tr.tb td{border-top:1.4px solid '+R+'}'+
+    'table.dt tbody td.seq,table.dt tbody td.nm,table.dt tbody td.tt,table.dt tbody td.sp{border:1.4px solid '+R+';background:#fff;white-space:normal}'+
+    'table.dt tbody td.nm{font-weight:800;font-size:8.4pt;line-height:1.2;text-align:center;padding:0 1mm}'+'table.dt tbody td.nm.sm{font-size:7.6pt}table.dt tbody td.nm.xs{font-size:6.8pt}'+'table.dt tbody td.one{white-space:nowrap!important;text-overflow:ellipsis}'+
+    'table.dt tbody td.tt,table.dt tbody td.sp{font-size:7.8pt;font-weight:700;line-height:1.25}'+
+    'table.dt tbody td.seq{font-weight:800;font-size:8.4pt}'+
+    'table.dt tbody td.sj{border-right:1.4px solid '+R+';border-left:1.4px solid '+R+';font-size:7.2pt;font-weight:700;background:#fff;text-overflow:ellipsis}'+
+    'table.dt tbody td.sj.sm{font-size:6.4pt;letter-spacing:-.1px}table.dt tbody td.sj.xs{font-size:5.6pt;letter-spacing:-.2px;text-overflow:clip}'+
+    'table.dt tbody td.nv{font-weight:800;font-size:7.8pt;color:#0b2a6a}'+
+    'table.dt tr.sum td{border-top:1.4px solid '+R+';border-bottom:1.4px solid '+R+';height:6.5mm}'+
+    'table.dt tr.sum td.sumlbl{color:'+R+';font-weight:700;font-size:10.5pt;background:#fff;border:1.4px solid '+R+';letter-spacing:.5px}'+
+    'table.dt tr.sum td.nv{color:'+R+'}'+
+    'table.dt tr.sum td.gt{background:#fff;border-left:1.4px solid '+R+';color:'+R+';font-size:8.6pt}'+
+    /* الجداول الجانبية */
+    '.sbox{display:flex;flex-direction:column}'+
+    '.notes-pill{align-self:center;margin:0 0 3.5mm;padding:1.8mm 8mm;border-radius:2.2mm;background:linear-gradient(180deg,#d8333b,#a91f26);color:#fff;font-weight:800;font-size:11.5pt;box-shadow:0 .6mm 1.4mm rgba(0,0,0,.28);border:1px solid #8e1a20}'+
+    'table.box{width:100%;border-collapse:collapse;table-layout:fixed;border:1.6px solid '+R+';font-size:8.4pt}'+
+    'table.box th{background:#fff;font-weight:700;border:1px solid '+R+';font-size:9pt;line-height:1.25;padding:.6mm}'+
+    'table.box th.bh{height:12mm}'+
+    'table.box tr.gh th{height:11mm;font-size:8pt}'+
+    'table.box td{border:1px solid '+R+';height:var(--sr,4.6mm);padding:0 1.2mm;white-space:nowrap;overflow:hidden}'+
+    'table.box td.lb{font-weight:700;text-align:right}'+
+    'table.box td.vl{text-align:center;font-weight:800;color:#0b2a6a}'+
+    'table.box td.b{font-weight:900}'+
+    'table.box tr.sep td{border-bottom:1.6px solid '+R+'}'+
+    'table.box tr.tot td{border-top:1.6px solid '+R+'}'+
+    'table.box td.act{text-align:center;font-weight:900;font-size:9pt;padding:0}table.box td.act span{writing-mode:vertical-rl;transform:rotate(180deg);display:inline-block}'+
+    /* الذيل */
+    '.foot{flex:none;margin-top:3mm;font-size:10.6pt}'+
+    '.foot .ln{display:flex;align-items:baseline;gap:2mm;margin:1.2mm 0;white-space:nowrap}'+
+    '.foot .ed.fill.s{flex:0 0 32mm}.foot .ed.fill.w{flex:1}'+
+    '.foot .sign{margin:4mm 0 0 10mm;display:flex;flex-direction:column;align-items:center;width:45mm;margin-right:auto;font-size:10pt;gap:1mm}'+
+    '.foot .sign b{font-weight:600}'+
+    '.cont{flex:none;text-align:center;font-weight:800;font-size:10.5pt;color:'+R+';padding:1mm 0 2.5mm}'+
+    (screen?(
+      '.dwrap .ed[contenteditable]{background:rgba(255,236,150,.28);border-radius:1mm;cursor:text;transition:background .15s}'+
+      '.dwrap .ed[contenteditable]:focus{background:rgba(255,224,102,.55);box-shadow:0 0 0 .5mm #e0b400}'+
+      '.dwrap td .ed[contenteditable]{display:flex;align-items:center;justify-content:center;width:100%;min-height:100%;height:100%;white-space:normal}'+
+      '.dwrap table.dt td.tt,.dwrap table.dt td.sp{padding:0}'+
+      '.dwrap table.box td.vl{padding:0}'+
+      '.dwrap .lg{cursor:pointer;border-radius:2mm}'+
+      '.dwrap .lg.empty{border:1.4px dashed #9aa9c4;color:#7a8aa8;font-size:9pt;font-weight:800;background:rgba(150,170,200,.08)}'+
+      '.dwrap .lg-x{position:absolute;margin:-3mm 0 0 -3mm;width:5mm;height:5mm;border-radius:50%;border:0;background:#c0392b;color:#fff;font-size:9pt;line-height:5mm;cursor:pointer;padding:0;z-index:2}'
+    ):(
+      '.ed.dots{border-bottom:1.1px dotted #444}'
+    ));
+  }
+
+  /* ───────────── الشاشة ───────────── */
+  var VIEW=null;
+  function render(){
+    var v=$('view-dist'); if(!v) return;
+    if(!(DB.stages||[]).length){ v.innerHTML='<div class="card" style="margin:12px"><h2>📑 جدول التربية</h2><p class="hint">أضف المراحل والشعب والمعلمين ووزّع النصاب أولًا — ثم يُبنى جدول توزيع الحصص تلقائيًا.</p></div>'; return; }
+    EDIT=true;
+    var pages=pagesHtml();
+    EDIT=false;
+    var dm=digitsMode();
+    v.innerHTML=
+      '<div class="dist-bar no-print">'+
+        '<div class="dist-ttl"><span class="ic">📑</span><div><b>جدول التربية</b><small>جدول توزيع الحصص الرسمي — الحقول المظلّلة قابلة للكتابة — الأرقام تُحسب من النصاب تلقائيًا</small></div></div>'+
+        '<div class="dist-acts">'+
+          '<span class="dist-seg" role="group" aria-label="شكل الأرقام"><button type="button" data-dg="ar" class="'+(dm==='ar'?'on':'')+'">١٢٣</button><button type="button" data-dg="en" class="'+(dm==='en'?'on':'')+'">123</button></span>'+
+          '<button type="button" class="btn btn-outline btn-sm" data-act="reset" title="إرجاع الحقول المكتوبة إلى القيم التلقائية">↺ القيم التلقائية</button>'+
+          '<button type="button" class="btn btn-gold" data-act="print">🖨️ طباعة / PDF</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="dist-stage"><div class="dwrap dist-scale">'+pages+'</div></div>';
+    fit();
+  }
+  function fit(){
+    var v=$('view-dist'); if(!v) return; var st=v.querySelector('.dist-stage'), w=v.querySelector('.dist-scale'); if(!st||!w) return;
+    var pw=210*96/25.4, avail=Math.max(260, st.clientWidth-8), s=Math.min(1.25, avail/pw);
+    w.style.transform='scale('+s.toFixed(4)+')'; w.style.transformOrigin='top right';
+    var h=0; Array.prototype.forEach.call(w.children, function(p){ h+=p.offsetHeight+16; });
+    st.style.height=(h*s+10)+'px'; w.style.width=pw+'px';
+  }
+  function onInput(e){
+    var el=e.target.closest && e.target.closest('[contenteditable]'); if(!el) return;
+    var D=ensureF(), val=String(el.textContent||'').replace(/\s+/g,' ').trim();
+    if(el.hasAttribute('data-f')){ var k=el.getAttribute('data-f'); if(el.hasAttribute('data-num')) val=val?String(toInt(val)):''; D.f[k]=val; }
+    else if(el.hasAttribute('data-t')){ var tid=el.getAttribute('data-t'), tk=el.getAttribute('data-tk'); D.t[tid]=D.t[tid]||{}; D.t[tid][tk]=val; }
+    else if(el.hasAttribute('data-st')){ D.st[el.getAttribute('data-st')]=val?String(toInt(val)):''; }
+    saveSoon();
+  }
+  function onBlur(e){
+    var el=e.target.closest && e.target.closest('[contenteditable]'); if(!el) return;
+    /* المجاميع المحسوبة تتحدّث بعد الخروج من الحقل الرقمي */
+    if(el.hasAttribute('data-num') || el.hasAttribute('data-st')){ setTimeout(function(){ var a=document.activeElement; if(!(a && a.closest && a.closest('#view-dist [contenteditable]'))) render(); }, 30); }
+  }
+  function onClick(e){
+    var dg=e.target.closest && e.target.closest('[data-dg]');
+    if(dg){ ensureF().digits=dg.getAttribute('data-dg'); saveSoon(); render(); return; }
+    var x=e.target.closest && e.target.closest('[data-logo-x]');
+    if(x){ e.preventDefault(); var D=ensureF(); D.logos[x.getAttribute('data-logo-x')]=''; saveSoon(); render(); return; }
+    var a=e.target.closest && e.target.closest('[data-act]'); if(!a) return;
+    var act=a.getAttribute('data-act');
+    if(act==='print'){ printIt(); return; }
+    if(act==='reset'){
+      Promise.resolve(confirmDialog('إرجاع القيم التلقائية؟','تُمسح الحقول المكتوبة يدويًا (الأرقام وأسماء الدوائر والعناوين الوظيفية) وتعود القيم المحسوبة. الشعارات تبقى.')).then(function(ok){
+        if(!ok) return; var D=ensureF(); D.f={}; D.t={}; D.st={}; saveSoon(); render(); T('أُعيدت القيم التلقائية','ok');
+      });
+    }
+  }
+  function onChange(e){
+    var inp=e.target; if(!inp || !inp.hasAttribute || !inp.hasAttribute('data-logo')) return;
+    var f=inp.files && inp.files[0]; if(!f) return;
+    var pos=inp.getAttribute('data-logo');
+    var done=function(data){ var D=ensureF(); D.logos[pos]=data; saveSoon(); render(); T('تم وضع الشعار','ok'); };
+    try{ if(typeof window.nbPrepLogo==='function'){ window.nbPrepLogo(f, done); return; } }catch(_){ }
+    var r=new FileReader(); r.onload=function(){ done(r.result); }; r.readAsDataURL(f);
+    inp.value='';
+  }
+
+  /* ───────────── الطباعة (وثيقة مستقلة تمر عبر واجهة المعاينة) ───────────── */
+  function docHtml(){
+    EDIT=false;
+    return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>جدول التربية</title><style>'+
+      '@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff}'+css(false)+
+      '</style></head><body><div class="dwrap">'+pagesHtml()+'</div></body></html>';
+  }
+  function printIt(){
+    try{ var a=document.activeElement; if(a && a.blur) a.blur(); }catch(e){}
+    try{ pexDoPrint({act:'dist_form', name:'جدول التربية', paper:'A4', orient:'portrait'}); }
+    catch(e){ openDoc(); }
+  }
+  function openDoc(){
+    var w=window.open('', '_blank'); if(!w){ T('اسمح بالنوافذ المنبثقة للطباعة','err'); return; }
+    w.document.open(); w.document.write(docHtml()); w.document.close();
+    setTimeout(function(){ try{ w.focus(); w.print(); }catch(e){} }, 350);
+  }
+  window.nbDistOpenPrint=openDoc;
+  window.nbDistRender=render;
+
+  function hook(){
+    var v=$('view-dist'); if(!v) return;
+    var st=document.createElement('style'); st.id='nbdist-style';
+    st.textContent=css(true)+
+      '#view-dist .dist-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:10px 0 12px;padding:10px 14px;border-radius:16px;background:var(--paper-2,#fff);border:1px solid var(--line,#e3e9f5);box-shadow:var(--shadow,0 6px 20px rgba(0,0,0,.06))}'+
+      '#view-dist .dist-ttl{display:flex;align-items:center;gap:10px}#view-dist .dist-ttl .ic{font-size:26px}'+
+      '#view-dist .dist-ttl b{display:block;font-size:16px;font-weight:900}#view-dist .dist-ttl small{display:block;font-size:12px;font-weight:700;opacity:.7}'+
+      '#view-dist .dist-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}'+
+      '#view-dist .dist-seg{display:inline-flex;border:1.5px solid var(--line,#ddd);border-radius:12px;overflow:hidden}'+
+      '#view-dist .dist-seg button{border:0;background:transparent;color:inherit;font:inherit;font-weight:900;padding:7px 12px;cursor:pointer}'+
+      '#view-dist .dist-seg button.on{background:var(--nb-accent,#2f6b3a);color:#fff}'+
+      '#view-dist .dist-stage{position:relative;overflow:hidden;width:100%}'+
+      '#view-dist .dist-scale{position:absolute;top:0;right:0}'+
+      '#view-dist .dist-scale .dpage{margin:0 0 16px;box-shadow:0 10px 30px rgba(0,0,0,.18);border-radius:2px}'+
+      '@media print{#view-dist{display:none!important}}';
+    document.head.appendChild(st);
+    v.addEventListener('input', onInput);
+    v.addEventListener('focusout', onBlur);
+    v.addEventListener('click', onClick);
+    v.addEventListener('change', onChange);
+    v.addEventListener('keydown', function(e){ if(e.key==='Enter' && e.target.closest && e.target.closest('[contenteditable]')){ e.preventDefault(); e.target.blur(); } });
+    window.addEventListener('resize', function(){ if(v.classList.contains('active')) fit(); });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', hook); else hook();
+})();
+
+/* =========================================================================
+   «▦ القائمة» — طريقة عرض بديلة للأقسام (اختيارية من الإعدادات ← المظهر)
+   - تُخفى القائمة الجانبية ويظهر زر «القائمة» في الشريط العلوي.
+   - الضغط عليه يفتح لوحة بملء الشاشة: أيقونة كبيرة لكل قسم وتحتها اسمه.
+   - الأقسام ذات العناوين الفرعية (إنشاء الجدول، المعلمون، الجداول) تفتح
+     لوحة ثانية بأيقونات أقسامها الفرعية، وكل قسم فرعي يفتح كصفحة مستقلة
+     مع شريط مسار علوي (القائمة › القسم › الفرعي) للرجوع.
+   - إذا لم تُفعَّل يبقى التطبيق كما هو تمامًا (القائمة الجانبية).
+   التفضيل محفوظ على الجهاز فقط (لا يمس بيانات المدرسة).
+   ========================================================================= */
+(function(){
+  'use strict';
+  var LS='nibras-nav-mode';
+  var $=function(id){ return document.getElementById(id); };
+  var E=function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  var get=function(){ try{ return localStorage.getItem(LS)==='side'?'side':'grid'; }catch(e){ return 'grid'; } };
+  var set=function(v){ try{ localStorage.setItem(LS, v); }catch(e){} };
+  var on=function(){ return document.documentElement.classList.contains('nb-gridnav'); };
+
+  /* وصف قصير تحت اسم كل قسم */
+  var DESC={dash:'نظرة عامة على يومك', demo:'جرّب البرنامج بجدول جاهز', settings:'المدرسة والمظهر والنسخ', teachers:'الكادر والتفريغ والمراقبة', subjects:'المواد وأولويات التوزيع',
+    build:'المراحل والنصاب والتوليد', full:'جدول المدرسة كاملًا', att:'الحضور والغياب والإجازات', pex:'طباعة و PDF وإكسل', dist:'استمارة توزيع الحصص الرسمية',
+    schedule:'جداول الشعب والمعلمين', saved:'الجداول المحفوظة', timings:'بدء الحصص والاستراحات', apps:'تطبيقاتنا الأخرى', about:'معلومات وتواصل'};
+  /* تدرّجات فاخرة لكل أيقونة (تتكرر بالترتيب) */
+  var GRAD=[
+    ['#2a52c9','#0f2462'],['#d4a017','#8a5a00'],['#16a085','#0b5345'],['#c0392b','#6e1510'],['#7d3c98','#3b1650'],
+    ['#2e86de','#0b3d75'],['#e67e22','#8a3c00'],['#27ae60','#0e5c2e'],['#b03a6e','#5b1235'],['#34495e','#141e29'],
+    ['#00a3a3','#00525e'],['#a0522d','#4e2310'],['#5b4cc4','#241b6b'],['#d35400','#6a2400'],['#1f8bb5','#0b3f5c']];
+  /* الأقسام التي لها عناوين فرعية */
+  var SUBS={build:'#buildSubTabs', teachers:'#ttTeachAria', schedule:'#schedSubTabs', settings:'#settingsNav'};
+
+  function sections(){
+    var out=[];
+    document.querySelectorAll('#tabs .tab-btn[data-view]').forEach(function(b){
+      if(b.style.display==='none' || getComputedStyle(b).display==='none') return;
+      var ic=b.querySelector('.tb-ico'), tx=b.querySelector('.tb-tx');
+      var icon=ic?ic.textContent.trim():'', name=(tx?tx.textContent:b.textContent).trim();
+      if(!icon){ var m=name.match(/^(\S+)\s+(.*)$/); if(m){ icon=m[1]; name=m[2]; } }
+      out.push({view:b.getAttribute('data-view'), icon:icon||'•', name:name});
+    });
+    return out;
+  }
+  function subItems(view){
+    var box=document.querySelector(SUBS[view]||'#__none'); if(!box) return [];
+    var out=[];
+    box.querySelectorAll('button, a.set-nav-btn').forEach(function(b){
+      if(b.style.display==='none' || getComputedStyle(b).display==='none') return;
+      var ico=b.querySelector('.ico'), bt=b.querySelector('b');
+      if(ico && bt){ var ie=ico.textContent.trim(); if(!ie && ico.querySelector('svg')) ie='💬'; out.push({btn:b, icon:ie||'•', name:bt.textContent.trim(), active:b.classList.contains('active')}); return; }
+      var t=b.textContent.trim(), m=t.match(/^(\S+)\s+(.*)$/);
+      var icon=(m && /[^؀-ۿa-zA-Z0-9]/.test(m[1]))?m[1]:'•', name=m && icon!=='•'?m[2]:t;
+      out.push({btn:b, icon:icon, name:name, active:b.classList.contains('active')});
+    });
+    return out;
+  }
+  /* فتح الروابط الخارجية خارج التطبيق عبر جسر الأندرويد (إن كان التطبيق المحدَّث يدعمه):
+     تطبيق «إدارة المدرسة والامتحانات» يُفتح بتطبيقه الخاص أو بمتصفح Chrome حيث تعمل الطباعة والملفات والكاميرا والأجهزة الملحقة. */
+  function openExternal(url){
+    try{ if(window.NibrasAndroid && typeof window.NibrasAndroid.openExternal==='function'){ window.NibrasAndroid.openExternal(String(url)); return true; } }catch(e){}
+    return false;
+  }
+  /* كل رابط خارجي (target=_blank أو موقع آخر) يمر عبر الجسر نفسه عند توفره — دون أي تغيير إن لم يكن متوفرًا */
+  document.addEventListener('click', function(e){
+    var a=e.target.closest && e.target.closest('a[href]'); if(!a) return;
+    var href=a.getAttribute('href')||''; if(!/^(https?:|whatsapp:|tel:|mailto:|intent:)/i.test(href)) return;
+    try{ var u=new URL(a.href, location.href); if(u.origin===location.origin && !/^(whatsapp|tel|mailto|intent):/i.test(href)) return; }catch(_){ }
+    if(!(window.NibrasAndroid && typeof window.NibrasAndroid.openExternal==='function')) return;
+    e.preventDefault(); e.stopPropagation(); openExternal(a.href);
+  }, true);
+  function daragatLink(){ try{ return document.querySelector('#view-apps a[href*="Daragat"]'); }catch(e){ return null; } }
+  function curView(){ try{ return currentViewName; }catch(e){ return ''; } }
+  function secName(view){ var s=sections().find(function(x){ return x.view===view; }); return s?s.name:''; }
+  function secIcon(view){ var s=sections().find(function(x){ return x.view===view; }); return s?s.icon:''; }
+
+  /* ───────────── اللوحة بملء الشاشة ───────────── */
+  var L=null;
+  function ensure(){
+    if(L) return L;
+    L=document.createElement('div'); L.id='nbLauncher'; L.className='nbl no-print'; L.hidden=true; L.setAttribute('role','dialog'); L.setAttribute('aria-label','القائمة');
+    L.innerHTML='<div class="nbl-bg"></div><div class="nbl-in"><div class="nbl-head"></div><div class="nbl-grid" role="list"></div><div class="nbl-foot">تصميم الأستاذ حسين ناهي المسعودي</div></div>';
+    document.body.appendChild(L);
+    L.addEventListener('click', onClick);
+    return L;
+  }
+  function schoolLine(){ try{ return (DB.settings&&DB.settings.schoolName)||''; }catch(e){ return ''; } }
+  function logo(){ try{ return (DB.settings&&DB.settings.logo)||''; }catch(e){ return ''; } }
+  function openMain(){
+    ensure();
+    var cv=curView(), list=sections();
+    /* أيقونات إضافية على الشاشة الرئيسية: ربط أجهزة المدرسة، وإدارة المدرسة والامتحانات */
+    var extra=[{special:'link', icon:'📱', name:'ربط أجهزة المدرسة', desc:'باركود تطبيق «جدولي» للمعلمين'}];
+    if(daragatLink()) extra.push({special:'daragat', icon:'🏫', name:'إدارة المدرسة والامتحانات', desc:'تطبيق الإدارة والدرجات'});
+    var at=list.findIndex(function(x){ return x.view==='apps'; }); if(at<0) at=list.length;
+    list=list.slice(0,at).concat(extra, list.slice(at));
+    L.querySelector('.nbl-head').innerHTML=
+      '<div class="nbl-brand">'+(logo()?'<img src="'+E(logo())+'" alt="">':'<span class="nbl-mk">🏫</span>')+'<div><b>الجدول الأسبوعي الذكي</b><small>'+E(schoolLine()||'القائمة الرئيسية')+'</small></div></div>'+
+      '<button type="button" class="nbl-x" data-x aria-label="إغلاق القائمة">✕</button>';
+    L.querySelector('.nbl-grid').innerHTML=list.map(function(s,i){
+      var g=GRAD[i%GRAD.length], has=!!SUBS[s.view] && subItems(s.view).length>1;
+      if(s.special) return '<button type="button" class="nbl-tile'+(s.special==='link'?' phone':'')+'" role="listitem" data-special="'+s.special+'" style="--g1:'+g[0]+';--g2:'+g[1]+';--d:'+(i*22)+'ms">'+
+        '<span class="nbl-ic"><i>'+E(s.icon)+'</i></span><b>'+E(s.name)+'</b><small>'+E(s.desc)+'</small>'+(s.special==='daragat'?'<em class="nbl-more" aria-hidden="true">↗</em>':'')+'</button>';
+      return '<button type="button" class="nbl-tile'+(s.view===cv?' cur':'')+'" role="listitem" data-view="'+E(s.view)+'" style="--g1:'+g[0]+';--g2:'+g[1]+';--d:'+(i*22)+'ms">'+
+        '<span class="nbl-ic"><i>'+E(s.icon)+'</i></span><b>'+E(s.name)+'</b><small>'+E(DESC[s.view]||'')+'</small>'+(has?'<em class="nbl-more" aria-hidden="true">◂</em>':'')+'</button>';
+    }).join('');
+    show();
+  }
+  function openSub(view){
+    ensure();
+    var items=subItems(view); if(items.length<2){ go(view); return; }
+    var idx=sections().findIndex(function(x){ return x.view===view; });
+    L.querySelector('.nbl-head').innerHTML=
+      '<button type="button" class="nbl-back" data-back aria-label="رجوع إلى القائمة">‹ القائمة</button>'+
+      '<div class="nbl-brand sub"><span class="nbl-mk">'+E(secIcon(view))+'</span><div><b>'+E(secName(view))+'</b><small>اختر القسم الفرعي</small></div></div>'+
+      '<button type="button" class="nbl-x" data-x aria-label="إغلاق القائمة">✕</button>';
+    L.querySelector('.nbl-grid').innerHTML=items.map(function(s,i){
+      var g=GRAD[(idx+i+1)%GRAD.length];
+      return '<button type="button" class="nbl-tile" role="listitem" data-sub="'+i+'" data-of="'+E(view)+'" style="--g1:'+g[0]+';--g2:'+g[1]+';--d:'+(i*30)+'ms">'+
+        '<span class="nbl-ic"><i>'+E(s.icon)+'</i></span><b>'+E(s.name)+'</b><small>'+E(secName(view))+'</small></button>';
+    }).join('');
+    show();
+  }
+  function show(){ L.hidden=false; document.documentElement.classList.add('nbl-open'); L.classList.remove('nbl-anim'); void L.offsetWidth; L.classList.add('nbl-anim'); try{ L.querySelector('.nbl-x').focus({preventScroll:true}); }catch(e){} }
+  function close(){ if(!L) return; L.hidden=true; document.documentElement.classList.remove('nbl-open'); }
+  function go(view, subBtn){
+    close();
+    try{ showView(view); }catch(e){}
+    if(subBtn){ setTimeout(function(){ try{ subBtn.click(); }catch(e){} crumb(); }, 30); }
+    try{ window.scrollTo(0,0); }catch(e){}
+    setTimeout(crumb, 60);
+  }
+  function onClick(e){
+    var t=e.target;
+    if(t===L.querySelector('.nbl-bg') || (t.closest && t.closest('[data-x]'))){ close(); return; }
+    if(t.closest && t.closest('[data-back]')){ openMain(); return; }
+    var tile=t.closest && t.closest('.nbl-tile'); if(!tile) return;
+    if(tile.hasAttribute('data-view')){
+      var v=tile.getAttribute('data-view');
+      if(SUBS[v] && subItems(v).length>1){ openSub(v); return; }
+      go(v); return;
+    }
+    if(tile.hasAttribute('data-special')){
+      var sp=tile.getAttribute('data-special');
+      if(sp==='link'){ var lb=document.querySelector('#settingsNav [data-set="link"]'); go('settings', lb); return; }
+      if(sp==='daragat'){ var a=daragatLink(); close(); if(a){ if(openExternal(a.href)) return; try{ a.click(); }catch(_){ try{ window.open(a.href,'_blank'); }catch(__){} } } return; }
+    }
+    if(tile.hasAttribute('data-sub')){
+      var of=tile.getAttribute('data-of'), it=subItems(of)[+tile.getAttribute('data-sub')];
+      go(of, it?it.btn:null);
+    }
+  }
+
+  /* ───────────── شريط المسار أعلى الصفحة ───────────── */
+  var C=null;
+  function crumb(){
+    if(!on()){ if(C) C.hidden=true; return; }
+    var main=document.querySelector('main'); if(!main) return;
+    if(!C){ C=document.createElement('nav'); C.id='nbCrumb'; C.className='nbc no-print'; C.setAttribute('aria-label','المسار'); main.insertBefore(C, main.firstChild); C.addEventListener('click', onCrumb); }
+    var v=curView(), h='<button type="button" class="nbc-home" data-c="home"><span class="g" aria-hidden="true"><i></i><i></i><i></i><i></i></span>القائمة</button>';
+    if(v){
+      var hasSub=SUBS[v] && subItems(v).length>1;
+      h+='<span class="nbc-sep">‹</span><button type="button" class="nbc-it'+(hasSub?'':' cur')+'" data-c="sec">'+E(secIcon(v))+' '+E(secName(v))+'</button>';
+      if(hasSub){ var a=subItems(v).find(function(x){ return x.active; }); if(a) h+='<span class="nbc-sep">‹</span><span class="nbc-it cur">'+E(a.icon)+' '+E(a.name)+'</span>'; }
+    }
+    C.innerHTML=h; C.hidden=false;
+  }
+  function onCrumb(e){
+    var b=e.target.closest && e.target.closest('[data-c]'); if(!b) return;
+    var c=b.getAttribute('data-c'), v=curView();
+    if(c==='home'){ openMain(); return; }
+    if(c==='sec'){ if(SUBS[v] && subItems(v).length>1) openSub(v); }
+  }
+
+  /* ───────────── زر «القائمة» في الشريط العلوي ───────────── */
+  function topBtn(){
+    if($('nbGridBtn')) return;
+    var row=document.querySelector('.topbar .topbar-row'); if(!row) return;
+    var b=document.createElement('button'); b.type='button'; b.id='nbGridBtn'; b.className='nbg-btn no-print'; b.setAttribute('aria-label','فتح القائمة');
+    b.innerHTML='<span class="g" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="t">القائمة</span>';
+    row.insertBefore(b, row.firstChild);
+    b.addEventListener('click', function(){ openMain(); });
+  }
+
+  /* ───────────── خيار الإعدادات ───────────── */
+  function settingsCard(){
+    var pane=$('set-theme'); if(!pane || $('nbNavModeCard')) return;
+    var card=document.createElement('div'); card.className='card'; card.id='nbNavModeCard';
+    card.innerHTML='<h2>طريقة عرض القوائم</h2><p class="hint">اختر بين القائمة الجانبية المعتادة، أو زر «القائمة» الذي يفتح كل الأقسام بأيقونات كبيرة بملء الشاشة (والأقسام الفرعية كذلك).</p>'+
+      '<div class="nbnm-row">'+
+        '<button type="button" class="nbnm-opt" data-nav="side"><span class="pv side" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>📚 القائمة الجانبية</b><small>كما هو الآن</small></button>'+
+        '<button type="button" class="nbnm-opt" data-nav="grid"><span class="pv grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span><b>▦ قائمة الأيقونات</b><small>بملء الشاشة بأيقونات كبيرة</small></button>'+
+      '</div>';
+    var first=pane.querySelector('.card'); if(first && first.nextSibling) pane.insertBefore(card, first.nextSibling); else pane.appendChild(card);
+    card.addEventListener('click', function(e){ var b=e.target.closest && e.target.closest('[data-nav]'); if(!b) return; set(b.getAttribute('data-nav')); apply(); syncCard(); try{ toast(get()==='grid'?'تم تفعيل قائمة الأيقونات — اضغط «القائمة» في الأعلى':'عادت القائمة الجانبية','ok'); }catch(_){ } });
+    syncCard();
+  }
+  function syncCard(){ document.querySelectorAll('#nbNavModeCard [data-nav]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-nav')===get()); }); }
+
+  function apply(){
+    var g=get()==='grid', H=document.documentElement;
+    if(H.classList.contains('nb-gridnav')!==g) H.classList.toggle('nb-gridnav', g);
+    if(g){ topBtn(); H.classList.remove('nb-side-open'); }
+    else close();
+    crumb();
+    try{ if(typeof window.nbSidebarSync==='function') window.nbSidebarSync(); }catch(e){}
+  }
+
+  function css(){
+    var st=document.createElement('style'); st.id='nbnav-style';
+    st.textContent=''+
+    /* إخفاء القائمة الجانبية وتحرير المساحة */
+    'html.nb-gridnav .nb-sidebar,html.nb-gridnav .nb-side-scrim,html.nb-gridnav .nb-side-burger{display:none!important}'+
+    'html.nb-gridnav.nb-side:not(.nb-side-drawer) main,html.nb-gridnav.nb-side.nb-side-compact:not(.nb-side-drawer) main,html.nb-gridnav main{padding-right:14px!important}'+
+    'html.nb-gridnav #buildSubTabs,html.nb-gridnav #ttTeachAria,html.nb-gridnav #schedSubTabs,html.nb-gridnav #settingsNav{display:none!important}'+
+    /* أيقونة الموبايل لربط الأجهزة: إطار هاتف أنيق حول الرمز */
+    '.nbl-tile.phone .nbl-ic{width:70px;border-radius:18px}.nbl-tile.phone .nbl-ic::after{content:"";position:absolute;top:7px;left:50%;width:18px;height:4px;margin-left:-9px;border-radius:3px;background:rgba(255,255,255,.55)}'+
+    'html.nbl-open{overflow:hidden}'+
+    'html.nb-gridnav .demo-mode-bar{display:flex!important;justify-content:flex-end;align-items:center;min-height:0!important;margin:0 0 8px!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important}'+
+    'html.nb-gridnav .demo-mode-bar > .nb-wa-pill{position:static!important;transform:none!important}'+
+    '@media print{#nbLauncher,#nbCrumb,#nbGridBtn{display:none!important}}'+
+    /* زر القائمة */
+    '.nbg-btn{display:none;align-items:center;gap:8px;flex:none;height:40px;padding:0 14px 0 12px;border-radius:999px;border:1.5px solid rgba(255,230,160,.85);cursor:pointer;font:inherit;font-weight:900;font-size:14px;color:#2b1a00;'+
+      'background:linear-gradient(135deg,#fff1b8 0%,#e6c665 35%,#c99d38 70%,#f0d78c 100%);box-shadow:0 6px 16px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.7);margin-inline-end:8px}'+
+    'html.nb-gridnav .nbg-btn{display:inline-flex}'+
+    '.nbg-btn:active{transform:scale(.97)}'+
+    '.nbg-btn .g,.nbc-home .g{display:grid;grid-template-columns:repeat(2,7px);gap:3px}.nbg-btn .g i,.nbc-home .g i{width:7px;height:7px;border-radius:2px;background:#3a2500;display:block}'+
+    '@media (max-width:560px){.nbg-btn .t{display:none}.nbg-btn{padding:0 11px}}'+
+    /* اللوحة */
+    '.nbl{position:fixed;inset:0;top:0;right:0;bottom:0;left:0;z-index:2147482000;direction:rtl;color:#fff;font-family:inherit}'+
+    '.nbl[hidden]{display:none!important}'+
+    '.nbl-bg{position:absolute;top:0;right:0;bottom:0;left:0;background:'+
+      'radial-gradient(900px 520px at 100% -10%,rgba(230,198,101,.22),transparent 60%),'+
+      'radial-gradient(800px 600px at -10% 110%,rgba(64,120,255,.25),transparent 60%),'+
+      'linear-gradient(160deg,#0b1f5e 0%,#071443 55%,#040b26 100%)}'+
+    '.nbl-bg::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;opacity:.07;background-image:radial-gradient(#fff 1px,transparent 1.4px);background-size:26px 26px}'+
+    '.nbl-in{position:relative;height:100%;overflow:auto;-webkit-overflow-scrolling:touch;padding:18px clamp(14px,4vw,48px) 26px;display:flex;flex-direction:column}'+
+    '.nbl-head{display:flex;align-items:center;gap:12px;margin:0 auto 18px;width:100%;max-width:1180px}'+
+    '.nbl-brand{display:flex;align-items:center;gap:12px;flex:1;min-width:0}'+
+    '.nbl-brand img,.nbl-brand .nbl-mk{width:54px;height:54px;border-radius:50%;object-fit:contain;flex:none;display:grid;place-items:center;font-size:28px;'+
+      'background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.22),rgba(255,255,255,.05) 70%);box-shadow:0 0 0 2px rgba(230,198,101,.85),0 8px 22px rgba(0,0,0,.35)}'+
+    '.nbl-brand b{display:block;font-size:clamp(17px,2.4vw,22px);font-weight:900;letter-spacing:.2px;text-shadow:0 2px 10px rgba(0,0,0,.35)}'+
+    '.nbl-brand small{display:block;font-size:13px;font-weight:700;color:#f4dc8a;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'+
+    '.nbl-x,.nbl-back{flex:none;height:44px;min-width:44px;padding:0 14px;border-radius:14px;border:1.5px solid rgba(230,198,101,.6);background:rgba(255,255,255,.08);color:#fff;font:inherit;font-weight:900;font-size:16px;cursor:pointer}'+
+    '.nbl-back{font-size:15px;background:linear-gradient(135deg,rgba(230,198,101,.3),rgba(230,198,101,.12))}'+
+    '.nbl-x:hover,.nbl-back:hover{background:rgba(255,255,255,.16)}'+
+    '.nbl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:16px;width:100%;max-width:1180px;margin:0 auto}'+
+    '.nbl-tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;padding:20px 12px 16px;border-radius:24px;cursor:pointer;color:#fff;font:inherit;text-align:center;'+
+      'background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.035));border:1px solid rgba(255,236,170,.28);'+
+      'box-shadow:0 10px 26px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.12);transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease}'+
+    '.nbl-tile:hover,.nbl-tile:focus-visible{transform:translateY(-4px);border-color:rgba(255,226,140,.9);background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.05));box-shadow:0 18px 36px rgba(0,0,0,.36), 0 0 0 3px rgba(230,198,101,.22);outline:none}'+
+    '.nbl-tile:active{transform:translateY(-1px) scale(.98)}'+
+    '.nbl-tile.cur{border-color:#e6c665;box-shadow:0 0 0 2px #e6c665, 0 14px 30px rgba(0,0,0,.35)}'+
+    '.nbl-tile.cur::after{content:"أنت هنا";position:absolute;top:10px;left:10px;font-size:10.5px;font-weight:900;color:#2b1a00;background:#e6c665;border-radius:999px;padding:2px 8px}'+
+    '.nbl-ic{position:relative;width:92px;height:92px;border-radius:28px;display:grid;place-items:center;margin-bottom:6px;'+
+      'background:radial-gradient(120% 120% at 30% 15%,rgba(255,255,255,.45),transparent 45%),linear-gradient(150deg,var(--g1),var(--g2));'+
+      'box-shadow:0 12px 24px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,236,170,.55), inset 0 -6px 14px rgba(0,0,0,.25)}'+
+    '.nbl-ic::before{content:"";position:absolute;inset:6px;top:6px;right:6px;bottom:6px;left:6px;border-radius:22px;border:1px solid rgba(255,255,255,.22)}'+
+    '.nbl-ic i{font-style:normal;font-size:46px;line-height:1;filter:drop-shadow(0 4px 6px rgba(0,0,0,.35))}'+
+    '.nbl-tile b{font-size:16.5px;font-weight:900;line-height:1.3;text-shadow:0 2px 8px rgba(0,0,0,.35)}'+
+    '.nbl-tile small{font-size:12px;font-weight:700;color:rgba(235,240,255,.72);line-height:1.4}'+
+    '.nbl-more{position:absolute;top:12px;right:14px;font-style:normal;color:#f4dc8a;font-size:15px;opacity:.9}'+
+    '.nbl-foot{margin:22px auto 0;font-size:12px;font-weight:800;color:rgba(244,220,138,.75);letter-spacing:.3px}'+
+    '.nbl.nbl-anim .nbl-tile{animation:nblIn .38s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d,0ms)}'+
+    '@keyframes nblIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}'+
+    '@media (max-width:560px){.nbl-grid{grid-template-columns:repeat(2,1fr);gap:12px}.nbl-ic{width:76px;height:76px;border-radius:24px}.nbl-ic i{font-size:38px}.nbl-tile{padding:16px 8px 12px;border-radius:20px}.nbl-tile b{font-size:14.5px}.nbl-tile small{font-size:11px}}'+
+    '@media (prefers-reduced-motion:reduce){.nbl.nbl-anim .nbl-tile{animation:none}}'+
+    /* شريط المسار */
+    '.nbc{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:10px 0 12px;padding:7px 10px;border-radius:16px;background:var(--paper-2,#fff);border:1px solid rgba(195,154,58,.45);box-shadow:0 6px 18px rgba(6,16,44,.08)}'+
+    '.nbc[hidden]{display:none!important}'+
+    '.nbc button{border:0;background:transparent;color:inherit;font:inherit;font-weight:900;font-size:14px;cursor:pointer;border-radius:12px;padding:6px 10px}'+
+    '.nbc .nbc-home{display:inline-flex;align-items:center;gap:8px;color:#2b1a00;background:linear-gradient(135deg,#fff1b8,#e6c665 45%,#c99d38);box-shadow:inset 0 1px 0 rgba(255,255,255,.7)}'+
+    '.nbc .nbc-it{font-weight:800}.nbc button.nbc-it:hover{background:rgba(29,60,148,.08)}'+
+    '.nbc span.nbc-it{padding:6px 10px;border-radius:12px;background:linear-gradient(135deg,#2a52c9,#0f2462);color:#fff;font-size:14px}'+
+    '.nbc button.nbc-it.cur{background:linear-gradient(135deg,#2a52c9,#0f2462);color:#fff}'+
+    '.nbc-sep{opacity:.5;font-weight:900}'+
+    'html[data-theme="night"] .nbc{background:rgba(14,26,51,.85);border-color:rgba(125,239,255,.25)}'+
+    /* خيار الإعدادات */
+    '.nbnm-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:8px}'+
+    '.nbnm-opt{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px;border-radius:18px;border:2px solid var(--line,#ddd);background:var(--paper-2,#fff);color:inherit;font:inherit;cursor:pointer;transition:border-color .15s, box-shadow .15s}'+
+    '.nbnm-opt b{font-size:15px;font-weight:900}.nbnm-opt small{font-size:12px;opacity:.7;font-weight:700}'+
+    '.nbnm-opt.on{border-color:#c39a3a;box-shadow:0 0 0 3px rgba(195,154,58,.25), 0 8px 20px rgba(6,16,44,.1)}'+
+    '.nbnm-opt .pv{display:grid;gap:4px;width:120px;height:70px;padding:7px;border-radius:12px;background:linear-gradient(160deg,#0b1f5e,#040b26)}'+
+    '.nbnm-opt .pv.side{grid-template-columns:1fr 34px}.nbnm-opt .pv.side i{background:rgba(255,255,255,.18);border-radius:4px}.nbnm-opt .pv.side i:nth-child(1){grid-row:1/5;grid-column:1;background:rgba(255,255,255,.08)}.nbnm-opt .pv.side i:nth-child(n+2){grid-column:2}'+
+    '.nbnm-opt .pv.grid{grid-template-columns:repeat(3,1fr)}.nbnm-opt .pv.grid i{border-radius:6px;background:linear-gradient(150deg,#e6c665,#2a52c9)}';
+    document.head.appendChild(st);
+  }
+
+  function hook(){
+    if(!$('tabs')) return;
+    css(); ensure(); topBtn(); settingsCard();
+    /* تحديث المسار عند الانتقال بين الأقسام والأقسام الفرعية */
+    var orig=showView;
+    showView=function(){ var r=orig.apply(this, arguments); setTimeout(function(){ if(on()) crumb(); if(curView()==='settings') { settingsCard(); syncCard(); } }, 40); return r; };
+    ['buildSubTabs','ttTeachAria','schedSubTabs','settingsNav'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('click', function(){ setTimeout(crumb, 60); }); });
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape' && L && !L.hidden){ e.stopImmediatePropagation(); close(); } }, true);
+    apply();
+    /* الأقسام تُبنى بعد التحميل (القائمة الجانبية تُنقل)؛ نعيد الضبط قليلًا */
+    setTimeout(apply, 300); setTimeout(apply, 1500);
+  }
+  window.__nbNav={open:openMain, sub:openSub, close:close, apply:apply, mode:get, setMode:function(v){ set(v); apply(); }};
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', hook); else setTimeout(hook, 0);
+})();
+
 init();
 
 })();
@@ -28404,32 +29263,32 @@ init();
    ===================================================================== */
 @media screen{
   html:not([data-theme="night"]){
-    --dp-teal:#380d56; --dp-teal-2:#4c1175; --dp-teal-d:#1c052c;
+    --dp-teal:#10245d; --dp-teal-2:#15307e; --dp-teal-d:#07112f;
     --dp-gold:#c4a04a; --dp-gold-l:#ecd28a;
-    --dp-ink:#250939; --dp-soft:#6e5083;
-    --dp-card-shadow:0 1px 2px rgba(28,5,44,.06), 0 10px 28px -10px rgba(28,5,44,.22);
-    --dp-card-shadow-h:0 2px 4px rgba(28,5,44,.07), 0 18px 38px -12px rgba(28,5,44,.30);
+    --dp-ink:#0b183d; --dp-soft:#6e5083;
+    --dp-card-shadow:0 1px 2px rgba(7,17,47,.06), 0 10px 28px -10px rgba(7,17,47,.22);
+    --dp-card-shadow-h:0 2px 4px rgba(7,17,47,.07), 0 18px 38px -12px rgba(7,17,47,.30);
   }
 
   /* الخلفية العامة: هادئة متدرجة بدل اللون المسطح */
   html:not([data-theme="night"]) body{
     background:
-      radial-gradient(1100px 520px at 100% -10%, rgba(76,17,117,.20), transparent 62%),
+      radial-gradient(1100px 520px at 100% -10%, rgba(21,48,126,.20), transparent 62%),
       radial-gradient(900px 480px at -5% 105%, rgba(196,160,74,.13), transparent 58%),
-      linear-gradient(180deg,#e6dced 0%,#dcd0e5 55%,#d4c6de 100%) fixed;
+      linear-gradient(180deg,#dee1eb 0%,#d2d6e3 55%,#c8cddc 100%) fixed;
   }
 
   /* الشريط العلوي: تدرج أعمق مع خط ذهبي رفيع في الأسفل */
   html:not([data-theme="night"]) body .topbar{
-    background:linear-gradient(135deg,#160423 0%,#340c50 55%,#441068 100%);
-    box-shadow:0 10px 30px -8px rgba(17,4,26,.45), inset 0 -1px 0 rgba(236,210,138,.35);
+    background:linear-gradient(135deg,#050e26 0%,#0f2156 55%,#142c70 100%);
+    box-shadow:0 10px 30px -8px rgba(5,11,28,.45), inset 0 -1px 0 rgba(236,210,138,.35);
   }
 
   /* القوائم الرئيسية (التبويبات) */
   html:not([data-theme="night"]) body .tab-btn{
     background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04));
     border-color:rgba(255,255,255,.20);
-    color:#f2eaf7;
+    color:#eceef5;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.10);
   }
   html:not([data-theme="night"]) body .tab-btn:hover{
@@ -28445,16 +29304,16 @@ init();
 
   /* القوائم الفرعية (المراحل والشعب / توزيع النصاب / توليد تلقائي ...) */
   html:not([data-theme="night"]) body .demo-mode-toggle{
-    background:linear-gradient(180deg,#ffffff,#f7f3fa);
-    border-color:rgba(56,13,86,.14);
-    box-shadow:0 1px 2px rgba(28,5,44,.05), 0 8px 22px -10px rgba(28,5,44,.22);
+    background:linear-gradient(180deg,#ffffff,#f4f5f9);
+    border-color:rgba(16,36,93,.14);
+    box-shadow:0 1px 2px rgba(7,17,47,.05), 0 8px 22px -10px rgba(7,17,47,.22);
   }
   html:not([data-theme="night"]) body .demo-mode-btn{ color:var(--dp-ink); }
-  html:not([data-theme="night"]) body .demo-mode-btn:not(.active):hover{ background:rgba(56,13,86,.07); }
+  html:not([data-theme="night"]) body .demo-mode-btn:not(.active):hover{ background:rgba(16,36,93,.07); }
   html:not([data-theme="night"]) body .demo-mode-btn.active{
     background:linear-gradient(180deg,var(--dp-teal-2) 0%,var(--dp-teal-d) 100%);
     color:#fff;
-    box-shadow:0 8px 18px -6px rgba(28,5,44,.55), inset 0 -2px 0 var(--dp-gold), inset 0 1px 0 rgba(255,255,255,.12);
+    box-shadow:0 8px 18px -6px rgba(7,17,47,.55), inset 0 -2px 0 var(--dp-gold), inset 0 1px 0 rgba(255,255,255,.12);
   }
 
   /* البطاقات: أبيض ناصع، شريط لوني رفيع في الأعلى، ظل طبقي ناعم */
@@ -28462,15 +29321,15 @@ init();
   html:not([data-theme="night"]) body .dash-card{
     background:
       linear-gradient(90deg,var(--dp-teal) 0%,var(--dp-teal-2) 55%,var(--dp-gold) 100%) top / 100% 3px no-repeat,
-      linear-gradient(180deg,#ffffff 0%,#fcfbfd 70%,#f8f4fb 100%);
-    border-color:rgba(56,13,86,.13);
+      linear-gradient(180deg,#ffffff 0%,#fbfcfd 70%,#f5f6fa 100%);
+    border-color:rgba(16,36,93,.13);
     box-shadow:var(--dp-card-shadow);
   }
   html:not([data-theme="night"]) body .card:hover,
   html:not([data-theme="night"]) body .dash-card:hover{ box-shadow:var(--dp-card-shadow-h); }
   html:not([data-theme="night"]) body .card h2{
     color:var(--dp-teal-d);
-    border-bottom-color:rgba(56,13,86,.10);
+    border-bottom-color:rgba(16,36,93,.10);
   }
   html:not([data-theme="night"]) body .card h2 .num{
     background:linear-gradient(180deg,#e2c272,#b8913a);
@@ -28482,36 +29341,36 @@ init();
   html:not([data-theme="night"]) body .item-row,
   html:not([data-theme="night"]) body .assign-row,
   html:not([data-theme="night"]) body .tm-item{
-    background:linear-gradient(180deg,#ffffff,#fcfafd);
-    border-color:rgba(56,13,86,.11);
-    box-shadow:0 1px 2px rgba(28,5,44,.04), 0 4px 12px -6px rgba(28,5,44,.14);
+    background:linear-gradient(180deg,#ffffff,#fafbfd);
+    border-color:rgba(16,36,93,.11);
+    box-shadow:0 1px 2px rgba(7,17,47,.04), 0 4px 12px -6px rgba(7,17,47,.14);
   }
   html:not([data-theme="night"]) body .item-row:hover,
   html:not([data-theme="night"]) body .assign-row:hover,
   html:not([data-theme="night"]) body .tm-item:hover{
-    background:linear-gradient(180deg,#ffffff,#f6f1fa);
-    border-color:rgba(56,13,86,.24);
-    box-shadow:inset -3px 0 0 var(--dp-gold), 0 6px 16px -8px rgba(28,5,44,.28);
+    background:linear-gradient(180deg,#ffffff,#f2f4f9);
+    border-color:rgba(16,36,93,.24);
+    box-shadow:inset -3px 0 0 var(--dp-gold), 0 6px 16px -8px rgba(7,17,47,.28);
   }
   html:not([data-theme="night"]) body .item-main b{ color:var(--dp-ink); }
   html:not([data-theme="night"]) body .item-main span{ color:var(--dp-soft); }
 
   /* أزرار التنقل في الإعدادات */
   html:not([data-theme="night"]) body .set-nav-btn:not(.active){
-    background:linear-gradient(180deg,#ffffff,#f9f5fb);
-    border-color:rgba(56,13,86,.14);
-    box-shadow:0 1px 2px rgba(28,5,44,.05), 0 8px 20px -10px rgba(28,5,44,.25);
+    background:linear-gradient(180deg,#ffffff,#f6f7fa);
+    border-color:rgba(16,36,93,.14);
+    box-shadow:0 1px 2px rgba(7,17,47,.05), 0 8px 20px -10px rgba(7,17,47,.25);
   }
-  html:not([data-theme="night"]) body .set-nav-btn:not(.active):hover{ border-color:rgba(56,13,86,.30); }
+  html:not([data-theme="night"]) body .set-nav-btn:not(.active):hover{ border-color:rgba(16,36,93,.30); }
   html:not([data-theme="night"]) body .set-nav-btn.active{
-    box-shadow:0 0 0 3px rgba(196,160,74,.30), 0 12px 24px -10px rgba(28,5,44,.55);
+    box-shadow:0 0 0 3px rgba(196,160,74,.30), 0 12px 24px -10px rgba(7,17,47,.55);
   }
 
   /* حبوب الشعب والرقائق */
-  html:not([data-theme="night"]) body .class-pill:not(.active):hover{ border-color:rgba(56,13,86,.32); background:#f8f4fb; }
+  html:not([data-theme="night"]) body .class-pill:not(.active):hover{ border-color:rgba(16,36,93,.32); background:#f5f6fa; }
   html:not([data-theme="night"]) body .chip{
-    background:linear-gradient(180deg,#ffffff,#f4eef8);
-    border-color:rgba(56,13,86,.16);
+    background:linear-gradient(180deg,#ffffff,#eff1f7);
+    border-color:rgba(16,36,93,.16);
     color:var(--dp-ink);
   }
 
@@ -28521,22 +29380,22 @@ init();
   html:not([data-theme="night"]) body .field select,
   html:not([data-theme="night"]) body .field textarea{
     background:#ffffff;
-    border-color:rgba(56,13,86,.20);
-    box-shadow:inset 0 1px 2px rgba(28,5,44,.05);
+    border-color:rgba(16,36,93,.20);
+    box-shadow:inset 0 1px 2px rgba(7,17,47,.05);
   }
   html:not([data-theme="night"]) body .field input:focus,
   html:not([data-theme="night"]) body .field select:focus,
   html:not([data-theme="night"]) body .field textarea:focus{
     outline-color:transparent;
     border-color:var(--dp-teal-2);
-    box-shadow:0 0 0 3px rgba(76,17,117,.16), inset 0 1px 2px rgba(28,5,44,.05);
+    box-shadow:0 0 0 3px rgba(21,48,126,.16), inset 0 1px 2px rgba(7,17,47,.05);
   }
   html:not([data-theme="night"]) body .field label{ color:var(--dp-teal); }
 
   /* الأزرار: تدرجات بنفس الألوان الحالية */
   html:not([data-theme="night"]) body .btn-primary{
     background:linear-gradient(180deg,var(--dp-teal-2),var(--dp-teal-d));
-    box-shadow:0 6px 16px -6px rgba(28,5,44,.55), inset 0 1px 0 rgba(255,255,255,.12);
+    box-shadow:0 6px 16px -6px rgba(7,17,47,.55), inset 0 1px 0 rgba(255,255,255,.12);
   }
   html:not([data-theme="night"]) body .btn-gold{
     background:linear-gradient(180deg,#dcbb66,#b8913a);
@@ -28547,13 +29406,13 @@ init();
   html:not([data-theme="night"]) body .modal-card{
     background:
       linear-gradient(90deg,var(--dp-teal),var(--dp-gold)) top / 100% 3px no-repeat,
-      linear-gradient(180deg,#ffffff,#faf7fc);
-    border-color:rgba(56,13,86,.14);
-    box-shadow:0 24px 60px -16px rgba(17,4,26,.45);
+      linear-gradient(180deg,#ffffff,#f8f9fb);
+    border-color:rgba(16,36,93,.14);
+    box-shadow:0 24px 60px -16px rgba(5,11,28,.45);
   }
   html:not([data-theme="night"]) body .empty-hint{
-    background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(248,244,251,.75));
-    border-color:rgba(56,13,86,.22);
+    background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(245,246,250,.75));
+    border-color:rgba(16,36,93,.22);
     color:var(--dp-soft);
   }
 }
@@ -28596,7 +29455,7 @@ html:not([data-theme="night"]) #stagesList .stage-block .add-sec-btn:hover{ filt
 
 /* زر «استبدال المعلم» في شريط خيارات الجدول */
 .btn-swap-teach{
-  border:1.5px solid rgba(56,13,86,.25); background:#fff; color:#250939;
+  border:1.5px solid rgba(16,36,93,.25); background:#fff; color:#0b183d;
   border-radius:999px; padding:5px 11px; font-size:12px; font-weight:800; cursor:pointer; white-space:nowrap;
   font-family:inherit;
 }
@@ -28618,18 +29477,18 @@ html[data-theme="night"] .btn-swap-teach.active{ background:linear-gradient(180d
 @media print{ .btn-swap-teach, .nb-swap-bg{ display:none !important; } }
 
 /* نافذة الاستبدال */
-.nb-swap-bg{ position:fixed; inset:0; z-index:100000; background:rgba(17,4,26,.55); display:flex; align-items:center; justify-content:center; padding:16px; }
+.nb-swap-bg{ position:fixed; inset:0; z-index:100000; background:rgba(5,11,28,.55); display:flex; align-items:center; justify-content:center; padding:16px; }
 .nb-swap-card{
   width:100%; max-width:440px; border-radius:18px; padding:18px 18px 14px; direction:rtl;
-  background:linear-gradient(90deg,#380d56,#c4a04a) top/100% 4px no-repeat, linear-gradient(180deg,#ffffff,#faf6fc);
-  color:#250939; box-shadow:0 24px 60px -12px rgba(17,4,26,.55); border:1px solid rgba(56,13,86,.15);
+  background:linear-gradient(90deg,#10245d,#c4a04a) top/100% 4px no-repeat, linear-gradient(180deg,#ffffff,#f7f8fb);
+  color:#0b183d; box-shadow:0 24px 60px -12px rgba(5,11,28,.55); border:1px solid rgba(16,36,93,.15);
 }
 html[data-theme="night"] .nb-swap-card{ background:linear-gradient(90deg,#22d3ee,#7defff) top/100% 4px no-repeat, #0e1e3d; color:#e9f3ff; border-color:rgba(126,196,255,.18); }
 .nb-swap-h{ font-size:17px; font-weight:900; margin-bottom:8px; }
-.nb-swap-info{ font-size:13.5px; line-height:1.9; padding:8px 10px; border-radius:10px; background:rgba(56,13,86,.06); margin-bottom:10px; }
+.nb-swap-info{ font-size:13.5px; line-height:1.9; padding:8px 10px; border-radius:10px; background:rgba(16,36,93,.06); margin-bottom:10px; }
 html[data-theme="night"] .nb-swap-info{ background:rgba(126,196,255,.07); }
 .nb-swap-lbl{ display:block; font-size:12.5px; font-weight:800; margin:4px 0 6px; }
-.nb-swap-sel{ width:100%; padding:10px 12px; border-radius:10px; border:1.5px solid rgba(56,13,86,.25); font-size:15px; font-family:inherit; background:#fff; color:#250939; }
+.nb-swap-sel{ width:100%; padding:10px 12px; border-radius:10px; border:1.5px solid rgba(16,36,93,.25); font-size:15px; font-family:inherit; background:#fff; color:#0b183d; }
 html[data-theme="night"] .nb-swap-sel{ background:#0b1830; color:#e9f3ff; border-color:rgba(126,196,255,.25); }
 .nb-swap-note{ font-size:12.5px; line-height:1.8; margin-top:8px; padding:7px 10px; border-radius:9px; background:rgba(47,111,79,.10); color:#1e6b44; font-weight:700; }
 .nb-swap-note.warn{ background:rgba(154,107,18,.12); color:#8a5d0c; }
@@ -28648,10 +29507,10 @@ html[data-theme="night"] .nb-swap-note{ color:#a2c556; } html[data-theme="night"
     overflow-x:auto !important; overflow-y:hidden !important;
     -webkit-overflow-scrolling:touch;
     scrollbar-width:thin;
-    scrollbar-color:rgba(56,13,86,.35) transparent;
+    scrollbar-color:rgba(16,36,93,.35) transparent;
   }
   .full-font-bar::-webkit-scrollbar{ height:5px; }
-  .full-font-bar::-webkit-scrollbar-thumb{ background:rgba(56,13,86,.35); border-radius:99px; }
+  .full-font-bar::-webkit-scrollbar-thumb{ background:rgba(16,36,93,.35); border-radius:99px; }
   /* يحافظ على المحاذاة الأصلية (نحو اليسار) عندما يتسع الشريط، ويسمح بالتمرير عند الضيق */
   .full-font-bar > :first-child{ margin-inline-start:auto !important; }
   .full-font-bar > *{ flex:none !important; white-space:nowrap !important; }
@@ -28667,9 +29526,9 @@ html[data-theme="night"] .nb-swap-note{ color:#a2c556; } html[data-theme="night"
     width:auto !important; height:32px !important; padding:0 16px !important;
     border-radius:999px !important; font-size:12.5px !important; font-weight:900 !important;
     display:inline-flex !important; align-items:center !important; line-height:1 !important;
-    background:linear-gradient(180deg,#4c1175,#1c052c) !important; color:#fff !important;
+    background:linear-gradient(180deg,#15307e,#07112f) !important; color:#fff !important;
     border:1.5px solid #d9b55c !important;
-    box-shadow:0 4px 12px -4px rgba(28,5,44,.55), inset 0 1px 0 rgba(255,255,255,.15) !important;
+    box-shadow:0 4px 12px -4px rgba(7,17,47,.55), inset 0 1px 0 rgba(255,255,255,.15) !important;
   }
   .full-font-ctrl .btn-swap-teach.active{
     background:linear-gradient(180deg,#f3dc95,#d9b55c) !important; color:#2a1d02 !important; border-color:#f3dc95 !important;
@@ -28692,10 +29551,10 @@ html[data-theme="night"] .nb-swap-note{ color:#a2c556; } html[data-theme="night"
 .nb-theme-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; max-height:60vh; overflow:auto; padding:2px; }
 .nb-theme-opt{
   display:flex; flex-direction:column; align-items:stretch; gap:6px; text-align:right; cursor:pointer; font-family:inherit;
-  border:1.5px solid rgba(56,13,86,.16); border-radius:14px; padding:10px; background:#fff; color:#250939;
-  box-shadow:0 2px 8px -4px rgba(28,5,44,.25); transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  border:1.5px solid rgba(16,36,93,.16); border-radius:14px; padding:10px; background:#fff; color:#0b183d;
+  box-shadow:0 2px 8px -4px rgba(7,17,47,.25); transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
-.nb-theme-opt:hover{ transform:translateY(-2px); box-shadow:0 8px 18px -8px rgba(28,5,44,.35); border-color:rgba(56,13,86,.35); }
+.nb-theme-opt:hover{ transform:translateY(-2px); box-shadow:0 8px 18px -8px rgba(7,17,47,.35); border-color:rgba(16,36,93,.35); }
 .nb-theme-opt.active{ border-color:#d9b55c; box-shadow:0 0 0 3px rgba(217,181,92,.30), 0 8px 18px -8px rgba(184,145,58,.5); }
 .nb-theme-opt b{ font-size:13.5px; font-weight:900; }
 .nb-theme-opt small{ font-size:11px; opacity:.75; line-height:1.5; font-weight:700; }
@@ -28709,14 +29568,14 @@ html[data-theme="night"] .nb-theme-opt.active{ border-color:#22d3ee; box-shadow:
 /* عناوين التبويبات في الوضع النهاري: أزرار فاتحة بارزة فوق رأس داكن، والنشط ذهبي — ألوان فقط */
 @media screen{
   html:not([data-theme="night"]) body .tab-btn{
-    background:linear-gradient(180deg,#ffffff 0%,#ede3f4 100%) !important;
+    background:linear-gradient(180deg,#ffffff 0%,#e5e8f2 100%) !important;
     border-color:rgba(255,255,255,.9) !important;
-    color:#2f0a48 !important;
-    box-shadow:0 3px 10px -3px rgba(0,0,0,.35), inset 0 -2px 0 rgba(56,13,86,.14) !important;
+    color:#0d1d4d !important;
+    box-shadow:0 3px 10px -3px rgba(0,0,0,.35), inset 0 -2px 0 rgba(16,36,93,.14) !important;
   }
   html:not([data-theme="night"]) body .tab-btn:hover{
     background:linear-gradient(180deg,#ffffff 0%,#fdf6e3 100%) !important;
-    border-color:#ecd28a !important; color:#200632 !important;
+    border-color:#ecd28a !important; color:#081436 !important;
   }
   html:not([data-theme="night"]) body .tab-btn.active{
     background:linear-gradient(180deg,#fae6a6 0%,#e0bb5e 55%,#c99b3a 100%) !important;
@@ -28765,18 +29624,18 @@ html[data-theme="night"] .nb-theme-opt.active{ border-color:#22d3ee; box-shadow:
 .nb-tc-role{ font-size:12px; font-weight:800; opacity:.7; }
 .nb-tc-name{ font-size:19px; font-weight:900; line-height:1.3; }
 .nb-tc-total{ min-width:84px; text-align:center; padding:8px 10px; border-radius:16px; color:#fff;
-  background:linear-gradient(180deg,#4c1175,#1c052c); box-shadow:0 8px 18px -8px rgba(28,5,44,.6), inset 0 -3px 0 #d9b55c; }
+  background:linear-gradient(180deg,#15307e,#07112f); box-shadow:0 8px 18px -8px rgba(7,17,47,.6), inset 0 -3px 0 #d9b55c; }
 .nb-tc-total b{ display:block; font-size:30px; line-height:1; font-weight:900; }
 .nb-tc-total small{ font-size:11px; font-weight:800; opacity:.9; }
 .nb-tc-sec{ font-size:12.5px; font-weight:900; margin:12px 0 6px; opacity:.85; }
 .nb-tc-days{ display:flex; flex-direction:column; gap:6px; }
 .nb-tc-day{ display:grid; grid-template-columns:72px 1fr 44px; align-items:center; gap:8px; font-size:13px; font-weight:800; }
-.nb-tc-bar{ height:10px; border-radius:99px; background:rgba(56,13,86,.10); overflow:hidden; }
-.nb-tc-bar i{ display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#4c1175,#d9b55c); }
+.nb-tc-bar{ height:10px; border-radius:99px; background:rgba(16,36,93,.10); overflow:hidden; }
+.nb-tc-bar i{ display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#15307e,#d9b55c); }
 .nb-tc-day b{ text-align:center; }
 .nb-tc-day.off{ opacity:.6; } .nb-tc-day.off b{ font-size:11px; color:#a33; }
 .nb-tc-cls{ list-style:none; margin:0; padding:0; max-height:26vh; overflow:auto; display:flex; flex-direction:column; gap:4px; }
-.nb-tc-cls li{ display:flex; justify-content:space-between; gap:8px; font-size:12.5px; font-weight:700; padding:6px 10px; border-radius:9px; background:rgba(56,13,86,.06); }
+.nb-tc-cls li{ display:flex; justify-content:space-between; gap:8px; font-size:12.5px; font-weight:700; padding:6px 10px; border-radius:9px; background:rgba(16,36,93,.06); }
 .nb-tc-cls li b{ font-weight:900; }
 html[data-theme="night"] .nb-tc-bar{ background:rgba(126,196,255,.12); }
 html[data-theme="night"] .nb-tc-cls li{ background:rgba(126,196,255,.07); }
@@ -28792,30 +29651,30 @@ html[data-theme="night"] .nb-tc-cls li{ background:rgba(126,196,255,.07); }
 </style>
 <style id="nibras-jlink-css">
 .nb-lock-card{ border:1.5px solid rgba(196,160,74,.55) !important; }
-.nb-lock-dev{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 12px; border-radius:12px; background:rgba(56,13,86,.06); margin-top:8px; }
+.nb-lock-dev{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 12px; border-radius:12px; background:rgba(16,36,93,.06); margin-top:8px; }
 .nb-lock-dev span{ font-size:13px; font-weight:800; opacity:.8; }
 .nb-lock-dev b{ font-size:20px; letter-spacing:1.5px; font-family:ui-monospace,Menlo,Consolas,monospace; }
 html[data-theme="night"] .nb-lock-dev{ background:rgba(126,196,255,.07); }
 #nbLinkWa{ text-decoration:none; display:inline-flex; align-items:center; }
 </style>
 <style id="nibras-promo-css">
-.nb-promo-bg{ position:fixed; inset:0; z-index:100001; background:rgba(13,3,20,.62); display:flex; align-items:center; justify-content:center; padding:16px; animation:nbpIn .25s ease; }
+.nb-promo-bg{ position:fixed; inset:0; z-index:100001; background:rgba(4,8,22,.62); display:flex; align-items:center; justify-content:center; padding:16px; animation:nbpIn .25s ease; }
 .nb-promo-bg.out{ opacity:0; transition:opacity .2s; }
 @keyframes nbpIn{ from{ opacity:0; } to{ opacity:1; } }
-.nb-promo{ width:100%; max-width:470px; max-height:92vh; overflow:auto; border-radius:22px; background:#fff; color:#250939; direction:rtl;
+.nb-promo{ width:100%; max-width:470px; max-height:92vh; overflow:auto; border-radius:22px; background:#fff; color:#0b183d; direction:rtl;
   box-shadow:0 30px 70px -18px rgba(0,0,0,.6); animation:nbpUp .3s ease; }
 @keyframes nbpUp{ from{ transform:translateY(16px) scale(.98); } to{ transform:none; } }
 .nb-promo-top{ position:relative; text-align:center; color:#fff; padding:22px 18px 18px; border-radius:22px 22px 0 0;
-  background:linear-gradient(150deg,#4c1175 0%,#1c052c 100%); box-shadow:inset 0 -3px 0 #d9b55c; }
+  background:linear-gradient(150deg,#15307e 0%,#07112f 100%); box-shadow:inset 0 -3px 0 #d9b55c; }
 .nb-promo-new{ position:absolute; top:14px; left:14px; font-size:12px; font-weight:900; padding:4px 10px; border-radius:99px; background:linear-gradient(180deg,#f3dc95,#d9b55c); color:#2a1d02; }
 .nb-promo-ic{ width:64px; height:64px; margin:0 auto 8px; border-radius:18px; display:grid; place-items:center; font-size:34px; background:rgba(255,255,255,.12); border:1px solid rgba(243,220,149,.5); }
 .nb-promo-top h2{ margin:0; font-size:20px; line-height:1.45; }
 .nb-promo-top p{ margin:6px 0 0; font-size:14px; opacity:.92; line-height:1.7; font-weight:700; }
 .nb-promo-list{ list-style:none; margin:0; padding:14px 16px 6px; display:flex; flex-direction:column; gap:10px; }
 .nb-promo-list li{ display:flex; gap:10px; align-items:flex-start; }
-.nb-promo-list i{ font-style:normal; flex:none; width:34px; height:34px; border-radius:10px; display:grid; place-items:center; background:rgba(56,13,86,.08); font-size:17px; }
+.nb-promo-list i{ font-style:normal; flex:none; width:34px; height:34px; border-radius:10px; display:grid; place-items:center; background:rgba(16,36,93,.08); font-size:17px; }
 .nb-promo-list b{ display:block; font-size:14.5px; }
-.nb-promo-list span{ font-size:13px; color:#5b3f6f; font-weight:600; line-height:1.6; }
+.nb-promo-list span{ font-size:13px; color:#475379; font-weight:600; line-height:1.6; }
 .nb-promo-note{ margin:6px 16px 0; padding:8px 12px; border-radius:10px; font-size:12.5px; font-weight:800; color:#7a5a12; background:rgba(217,181,92,.16); text-align:center; line-height:1.7; }
 .nb-promo-act{ display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:14px 16px 16px; }
 .nb-promo-act .btn{ justify-content:center; text-decoration:none; display:flex; align-items:center; }
@@ -28862,7 +29721,7 @@ html[data-theme="night"] .nb-mgr-opt{ border-color:rgba(34,211,238,.45); backgro
 .nb-dlp{ position:relative; width:min(560px, 100%); max-height:96vh; display:flex; flex-direction:column; align-items:center; gap:12px; animation:nbdlUp .28s ease; }
 @keyframes nbdlUp{ from{ transform:translateY(14px) scale(.985); } to{ transform:none; } }
 .nb-dlp img{ display:block; width:auto; max-width:100%; max-height:calc(96vh - 92px); aspect-ratio:4/5; object-fit:contain; border-radius:20px;
-  box-shadow:0 30px 70px -18px rgba(0,0,0,.75), 0 0 0 1px rgba(243,220,149,.25); background:#1f0730; }
+  box-shadow:0 30px 70px -18px rgba(0,0,0,.75), 0 0 0 1px rgba(243,220,149,.25); background:#091434; }
 .nb-dlp-act{ display:flex; gap:10px; width:100%; max-width:440px; }
 .nb-dlp-go{ flex:1; display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; font-weight:900; font-size:18px; font-family:inherit;
   padding:14px 18px; border-radius:16px; color:#2a1d02; background:linear-gradient(180deg,#f6e2a2,#d9b55c 60%,#c49a3c);
@@ -28918,18 +29777,18 @@ html[data-theme="night"] .nb-mgr-opt{ border-color:rgba(34,211,238,.45); backgro
 html:not([data-theme="night"]) body{
   background:
     radial-gradient(1200px 520px at 100% -10%, rgba(201,162,39,.10), transparent 60%),
-    radial-gradient(900px 480px at -10% 0%, rgba(74,29,110,.10), transparent 60%),
-    linear-gradient(180deg,#ece4f5 0%, #e2d8ef 100%) fixed;
+    radial-gradient(900px 480px at -10% 0%, rgba(34,56,119,.10), transparent 60%),
+    linear-gradient(180deg,#e6e9f3 0%, #dbdfec 100%) fixed;
 }
 html:not([data-theme="night"]) body .topbar{
   background:
     radial-gradient(700px 140px at 85% -40%, rgba(228,197,106,.22), transparent 70%),
-    linear-gradient(135deg,#1a0a2b 0%, #3a1259 55%, #4a1d6e 100%);
-  box-shadow:0 10px 30px rgba(26,10,43,.35), inset 0 -1px 0 rgba(228,197,106,.55);
+    linear-gradient(135deg,#0c152e 0%, #162960 55%, #223877 100%);
+  box-shadow:0 10px 30px rgba(12,21,46,.35), inset 0 -1px 0 rgba(228,197,106,.55);
 }
 /* كبسولات التبويبات: إطار ذهبي احترافي (حلقة داخلية لا تغيّر الأبعاد) */
 html:not([data-theme="night"]) body .tabs .tab-btn{
-  box-shadow: inset 0 0 0 1.5px rgba(212,175,55,.92), inset 0 1px 0 rgba(255,244,205,.55), 0 3px 10px rgba(26,10,43,.22) !important;
+  box-shadow: inset 0 0 0 1.5px rgba(212,175,55,.92), inset 0 1px 0 rgba(255,244,205,.55), 0 3px 10px rgba(12,21,46,.22) !important;
 }
 html:not([data-theme="night"]) body .tabs .tab-btn:not(.active):hover{
   box-shadow: inset 0 0 0 2px #e4c56a, 0 6px 16px rgba(201,162,39,.30) !important;
@@ -28941,21 +29800,21 @@ html:not([data-theme="night"]) body .tabs .tab-btn.active{
 /* البطاقات والقوائم: حافة ذهبية رفيعة وظل بنفسجي ناعم */
 html:not([data-theme="night"]) body .card,
 html:not([data-theme="night"]) body .dash-card{
-  box-shadow: 0 0 0 1px rgba(201,162,39,.22), 0 12px 30px rgba(36,13,59,.12), inset 0 1px 0 rgba(255,255,255,.8) !important;
+  box-shadow: 0 0 0 1px rgba(201,162,39,.22), 0 12px 30px rgba(16,28,64,.12), inset 0 1px 0 rgba(255,255,255,.8) !important;
 }
-html:not([data-theme="night"]) body .card h2{ color:#2c0f45; }
+html:not([data-theme="night"]) body .card h2{ color:#12204a; }
 html:not([data-theme="night"]) body .set-nav-btn.active,
 html:not([data-theme="night"]) body .class-pill.active,
 html:not([data-theme="night"]) body .demo-mode-btn.active{
-  background:linear-gradient(160deg,#612a8c 0%, #3a1259 60%, #240d3b 100%) !important;
-  box-shadow: inset 0 0 0 1.5px rgba(228,197,106,.85), 0 10px 22px rgba(36,13,59,.30) !important;
+  background:linear-gradient(160deg,#314b97 0%, #162960 60%, #101c40 100%) !important;
+  box-shadow: inset 0 0 0 1.5px rgba(228,197,106,.85), 0 10px 22px rgba(16,28,64,.30) !important;
 }
 html:not([data-theme="night"]) body .set-nav-btn:not(.active):hover,
 html:not([data-theme="night"]) body .item-row:hover{
-  box-shadow: 0 0 0 1px rgba(201,162,39,.45), 0 8px 18px rgba(36,13,59,.14) !important;
+  box-shadow: 0 0 0 1px rgba(201,162,39,.45), 0 8px 18px rgba(16,28,64,.14) !important;
 }
 html:not([data-theme="night"]) body .btn-primary{
-  background:linear-gradient(160deg,#612a8c,#3a1259) !important; border-color:rgba(228,197,106,.7) !important; color:#fff !important;
+  background:linear-gradient(160deg,#314b97,#162960) !important; border-color:rgba(228,197,106,.7) !important; color:#fff !important;
 }
 html:not([data-theme="night"]) body ::selection{ background:rgba(201,162,39,.35); }
 
@@ -28974,7 +29833,7 @@ html:not([data-theme="night"]) body ::selection{ background:rgba(201,162,39,.35)
 .nb-pop-launch .nb-pl-ico{font-size:20px}
 .nb-pop-launch .nb-pl-tx{flex:1;text-align:right}
 .nb-pop-launch .nb-pl-plus{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#f0d78c,#c9a227);color:#2a1d02;font-weight:900}
-.nb-pop-bg{position:fixed;inset:0;z-index:1200;background:rgba(20,8,34,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:16px}
+.nb-pop-bg{position:fixed;inset:0;z-index:1200;background:rgba(10,16,37,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:16px}
 .nb-pop-bg[hidden]{display:none}
 .nb-pop-shell{position:relative;width:100%;max-width:720px;max-height:92vh;overflow:auto;border-radius:18px;animation:nbPopIn .16s ease-out}
 .nb-pop-shell .nb-pop-card{margin:0;box-shadow:0 24px 60px rgba(0,0,0,.35)!important}
@@ -28997,13 +29856,13 @@ html:not([data-theme="night"]) body ::selection{ background:rgba(201,162,39,.35)
 
 /* زر الرجوع من صفحة المعاينة/الطباعة */
 .nb-print-back{position:fixed;top:12px;right:12px;z-index:2147483000;display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:999px;
-  border:1.5px solid #e4c56a;background:linear-gradient(160deg,#4a1d6e,#240d3b);color:#fff;font:inherit;font-weight:900;font-size:15px;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.35)}
+  border:1.5px solid #e4c56a;background:linear-gradient(160deg,#223877,#101c40);color:#fff;font:inherit;font-weight:900;font-size:15px;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.35)}
 .nb-print-back[hidden]{display:none!important}
 @media print{.nb-print-back{display:none!important}}
 
 /* زر «تراجع» في شريط الجدول الكامل — بنفس شكل كبسولة «تبديل معلم» */
 .full-font-ctrl .btn-undo-full{width:auto;height:32px;padding:0 14px;border-radius:999px;font:inherit;font-size:12.5px;font-weight:900;display:inline-flex;align-items:center;gap:2px;line-height:1;white-space:nowrap;cursor:pointer;
-  background:linear-gradient(180deg,#fff,#efe7f7);color:#250939;border:1.5px solid #d9b55c;box-shadow:0 4px 12px -4px rgba(28,5,44,.35)}
+  background:linear-gradient(180deg,#fff,#e9ecf5);color:#0b183d;border:1.5px solid #d9b55c;box-shadow:0 4px 12px -4px rgba(7,17,47,.35)}
 .full-font-ctrl .btn-undo-full:disabled{opacity:.45;cursor:default;box-shadow:none}
 html[data-theme="night"] .full-font-ctrl .btn-undo-full{background:linear-gradient(180deg,#1b3a6b,#0e1e3d);color:#e9f3ff;border-color:#22d3ee}
 @media print{.btn-undo-full{display:none!important}}
@@ -29022,7 +29881,7 @@ html[data-theme="night"] .full-font-ctrl .btn-undo-full{background:linear-gradie
 /* ================= القائمة الجانبية ================= */
 html.nb-side{--nb-side-w:252px;--nb-side-wc:70px}
 .nb-sidebar{position:fixed;top:var(--nb-side-top,0px);bottom:0;right:0;width:var(--nb-side-w);z-index:45;display:flex;flex-direction:column;
-  background:linear-gradient(180deg,var(--topbar-2,#380d56) 0%,var(--topbar-1,#1c052c) 100%);
+  background:linear-gradient(180deg,var(--topbar-2,#10245d) 0%,var(--topbar-1,#07112f) 100%);
   box-shadow:-10px 0 28px rgba(0,0,0,.18);border-left:1px solid rgba(228,197,106,.35);transition:width .18s ease, transform .2s ease}
 .nb-side-head{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:12px 12px 6px}
 .nb-side-title{color:#f3dc95;font-weight:900;font-size:13px;letter-spacing:.3px}
@@ -29053,7 +29912,7 @@ html.nb-side-drawer .nb-sidebar{top:0;transform:translateX(105%);width:min(82vw,
 html.nb-side-drawer.nb-side-open .nb-sidebar{transform:none}
 html.nb-side-drawer .nb-side-pin{display:none}
 .nb-side-scrim{display:none}
-html.nb-side-drawer.nb-side-open .nb-side-scrim{display:block;position:fixed;inset:0;z-index:1299;background:rgba(12,4,22,.5)}
+html.nb-side-drawer.nb-side-open .nb-side-scrim{display:block;position:fixed;inset:0;z-index:1299;background:rgba(5,10,24,.5)}
 /* لا قائمة في الطباعة */
 @media print{.nb-sidebar,.nb-side-scrim,.nb-side-burger{display:none!important} html.nb-side main{padding-right:0!important}}
 
@@ -29066,9 +29925,9 @@ html.nb-side:not(.need-landscape) body{padding-top:var(--nb-topbar-h,0px)!import
 @media print{html.nb-side body{padding-top:0!important} html.nb-side .topbar{position:static!important}}
 
 /* بطاقة «جاري التجهيز» */
-.nb-busy{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(14,5,24,.42);backdrop-filter:blur(2px)}
+.nb-busy{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(6,11,26,.42);backdrop-filter:blur(2px)}
 .nb-busy[hidden]{display:none!important}
-.nb-busy-box{display:flex;flex-direction:column;align-items:center;gap:10px;min-width:260px;max-width:86vw;padding:22px 26px;border-radius:18px;background:var(--paper-2,#fff);color:var(--ink,#1b0a2b);
+.nb-busy-box{display:flex;flex-direction:column;align-items:center;gap:10px;min-width:260px;max-width:86vw;padding:22px 26px;border-radius:18px;background:var(--paper-2,#fff);color:var(--ink,#0c152e);
   border:1.5px solid rgba(201,162,39,.75);box-shadow:0 24px 60px rgba(0,0,0,.35);text-align:center}
 .nb-busy-box b{font-size:16px;font-weight:900}
 .nb-busy-box small{font-size:12.5px;opacity:.8;font-weight:700}
@@ -29080,7 +29939,7 @@ html.nb-side:not(.need-landscape) body{padding-top:var(--nb-topbar-h,0px)!import
 
 /* شريط «وصل تحديث جديد» */
 .nb-upd-bar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:2147483000;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;
-  background:linear-gradient(160deg,#4a1d6e,#240d3b);color:#fff;border:1.5px solid #e4c56a;box-shadow:0 12px 30px rgba(0,0,0,.35);font-weight:800;font-size:14px}
+  background:linear-gradient(160deg,#223877,#101c40);color:#fff;border:1.5px solid #e4c56a;box-shadow:0 12px 30px rgba(0,0,0,.35);font-weight:800;font-size:14px}
 .nb-upd-bar button{border:0;border-radius:10px;padding:7px 12px;font:inherit;font-weight:900;cursor:pointer;background:linear-gradient(180deg,#f0d78c,#c9a227);color:#2a1d02}
 .nb-upd-bar button.x{background:transparent;color:#f3dc95;padding:4px 8px}
 
@@ -29107,16 +29966,18 @@ html.nb-side-compact .nb-side-moe{display:none}
 @media screen{
   /* ---------- متغيرات النهاري ---------- */
   html:not([data-theme="night"]){
-    --ink:#1b0832; --ink-2:#2b0e49; --ink-soft:#4b2c6a;
+    --ink:#0b1a46; --ink-2:#13286b; --ink-soft:#3c4e7d;
     --gold:#c39a3a; --gold-light:#e6c665;
-    --paper:#efe9f6; --paper-2:#fbf9fd;
-    --line:#ddd1ea; --line-2:#c3b0d8;
-    --shadow:0 1px 2px rgba(27,8,50,.06),0 12px 32px rgba(27,8,50,.09);
-    --topbar-1:#14031f; --topbar-2:#36115a;
-    --nbp-bg1:#f8f4fc; --nbp-bg2:#ece4f5; --nbp-glowA:rgba(195,154,58,.15); --nbp-glowB:rgba(96,44,160,.13);
-    --nbp-side1:#220a3a; --nbp-side2:#13041f; --nbp-sidetx:#ebdff8; --nbp-sidemuted:rgba(235,223,248,.62);
-    --nbp-card-bd:rgba(70,30,120,.09); --nbp-card-sh:0 1px 2px rgba(27,8,50,.05),0 14px 34px rgba(27,8,50,.08);
-    --nbp-tp1:#12031d; --nbp-tp2:#2a0c47; --nbp-tp3:#43166a;
+    --paper:#eef1f8; --paper-2:#fbfcfe;
+    --line:#d6dcec; --line-2:#b3bfdc;
+    --shadow:0 1px 2px rgba(6,16,44,.06),0 12px 32px rgba(6,16,44,.10);
+    --topbar-1:#050d26; --topbar-2:#152f7c;
+    --nbp-bg1:#f6f8fd; --nbp-bg2:#e5eaf6; --nbp-glowA:rgba(212,170,70,.16); --nbp-glowB:rgba(40,80,190,.13);
+    --nbp-side1:#132a6e; --nbp-side2:#06102c; --nbp-sidetx:#eef2ff; --nbp-sidemuted:rgba(238,242,255,.66);
+    --nbp-card-bd:rgba(25,50,130,.12); --nbp-card-sh:0 1px 2px rgba(6,16,44,.05),0 14px 34px rgba(6,16,44,.09);
+    --nbp-tp1:#040b22; --nbp-tp2:#0f2462; --nbp-tp3:#1d3c94;
+    --nb-accent:#1d3c94;
+    --nb-gold-frame:linear-gradient(135deg,#fff3b8 0%,#e6c665 18%,#b8892a 42%,#f4dc8a 62%,#a77a1e 82%,#e9cf72 100%);
   }
   /* ---------- متغيرات الليلي ---------- */
   html[data-theme="night"]{
@@ -29223,16 +30084,65 @@ html.nb-side-compact .nb-side-moe{display:none}
   /* ---------- الأزرار ---------- */
   html:root body main .btn{border-radius:12px;transition:transform .12s ease, box-shadow .16s ease, filter .16s ease}
   html:root body main .btn:active{transform:translateY(1px) scale(.99)}
-  html:not([data-theme="night"]):root body main .btn-primary{background:linear-gradient(135deg,#43166a 0%,#24093f 100%);box-shadow:0 6px 16px rgba(36,9,63,.25)}
+  html:not([data-theme="night"]):root body main .btn-primary{background:linear-gradient(135deg,#2a52c9 0%,#173a9a 55%,#0d2468 100%);box-shadow:0 6px 16px rgba(13,36,104,.30), inset 0 0 0 1px rgba(230,198,101,.35);color:#fff}
   html:root body main .btn-gold{background:linear-gradient(135deg,#ecca67 0%,#c99d38 60%,#b9892a 100%);color:#26160a;box-shadow:0 6px 16px rgba(185,137,42,.28)}
   html:root body main .btn-primary:hover, html:root body main .btn-gold:hover{filter:brightness(1.05)}
+
+  /* ---------- لمسات الملكي الفاخر (النهاري فقط): أزرق ملكي + ذهب ---------- */
+  /* كبسولات الأقسام الفرعية */
+  html:not([data-theme="night"]):root body main .demo-mode-toggle{
+    background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(236,241,252,.95)) !important;
+    border:1px solid rgba(195,154,58,.45) !important;
+    box-shadow:inset 0 1px 0 #fff, 0 8px 22px rgba(6,16,44,.09) !important;
+    border-radius:999px !important; padding:5px !important;
+  }
+  html:not([data-theme="night"]):root body main .demo-mode-btn{border-radius:999px !important;font-weight:800 !important;transition:background .18s ease, color .18s ease, box-shadow .18s ease !important}
+  html:not([data-theme="night"]):root body main .demo-mode-btn:not(.active):hover{background:rgba(29,60,148,.08) !important;color:#0b1a46 !important}
+  html:not([data-theme="night"]):root body main .demo-mode-btn.active{
+    background:radial-gradient(120% 140% at 50% -20%,rgba(255,255,255,.25),transparent 55%),linear-gradient(135deg,#2a52c9 0%,#173a9a 55%,#0b1f5e 100%) !important;
+    color:#fff !important; text-shadow:0 1px 2px rgba(0,0,0,.3);
+    box-shadow:0 6px 16px rgba(11,31,94,.35), inset 0 0 0 1.6px #e6c665 !important;
+  }
+  /* عناوين البطاقات: خط ذهبي ملكي */
+  html:not([data-theme="night"]):root body main .card > h2:first-child{position:relative; padding-bottom:9px !important; margin-bottom:12px !important}
+  html:not([data-theme="night"]):root body main .card > h2:first-child::after{
+    content:""; position:absolute; right:0; bottom:0; height:3px; width:min(190px,45%); border-radius:3px;
+    background:linear-gradient(270deg,#c39a3a 0%,#e6c665 30%,#2a52c9 70%,rgba(42,82,201,0) 100%);
+  }
+  html:not([data-theme="night"]):root body main .card{background:linear-gradient(180deg,#ffffff 0%,#fbfcff 100%)}
+  /* بطاقات أسماء المعلمين والمواد والمراحل: إطار ذهبي فاخر */
+  html:not([data-theme="night"]):root body main .item-row,
+  html:not([data-theme="night"]):root body main .stage-block{
+    border:2px solid transparent !important;
+    background:
+      radial-gradient(120% 90% at 100% 0%,rgba(255,255,255,.10),transparent 55%) padding-box,
+      linear-gradient(160deg,#18348a 0%,#0f2462 55%,#091846 100%) padding-box,
+      var(--nb-gold-frame) border-box !important;
+    box-shadow:0 10px 26px rgba(6,16,44,.22), 0 0 0 1px rgba(255,236,170,.25), inset 0 1px 0 rgba(255,255,255,.12) !important;
+  }
+  html:not([data-theme="night"]):root body main .item-row:hover,
+  html:not([data-theme="night"]):root body main .stage-block:hover{box-shadow:0 14px 32px rgba(6,16,44,.28), 0 0 0 3px rgba(230,198,101,.22), inset 0 1px 0 rgba(255,255,255,.14) !important}
+  html:not([data-theme="night"]):root body main .item-row .item-main b, html:not([data-theme="night"]):root body main .stage-block .stage-head b{color:#fff6d6}
+  /* الأزرار الثانوية */
+  html:not([data-theme="night"]):root body main .btn-outline{border-color:rgba(29,60,148,.32) !important;color:#13286b !important;background:#fff !important}
+  html:not([data-theme="night"]):root body main .btn-outline:hover{background:#f1f4fc !important;border-color:#c39a3a !important;box-shadow:0 4px 12px rgba(11,31,94,.12)}
+  /* القائمة الجانبية: أسماء الأقسام أوضح وأسمك */
+  html:not([data-theme="night"]):root body .nb-sidebar .tab-btn .tb-tx{font-weight:900 !important;font-size:14.5px !important;letter-spacing:.15px;color:#0b1a46}
+  html:not([data-theme="night"]):root body .nb-sidebar .tab-btn.active .tb-tx{color:#2b1a00}
+  html:not([data-theme="night"]):root body .nb-sidebar .tab-btn .tb-ico{font-size:18.5px !important;filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
+  html:not([data-theme="night"]):root body .nb-sidebar .nb-side-title{font-weight:900 !important;font-size:15px !important;color:#f4dc8a !important;letter-spacing:.3px}
+  html:not([data-theme="night"]):root body .nb-sidebar .tab-btn:not(.active):hover{box-shadow:0 6px 16px rgba(4,11,34,.30), inset 0 0 0 1.6px rgba(230,198,101,.85) !important;transform:translateX(-2px)}
+  html.nb-side-compact:root body .nb-sidebar .tab-btn .tb-tx{font-size:0 !important}
+  html:not([data-theme="night"]):root body main .chip.active, html:not([data-theme="night"]):root body main .day-chip.active{background:linear-gradient(135deg,#2a52c9,#0f2462) !important;color:#fff !important;border-color:transparent !important}
+  html:not([data-theme="night"]) ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#e6c665,#2a52c9);border-radius:10px}
+  html:not([data-theme="night"]) ::selection{background:rgba(42,82,201,.22)}
 
   /* ---------- الحقول ---------- */
   html:root body main .field input[type=text], html:root body main .field input[type=number], html:root body main .field select, html:root body main .field textarea{
     border-radius:12px; transition:border-color .15s ease, box-shadow .15s ease;
   }
   html:root body main .field input:focus, html:root body main .field select:focus, html:root body main .field textarea:focus{
-    outline:none !important; border-color:var(--gold) !important; box-shadow:0 0 0 4px rgba(195,154,58,.18) !important;
+    outline:none !important; border-color:var(--gold) !important; box-shadow:0 0 0 4px rgba(42,82,201,.16) !important;
   }
 
   /* ---------- خفّة وسلاسة: إيقاف الحركات اللانهائية التزيينية التي تعيد الرسم باستمرار ---------- */
