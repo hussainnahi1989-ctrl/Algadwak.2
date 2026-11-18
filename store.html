@@ -7,8 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--pri:#4f46e5;--pri2:#06b6d4;--bg:#f4f6fb;--card:#fff;--txt:#111827;--mut:#6b7280;--line:#e5e7eb;--soft:#eef2ff;--ok:#10b981;--warn:#f59e0b;--bad:#ef4444;--sh:0 1px 2px rgba(0,0,0,.04),0 6px 24px rgba(17,24,39,.06);--r:18px}
-body.dark{--bg:#0b1020;--card:#141a2e;--txt:#eef1f8;--mut:#9aa3b8;--line:#232b45;--soft:#1c2340;--sh:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35)}
+:root{--pri:#4f46e5;--pri-t:var(--pri);--pri2:#06b6d4;--bg:#f4f6fb;--card:#fff;--txt:#111827;--mut:#6b7280;--line:#e5e7eb;--soft:#eef2ff;--ok:#10b981;--warn:#f59e0b;--bad:#ef4444;--sh:0 1px 2px rgba(0,0,0,.04),0 6px 24px rgba(17,24,39,.06);--r:18px}
+body.dark{color-scheme:dark;--bg:#17191e;--card:#22252c;--txt:#eef0f4;--mut:#a7adba;--line:#323640;--soft:color-mix(in srgb,var(--pri) 18%,#22252c);--pri-t:color-mix(in srgb,var(--pri) 55%,#ffffff);--sh:0 1px 2px rgba(0,0,0,.2),0 4px 14px rgba(0,0,0,.22)}
+body.dark .chip.on,body.dark .btn.pri,body.dark .atabs button.on{color:#fff}
+body.dark .slide .go{color:#111}
+body.dark #toast{background:#eef0f4;color:#17191e}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth}
 body{font-family:Tajawal,system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.6;padding-bottom:80px;transition:background .25s}
@@ -26,7 +29,7 @@ svg{width:1em;height:1em;flex-shrink:0}
 .brand small{display:block;font-size:.72rem;font-weight:500;color:var(--mut);margin-top:-4px}
 .tsearch{flex:1;max-width:520px;margin-inline:auto;position:relative}
 .tsearch input{width:100%;height:44px;border-radius:999px;border:1px solid var(--line);background:var(--card);padding:0 44px 0 16px;outline:none;transition:.2s}
-.tsearch input:focus{border-color:var(--pri);box-shadow:0 0 0 4px color-mix(in srgb,var(--pri) 15%,transparent)}
+.tsearch input:focus{border-color:var(--pri-t);box-shadow:0 0 0 4px color-mix(in srgb,var(--pri) 15%,transparent)}
 .tsearch>svg{position:absolute;right:15px;top:50%;transform:translateY(-50%);color:var(--mut);font-size:18px}
 .sugg{position:absolute;top:50px;inset-inline:0;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh);overflow:hidden;display:none;z-index:50}
 .sugg.on{display:block}
@@ -35,26 +38,26 @@ svg{width:1em;height:1em;flex-shrink:0}
 .sugg img{width:34px;height:34px;border-radius:9px}
 .sugg small{color:var(--mut);display:block;font-size:.78rem;line-height:1.2}
 .ibtn{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:20px;color:var(--mut);transition:.2s}
-.ibtn:hover{background:var(--soft);color:var(--pri)}
+.ibtn:hover{background:var(--soft);color:var(--pri-t)}
 @media(max-width:700px){.brand small{display:none}.tsearch{display:none}.brand{font-size:1.05rem}.top .wrap{justify-content:space-between}}
 
 /* bottom nav */
 .bnav{position:fixed;bottom:0;inset-inline:0;z-index:40;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
 .bnav a{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.74rem;color:var(--mut);padding:4px 10px;border-radius:14px;min-width:62px;font-weight:500}
 .bnav a .ic{font-size:21px;padding:3px 16px;border-radius:999px;display:grid;place-items:center;transition:.2s}
-.bnav a.on{color:var(--pri);font-weight:700}
+.bnav a.on{color:var(--pri-t);font-weight:700}
 .bnav a.on .ic{background:var(--soft)}
 
 /* common */
 .sec{margin:26px 0}
 .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .sh h2{font-size:1.2rem;font-weight:800}
-.sh a{color:var(--pri);font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:4px}
+.sh a{color:var(--pri-t);font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:4px}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{white-space:nowrap;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:.9rem;font-weight:500;transition:.2s}
-.chip.on{background:var(--pri);border-color:var(--pri);color:#fff}
-.chip:hover:not(.on){border-color:var(--pri);color:var(--pri)}
+.chip.on{background:var(--pri);border-color:var(--pri-t);color:#fff}
+.chip:hover:not(.on){border-color:var(--pri-t);color:var(--pri-t)}
 .row{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 12px;scroll-snap-type:x mandatory;scrollbar-width:thin}
 .row>*{scroll-snap-align:start}
 .tile{width:128px;flex-shrink:0;transition:.2s}
@@ -70,6 +73,7 @@ svg{width:1em;height:1em;flex-shrink:0}
 .hero{position:relative;border-radius:26px;overflow:hidden;margin-top:18px;min-height:230px;box-shadow:var(--sh)}
 .slide{position:absolute;inset:0;display:flex;align-items:center;gap:22px;padding:28px 32px;color:#fff;opacity:0;transition:opacity .6s;pointer-events:none}
 .slide.on{opacity:1;pointer-events:auto;position:relative}
+.slide{min-height:230px}
 .slide::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 15% 120%,rgba(255,255,255,.18),transparent 55%);pointer-events:none}
 .slide img{width:120px;height:120px;border-radius:30px;box-shadow:0 12px 30px rgba(0,0,0,.25);border:3px solid rgba(255,255,255,.3);flex-shrink:0;object-fit:cover}
 .slide .tg{display:inline-block;background:rgba(255,255,255,.2);padding:3px 12px;border-radius:999px;font-size:.78rem;font-weight:700;margin-bottom:6px}
@@ -84,13 +88,13 @@ svg{width:1em;height:1em;flex-shrink:0}
 /* stats strip */
 .strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
 .strip div{background:var(--card);border-radius:16px;padding:12px;text-align:center;box-shadow:var(--sh)}
-.strip b{display:block;font-size:1.4rem;color:var(--pri);font-weight:800}
+.strip b{display:block;font-size:1.4rem;color:var(--pri-t);font-weight:800}
 .strip span{font-size:.82rem;color:var(--mut)}
 
 /* category grid */
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
 .cat{background:var(--card);border-radius:16px;padding:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh);transition:.2s;font-weight:700}
-.cat:hover{transform:translateY(-2px);color:var(--pri)}
+.cat:hover{transform:translateY(-2px);color:var(--pri-t)}
 .cat i{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-style:normal;font-size:20px;background:var(--soft)}
 .cat small{display:block;color:var(--mut);font-weight:500;font-size:.8rem}
 
@@ -107,30 +111,30 @@ svg{width:1em;height:1em;flex-shrink:0}
 .item b{display:block;font-size:1.02rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .item p{font-size:.85rem;color:var(--mut);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 .meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.8rem;color:var(--mut);margin-top:3px}
-.pf{display:inline-flex;align-items:center;gap:3px;background:var(--soft);color:var(--pri);padding:1px 8px;border-radius:999px;font-size:.74rem;font-weight:700}
-.getbtn{background:var(--soft);color:var(--pri);font-weight:800;padding:7px 16px;border-radius:999px;font-size:.88rem;white-space:nowrap}
+.pf{display:inline-flex;align-items:center;gap:3px;background:var(--soft);color:var(--pri-t);padding:1px 8px;border-radius:999px;font-size:.74rem;font-weight:700}
+.getbtn{background:var(--soft);color:var(--pri-t);font-weight:800;padding:7px 16px;border-radius:999px;font-size:.88rem;white-space:nowrap}
 .mtop{margin-top:18px}
 
 /* detail */
 .back{display:inline-flex;align-items:center;gap:6px;color:var(--mut);font-weight:700;margin-top:16px;padding:6px 10px 6px 4px;border-radius:10px}
-.back:hover{color:var(--pri)}
+.back:hover{color:var(--pri-t)}
 .dhead{display:flex;gap:22px;align-items:flex-start;margin-top:10px}
 .dhead>img{width:132px;height:132px;border-radius:30px;box-shadow:var(--sh);object-fit:cover;flex-shrink:0;background:var(--soft)}
 .dhead h1{font-size:2rem;font-weight:800;line-height:1.2}
-.dev{color:var(--pri);font-weight:700;margin:4px 0 8px}
-.facts{display:flex;gap:0;margin:16px 0;background:var(--card);border-radius:18px;box-shadow:var(--sh);overflow-x:auto}
-.facts div{flex:1;min-width:92px;text-align:center;padding:12px 8px;border-inline-start:1px solid var(--line)}
+.dev{color:var(--pri-t);font-weight:700;margin:4px 0 8px}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);margin:16px 0;background:var(--card);border-radius:18px;box-shadow:var(--sh);overflow:hidden}
+.facts div{min-width:0;text-align:center;padding:12px 8px;border-inline-start:1px solid var(--line)}
 .facts div:first-child{border:0}
 .facts b{display:flex;justify-content:center;align-items:center;gap:3px;font-size:1.05rem}
 .facts span{font-size:.75rem;color:var(--mut)}
 .dls{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
 .btn-dl{flex:1;min-width:200px;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,var(--pri),color-mix(in srgb,var(--pri) 70%,var(--pri2)));color:#fff;font-weight:800;font-size:1.05rem;padding:14px 22px;border-radius:16px;box-shadow:0 10px 24px color-mix(in srgb,var(--pri) 35%,transparent);transition:.2s}
 .btn-dl:hover{transform:translateY(-2px);filter:brightness(1.07)}
-.btn-dl.alt{background:var(--card);color:var(--pri);border:2px solid var(--pri);box-shadow:none}
+.btn-dl.alt{background:var(--card);color:var(--pri-t);border:2px solid var(--pri);box-shadow:none}
 .btn-dl svg{font-size:22px}
 .btn-dl small{display:block;font-weight:500;font-size:.75rem;opacity:.85;line-height:1}
 .sharebtn{display:inline-flex;align-items:center;gap:6px;color:var(--mut);font-weight:700;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card)}
-.sharebtn:hover{color:var(--pri);border-color:var(--pri)}
+.sharebtn:hover{color:var(--pri-t);border-color:var(--pri-t)}
 @media(max-width:600px){.dhead>img{width:92px;height:92px;border-radius:22px}.dhead h1{font-size:1.45rem}.dhead{gap:14px}}
 .shots{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 14px;scroll-snap-type:x mandatory;align-items:center}
 .shots img{height:380px;width:auto;max-width:none;border-radius:16px;box-shadow:var(--sh);cursor:zoom-in;scroll-snap-align:start;flex-shrink:0;background:var(--soft);transition:.2s;object-fit:contain}
@@ -139,7 +143,7 @@ svg{width:1em;height:1em;flex-shrink:0}
 @media(max-width:600px){.shots img{height:320px}.shots img.land{height:auto;width:86vw}}
 .card{background:var(--card);border-radius:var(--r);padding:18px 20px;box-shadow:var(--sh)}
 .card h3{font-size:1.1rem;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.card h3 svg{color:var(--pri)}
+.card h3 svg{color:var(--pri-t)}
 .desc{white-space:pre-line;color:var(--txt);opacity:.92}
 .feats{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
 .feat{display:flex;gap:10px;align-items:flex-start;background:var(--soft);padding:12px 14px;border-radius:14px;font-weight:500}
@@ -178,11 +182,11 @@ svg{width:1em;height:1em;flex-shrink:0}
 .fg label{display:block;font-weight:700;font-size:.88rem;margin-bottom:5px}
 .fg label small{color:var(--mut);font-weight:500}
 .inp{width:100%;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg);padding:9px 12px;outline:none}
-.inp:focus{border-color:var(--pri)}
+.inp:focus{border-color:var(--pri-t)}
 textarea.inp{min-height:90px;resize:vertical}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:520px){.f2{grid-template-columns:1fr}}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border-radius:12px;font-weight:700;background:var(--soft);color:var(--pri);transition:.2s}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border-radius:12px;font-weight:700;background:var(--soft);color:var(--pri-t);transition:.2s}
 .btn:hover{filter:brightness(.97)}
 .btn.pri{background:var(--pri);color:#fff}
 .btn.bad{background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad)}
@@ -190,7 +194,7 @@ textarea.inp{min-height:90px;resize:vertical}
 .acts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:6px;position:sticky;bottom:-20px;background:var(--card);padding:12px 0}
 .pfs{display:flex;flex-wrap:wrap;gap:8px}
 .pfs label{display:flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer;font-weight:500}
-.pfs input{accent-color:var(--pri)}
+.pfs input{accent-color:var(--pri-t)}
 .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .thumbs div{position:relative}
 .thumbs img{height:90px;width:auto;max-width:180px;object-fit:contain;background:var(--soft);border-radius:10px;border:1px solid var(--line);display:block}
@@ -222,6 +226,14 @@ textarea.inp{min-height:90px;resize:vertical}
 .colors button{width:36px;height:36px;border-radius:50%;border:3px solid transparent}
 .colors button.on{border-color:var(--txt)}
 
+@media(max-width:380px){.facts{grid-template-columns:repeat(2,1fr)}.facts div:nth-child(3){border-inline-start:0}.facts div:nth-child(n+3){border-top:1px solid var(--line)}.strip b{font-size:1.2rem}.btn-dl{min-width:100%}.slide h3{font-size:1.25rem}.lhead h1{font-size:1.25rem}}
+.dnav{display:none;gap:4px}
+.dnav a{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;font-weight:700;color:var(--mut);white-space:nowrap;transition:.2s}
+.dnav a:hover{color:var(--pri-t)}
+.dnav a.on{background:var(--soft);color:var(--pri-t)}
+@media(min-width:1024px){.bnav{display:none}body{padding-bottom:0}.dnav{display:flex}.tsearch{max-width:380px}#toast{bottom:28px}.tile{width:150px}.tile img{width:150px;height:150px;border-radius:32px}.hero{min-height:260px}.slide{min-height:260px;padding:34px 44px}}
+@media(min-width:1500px){.wrap{max-width:1360px}}
+@media(min-width:701px) and (max-width:1023px){.grid{grid-template-columns:repeat(2,1fr)}}
 #toast{position:fixed;bottom:92px;left:50%;transform:translateX(-50%) translateY(20px);background:#111827;color:#fff;padding:11px 20px;border-radius:999px;font-weight:700;opacity:0;transition:.3s;z-index:99;pointer-events:none;white-space:nowrap}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .fade{animation:fd .3s ease}
@@ -232,6 +244,7 @@ footer{text-align:center;color:var(--mut);font-size:.85rem;padding:30px 0 10px}
 <body>
 <header class="top"><div class="wrap">
   <a class="brand" href="#" id="brandLink"><span class="lg" id="brandIcon">✦</span><span><span id="brandName">تطبيقات نادرة</span><small id="brandTag"></small></span></a>
+  <nav class="dnav" id="dnav"></nav>
   <div class="tsearch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
     <input id="topQ" placeholder="ابحث عن تطبيق، تصنيف، ميزة..." autocomplete="off"><div class="sugg" id="sugg"></div></div>
   <button class="ibtn" id="themeBtn" title="الوضع الليلي"></button>
@@ -297,7 +310,7 @@ const BASE_UP=BASE.updated||0;
 let S=null;
 try{S=JSON.parse(localStorage.getItem(LS)||'null')}catch(e){}
 if(!S||!S.apps||(S.updated||0)<(BASE.updated||0))S=BASE;
-function save(){S.updated=Date.now();try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('تعذّر الحفظ المحلي — المساحة ممتلئة')}}
+function save(){S.updated=Date.now();try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('تعذّر الحفظ المحلي — المساحة ممتلئة')}if(typeof autoPublish==='function')autoPublish()}
 const st={cat:'الكل',sort:'new',q:'',pf:'all'};
 let heroTimer=null,lbList=[],lbIdx=0,authed=false;
 try{authed=sessionStorage.getItem('st-auth')==='1'}catch(e){}
@@ -318,7 +331,7 @@ const fmtDate=d=>{try{return new Date(d).toLocaleDateString('ar-IQ',{year:'numer
 /* ---------- shell ---------- */
 function applySettings(){const s=S.settings;document.documentElement.style.setProperty('--pri',s.color||'#4f46e5');$('#brandName').textContent=s.name||'متجري';$('#brandTag').textContent=s.tagline||'';document.title=s.name||'المتجر';$('#foot').textContent=s.footer||'';$('#brandIcon').textContent=(s.name||'م').trim()[0]}
 function setTheme(d){document.body.classList.toggle('dark',d);$('#themeBtn').innerHTML=d?I.sun:I.moon;try{localStorage.setItem('st-dark',d?'1':'0')}catch(e){}}
-function nav(cur){const t=[['','home','الرئيسية',I.home],['android','android','أندرويد',I.android],['windows','windows','حاسوب',I.windows],['all','all','الكل',I.grid],['search','search','بحث',I.search]];$('#bnav').innerHTML=t.map(x=>`<a href="#${x[0]}" class="${cur===x[1]?'on':''}"><span class="ic">${x[3]}</span>${x[2]}</a>`).join('')}
+function nav(cur){const t=[['','home','الرئيسية',I.home],['android','android','أندرويد',I.android],['windows','windows','حاسوب',I.windows],['all','all','الكل',I.grid],['search','search','بحث',I.search]];const navHtml=t.map(x=>`<a href="#${x[0]}" class="${cur===x[1]?'on':''}"><span class="ic">${x[3]}</span>${x[2]}</a>`).join('');$('#bnav').innerHTML=navHtml;$('#dnav').innerHTML=navHtml}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2300)}
 
 /* ---------- views ---------- */
@@ -425,10 +438,11 @@ function renderAdmin(){
   if(!authed){$('#view').innerHTML=`<div class="pin card fade"><div class="lk">${I.lock}</div><h2>لوحة إدارة المتجر</h2><p style="color:var(--mut)">أدخل الرمز السري للمتابعة</p><input class="inp" id="pinIn" type="password" inputmode="numeric" maxlength="12"><button class="btn pri" style="width:100%" id="pinGo">دخول</button></div>`;
     const go=()=>{if($('#pinIn').value===String(S.settings.pin||'8245310')){authed=true;try{sessionStorage.setItem('st-auth','1')}catch(e){}showAdminBtn();renderAdmin()}else{toast('رمز غير صحيح');$('#pinIn').value=''}};$('#pinGo').onclick=go;$('#pinIn').onkeydown=e=>{if(e.key==='Enter')go()};setTimeout(()=>$('#pinIn').focus(),50);return}
   let h=`<div class="lhead"><h1>${I.gear} لوحة الإدارة</h1><button class="btn pri" id="addApp">${I.plus} تطبيق جديد</button></div>
-  <div class="atabs">${[['apps','التطبيقات'],['settings','إعدادات المتجر'],['publish','النشر والنسخ الاحتياطي']].map(t=>`<button data-t="${t[0]}" class="${atab===t[0]?'on':''}">${t[1]}</button>`).join('')}</div>${unpublished()?`<div class="note" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="flex:1;min-width:200px"><b>لديك تعديلات لم تُنشر بعد</b> — الزبائن لا يرونها حتى تضغط «نشر الآن».</span><button class="btn pri" id="pubNow">${I.dl} نشر الآن للزبائن</button></div>`:''}<div id="apane" class="fade"></div>`;
+  <div class="atabs">${[['apps','التطبيقات'],['settings','إعدادات المتجر'],['publish','النشر والنسخ الاحتياطي']].map(t=>`<button data-t="${t[0]}" class="${atab===t[0]?'on':''}">${t[1]}</button>`).join('')}</div>${!getGh().token?`<div class="note" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="flex:1;min-width:200px"><b>النشر التلقائي غير مفعّل</b> — أدخل رمز GitHub مرة واحدة في «النشر والنسخ الاحتياطي» ليُرفع كل تعديل إلى الموقع مباشرة.</span><button class="btn pri" id="goSetup">إعداد الآن</button></div>`:''}${unpublished()&&!publishing&&!autoT&&getGh().token?`<div class="note" id="pubBanner" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="flex:1;min-width:200px"><b>توجد تعديلات لم تصل للموقع</b> (ربما بسبب انقطاع الإنترنت).</span><button class="btn pri" id="pubNow">${I.dl} نشر الآن للزبائن</button></div>`:''}<div id="apane" class="fade"></div>`;
   $('#view').innerHTML=h;
   document.querySelectorAll('.atabs button').forEach(b=>b.onclick=()=>{atab=b.dataset.t;renderAdmin()});
   $('#addApp').onclick=()=>appForm();
+  if($('#goSetup'))$('#goSetup').onclick=()=>{atab='publish';renderAdmin()};
   if($('#pubNow'))$('#pubNow').onclick=()=>{if(getGh().token)ghPublish();else{atab='publish';renderAdmin();toast('أدخل بيانات GitHub مرة واحدة أولاً')}};
   const P=$('#apane');
   if(atab==='apps'){
@@ -439,26 +453,29 @@ function renderAdmin(){
   }
   if(atab==='settings'){
     const s=S.settings;
-    P.innerHTML=`<div class="card"><div class="fg"><label>اسم المتجر</label><input class="inp" id="sName" value="${esc(s.name)}"></div><div class="fg"><label>الوصف المختصر</label><input class="inp" id="sTag" value="${esc(s.tagline)}"></div><div class="fg"><label>نص التذييل</label><input class="inp" id="sFoot" value="${esc(s.footer)}"></div><div class="fg"><label>اللون الرئيسي</label><div class="colors">${COLORS.map(c=>`<button style="background:${c}" data-c="${c}" class="${c===s.color?'on':''}"></button>`).join('')}<input type="color" id="sCol" value="${s.color}" style="width:44px;height:36px;border:0;background:none"></div></div><div class="fg"><label>الرمز السري للوحة الإدارة</label><input class="inp" id="sPin" value="${esc(s.pin)}" maxlength="12"></div><div class="acts"><button class="btn pri" id="sSave">حفظ الإعدادات</button></div></div>`;
+    P.innerHTML=`<div class="card"><div class="fg"><label>اسم المتجر</label><input class="inp" id="sName" value="${esc(s.name)}"></div><div class="fg"><label>الوصف المختصر</label><input class="inp" id="sTag" value="${esc(s.tagline)}"></div><div class="fg"><label>نص التذييل</label><input class="inp" id="sFoot" value="${esc(s.footer)}"></div><div class="fg"><label>اللون الرئيسي</label><div class="colors">${COLORS.map(c=>`<button style="background:${c}" data-c="${c}" class="${c===s.color?'on':''}"></button>`).join('')}<input type="color" id="sCol" value="${s.color}" style="width:44px;height:36px;border:0;background:none"></div></div><div class="fg"><label>الرمز السري للوحة الإدارة</label><input class="inp" id="sPin" value="${esc(s.pin)}" maxlength="12"></div><div class="acts"><button class="btn pri" id="sSave">حفظ الإعدادات</button></div></div>
+    <div class="card" style="margin-top:14px"><h3>${I.grid} التصنيفات</h3><p style="color:var(--mut);font-size:.88rem;margin-bottom:10px">التصنيفات تُكتب بحرية عند إضافة التطبيق. هنا يمكنك إعادة تسمية أي تصنيف فيتغيّر في كل تطبيقاته.</p>
+    ${cats().length?cats().map((c,i)=>`<div class="lnk" style="grid-template-columns:1fr auto auto;align-items:center"><input class="inp" data-cn="${i}" value="${esc(c)}"><small style="color:var(--mut);white-space:nowrap">${S.apps.filter(a=>a.cat===c).length} تطبيق</small><button class="btn sm" data-cr="${i}">حفظ</button></div>`).join(''):'<p style="color:var(--mut)">لا توجد تصنيفات بعد</p>'}</div>`;
+    const cl=cats();P.querySelectorAll('[data-cr]').forEach(b=>b.onclick=()=>{const i=+b.dataset.cr,nv=P.querySelector(`[data-cn="${i}"]`).value.trim();if(!nv){toast('اكتب اسم التصنيف');return}S.apps.forEach(a=>{if(a.cat===cl[i])a.cat=nv});save();renderAdmin();toast('تم تغيير اسم التصنيف')});
     let col=s.color;P.querySelectorAll('.colors button').forEach(b=>b.onclick=()=>{col=b.dataset.c;P.querySelectorAll('.colors button').forEach(x=>x.classList.toggle('on',x===b));document.documentElement.style.setProperty('--pri',col)});$('#sCol').oninput=e=>{col=e.target.value;document.documentElement.style.setProperty('--pri',col)};
     $('#sSave').onclick=()=>{Object.assign(s,{name:$('#sName').value.trim()||'متجري',tagline:$('#sTag').value.trim(),footer:$('#sFoot').value.trim(),color:col,pin:$('#sPin').value.trim()||'8245310'});save();applySettings();toast('تم حفظ الإعدادات')};
   }
   if(atab==='publish'){
     const g=getGh();
     P.innerHTML=`<div class="card" style="margin-bottom:14px"><h3>${I.dl} النشر المباشر للزبائن (GitHub)</h3>
-    <p style="color:var(--mut);font-size:.9rem;margin-bottom:12px">بعد إدخال هذه البيانات مرة واحدة، يكفي الضغط على «نشر الآن» بعد كل إضافة أو تعديل، فيُرفع المتجر إلى مستودعك تلقائياً ويراه الزبائن خلال دقيقة أو دقيقتين.</p>
+    <p style="color:var(--mut);font-size:.9rem;margin-bottom:12px">بعد إدخال هذه البيانات مرة واحدة، <b>كل إضافة أو تعديل أو حذف يُرفع إلى الموقع تلقائياً</b> ويراه الزبائن خلال دقيقة أو دقيقتين. زر «نشر الآن» للاحتياط فقط.</p>
     <div class="f2"><div class="fg"><label>اسم الحساب</label><input class="inp" id="gOwner" dir="ltr"></div><div class="fg"><label>اسم المستودع</label><input class="inp" id="gRepo" dir="ltr"></div></div>
     <div class="f2"><div class="fg"><label>اسم الملف في المستودع</label><input class="inp" id="gPath" dir="ltr"></div><div class="fg"><label>الفرع</label><input class="inp" id="gBranch" dir="ltr"></div></div>
     <div class="fg"><label>رمز GitHub (Token) <small>— يُحفظ على هذا الجهاز فقط ولا يدخل في الملف المنشور</small></label><input class="inp" id="gToken" type="password" dir="ltr" placeholder="github_pat_..."></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="gSave">حفظ البيانات</button><button class="btn pri" id="gPub">${I.dl} نشر الآن للزبائن</button></div>
     <div id="gStat" style="margin-top:10px;font-weight:700"></div>
-    <details style="margin-top:12px;font-size:.88rem;color:var(--mut)"><summary style="cursor:pointer;font-weight:700;color:var(--pri)">كيف أحصل على الرمز (Token)؟</summary><ol style="padding-inline-start:20px;margin-top:8px;line-height:2">
+    <details style="margin-top:12px;font-size:.88rem;color:var(--mut)"><summary style="cursor:pointer;font-weight:700;color:var(--pri-t)">كيف أحصل على الرمز (Token)؟</summary><ol style="padding-inline-start:20px;margin-top:8px;line-height:2">
     <li>في GitHub: صورتك ← Settings ← Developer settings</li><li>Personal access tokens ← Fine-grained tokens ← Generate new token</li><li>Repository access: اختر Only select repositories ثم اختر مستودع المتجر فقط</li><li>Permissions ← Repository permissions ← Contents: Read and write</li><li>اضغط Generate token وانسخ الرمز والصقه هنا</li></ol></details></div>
     <div class="note info"><b>طريقة يدوية بديلة</b><br>التعديلات التي تجريها هنا تُحفظ على هذا الجهاز فقط. لكي يراها الزبائن: اضغط «تصدير المتجر كاملاً» لتحصل على ملف HTML واحد يحتوي كل التطبيقات والصور، ثم ارفعه على استضافتك (مثل GitHub Pages) أو ضعه داخل تطبيق WebView.</div>
     <div class="card" style="display:grid;gap:10px"><button class="btn pri" id="expHtml">${I.dl} تصدير المتجر كاملاً (ملف HTML)</button><button class="btn" id="expJson">نسخ احتياطي للبيانات (JSON)</button><label class="btn" style="cursor:pointer">استيراد نسخة احتياطية<input type="file" id="impJson" accept=".json,application/json" hidden></label><button class="btn" id="pasteJson">لصق بيانات JSON يدوياً</button><button class="btn bad" id="resetAll">استعادة البيانات الأصلية للملف</button><button class="btn" id="logout">تسجيل الخروج من الإدارة</button></div>`;
     $('#gOwner').value=g.owner;$('#gRepo').value=g.repo;$('#gPath').value=g.path;$('#gBranch').value=g.branch;$('#gToken').value=g.token;
     const readG=()=>({owner:$('#gOwner').value.trim(),repo:$('#gRepo').value.trim(),path:$('#gPath').value.trim().replace(/^\/+/,''),branch:$('#gBranch').value.trim()||'main',token:$('#gToken').value.trim()});
-    $('#gSave').onclick=()=>{setGh(readG());toast('تم حفظ بيانات النشر')};
+    $('#gSave').onclick=()=>{setGh(readG());toast('تم حفظ بيانات النشر — النشر التلقائي مفعّل');if(unpublished())ghPublish(true)};
     $('#gPub').onclick=()=>{setGh(readG());ghPublish()};
     $('#expHtml').onclick=()=>{const html=buildExport();downloadOrCopy(html,(S.settings.name||'store')+'.html','text/html','كود المتجر الكامل — احفظه باسم store.html')};
     $('#expJson').onclick=()=>downloadOrCopy(JSON.stringify(S),'store-backup.json','application/json','بيانات المتجر (JSON)');
@@ -475,9 +492,10 @@ function setGh(g){try{localStorage.setItem('st-gh',JSON.stringify(g))}catch(e){}
 function pubAt(){let v=0;try{v=+localStorage.getItem('st-pubAt')||0}catch(e){}return Math.max(v,BASE_UP)}
 function unpublished(){return (S.updated||0)>pubAt()}
 function b64utf8(str){const by=new TextEncoder().encode(str);let bin='';for(let i=0;i<by.length;i+=0x8000)bin+=String.fromCharCode.apply(null,by.subarray(i,i+0x8000));return btoa(bin)}
-let publishing=false;
-async function ghPublish(){
-  if(publishing)return;const g=getGh();
+let publishing=false,pendingPub=false,autoT=null,lastSha=null;
+function autoPublish(){if(!authed)return;if(!getGh().token){return}clearTimeout(autoT);autoT=setTimeout(()=>{autoT=null;ghPublish(true)},1200)}
+async function ghPublish(auto){
+  if(publishing){pendingPub=true;return}const g=getGh();
   const stat=m=>{const el=$('#gStat');if(el)el.innerHTML=m;toast(m.replace(/<[^>]+>/g,''))};
   if(!g.owner||!g.repo||!g.path){stat('أكمل اسم الحساب والمستودع والملف');return}
   if(!g.token){stat('أدخل رمز GitHub أولاً');return}
@@ -487,18 +505,21 @@ async function ghPublish(){
   const why=st=>st===401?'الرمز (Token) غير صحيح أو منتهي الصلاحية':st===403?'الرمز لا يملك صلاحية الكتابة (Contents: Read and write)':st===404?'لم يُعثر على المستودع أو الفرع — تأكد من الأسماء ومن أن الرمز يشمل هذا المستودع':st===409||st===422?'تعارض في الملف، حاول مرة أخرى':'خطأ رقم '+st;
   try{
     stat('⏳ جارٍ الاتصال بـ GitHub...');
-    let sha=null;
-    const r=await fetch(api+'?ref='+encodeURIComponent(g.branch)+'&t='+Date.now(),{headers:H,cache:'no-store'});
-    if(r.ok)sha=(await r.json()).sha;else if(r.status!==404)throw new Error(why(r.status));
-    stat('⏳ جارٍ رفع المتجر...');
-    S.updated=Date.now();try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}
-    const body={message:'تحديث المتجر — '+new Date().toLocaleString('ar-IQ'),content:b64utf8(buildExport()),branch:g.branch};if(sha)body.sha=sha;
-    const p=await fetch(api,{method:'PUT',headers:{...H,'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!p.ok)throw new Error(why(p.status));
-    try{localStorage.setItem('st-pubAt',String(S.updated+1))}catch(e){}
-    publishing=false;stat('✅ تم النشر بنجاح — سيظهر للزبائن خلال دقيقة أو دقيقتين');
-    if(location.hash==='#admin')setTimeout(renderAdmin,1500);
-  }catch(e){publishing=false;stat('❌ فشل النشر: '+(e.message&&!/fetch/i.test(e.message)?e.message:'تحقق من اتصال الإنترنت'))}
+    const getSha=async()=>{const r=await fetch(api+'?ref='+encodeURIComponent(g.branch)+'&t='+Date.now(),{headers:H,cache:'no-store'});if(r.ok)return (await r.json()).sha;if(r.status===404)return null;throw new Error(why(r.status))};
+    let sha=lastSha||await getSha();
+    stat('⏳ جارٍ رفع التعديلات إلى الموقع...');
+    const stamp=S.updated;
+    const content=b64utf8(buildExport());
+    const put=sh=>{const body={message:'تحديث المتجر — '+new Date().toLocaleString('ar-IQ'),content,branch:g.branch};if(sh)body.sha=sh;return fetch(api,{method:'PUT',headers:{...H,'Content-Type':'application/json'},body:JSON.stringify(body)})};
+    let p=await put(sha);
+    if(p.status===409||p.status===422){await new Promise(r=>setTimeout(r,1500));sha=await getSha();p=await put(sha)}
+    if(!p.ok){lastSha=null;throw new Error(why(p.status))}
+    try{lastSha=(await p.json()).content.sha}catch(e){lastSha=null}
+    try{localStorage.setItem('st-pubAt',String(stamp))}catch(e){}
+    publishing=false;stat('✅ تم النشر على الموقع — يظهر للزبائن خلال دقيقة أو دقيقتين');
+    if(pendingPub){pendingPub=false;ghPublish(true);return}
+    const bn=$('#pubBanner');if(bn)bn.remove();
+  }catch(e){publishing=false;pendingPub=false;stat('❌ لم يُنشر: '+(e.message&&!/fetch/i.test(e.message)?e.message:'تحقق من اتصال الإنترنت')+' — ستبقى التعديلات محفوظة وتُنشر عند الضغط على «نشر الآن»');if(location.hash==='#admin'&&!$('#pubBanner'))renderAdmin()}
 }
 function importData(txt){try{const d=JSON.parse(txt);if(!d.apps||!d.settings)throw 0;S=d;save();applySettings();renderAdmin();toast('تم الاستيراد بنجاح')}catch(e){toast('ملف غير صالح')}}
 function buildExport(){const clone=document.documentElement.cloneNode(true);clone.querySelector('#view').innerHTML='';clone.querySelector('#bnav').innerHTML='';['#modal','#lb','#toast'].forEach(s=>{const n=clone.querySelector(s);n.innerHTML='';n.className=''});clone.querySelector('body').classList.remove('dark');const sd=clone.querySelector('#store-data');const data={...S,updated:Date.now()};sd.textContent=JSON.stringify(data).replace(/<\//g,'<\\/');return '<!DOCTYPE html>\n'+clone.outerHTML}
@@ -516,7 +537,7 @@ function appForm(id){
   openModal(`<div class="mh"><h2>${ex?'تعديل: '+esc(ex.name):'إضافة تطبيق جديد'}</h2><button class="ibtn" data-close>${I.x}</button></div>
   <div class="fg"><label>أيقونة التطبيق <small>(صورة مربعة)</small></label><div class="iconprev"><img id="icPrev" src="${icon(a)}"><label class="btn sm" style="cursor:pointer">${I.img} رفع صورة<input type="file" accept="image/*" id="icFile" hidden></label><button class="btn sm" id="icUrl">من رابط</button>${a.icon?'<button class="btn sm bad" id="icClr">إزالة</button>':''}</div></div>
   <div class="f2"><div class="fg"><label>اسم التطبيق *</label><input class="inp" id="fName" value="${esc(a.name)}"></div><div class="fg"><label>المطوّر</label><input class="inp" id="fDev" value="${esc(a.dev)}"></div></div>
-  <div class="f2"><div class="fg"><label>التصنيف *</label><input class="inp" id="fCat" list="catList" value="${esc(a.cat)}" placeholder="اختر أو اكتب تصنيفاً جديداً"><datalist id="catList">${cats().map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div><div class="fg"><label>الإصدار</label><input class="inp" id="fVer" value="${esc(a.version)}"></div></div>
+  <div class="f2"><div class="fg"><label>التصنيف *</label><input class="inp" id="fCat" value="${esc(a.cat)}" placeholder="اكتب أي تصنيف تريده" autocomplete="off">${cats().length?`<div class="chips" id="catSug" style="margin-top:6px;padding-bottom:2px">${cats().map(c=>`<button type="button" class="chip" style="padding:4px 12px;font-size:.8rem" data-cs="${esc(c)}">${esc(c)}</button>`).join('')}</div><small style="color:var(--mut)">اكتب تصنيفاً جديداً، أو اضغط على تصنيف موجود لاختياره</small>`:''}</div><div class="fg"><label>الإصدار</label><input class="inp" id="fVer" value="${esc(a.version)}"></div></div>
   <div class="fg"><label>المنصّات</label><div class="pfs">${Object.entries(PF).map(([k,v])=>`<label><input type="checkbox" value="${k}" ${a.platforms.includes(k)?'checked':''}>${v.i} ${v.n}</label>`).join('')}</div></div>
   <div class="fg"><label>روابط التحميل * <small>(Google Drive، MediaFire، أي رابط)</small></label><div id="lnks"></div><button class="btn sm" id="addLnk">${I.plus} رابط آخر</button></div>
   <div class="fg"><label>وصف قصير <small>(يظهر في القوائم)</small></label><input class="inp" id="fShort" value="${esc(a.short)}" maxlength="120"></div>
@@ -527,8 +548,9 @@ function appForm(id){
   <div class="fg"><label>ما الجديد في هذا الإصدار</label><textarea class="inp" id="fNews" style="min-height:60px">${esc(a.news)}</textarea></div>
   <div class="f2"><div class="fg"><label>الحجم</label><input class="inp" id="fSize" value="${esc(a.size)}" placeholder="مثال: 5 MB"></div><div class="fg"><label>عدد التنزيلات</label><input class="inp" id="fDl" value="${esc(a.dl)}" placeholder="مثال: +1000"></div></div>
   <div class="f2"><div class="fg"><label>التقييم (1-5)</label><input class="inp" id="fRate" type="number" min="1" max="5" step="0.1" value="${a.rating}"></div><div class="fg"><label>تاريخ التحديث</label><input class="inp" id="fUpd" type="date" value="${esc(a.updated)}"></div></div>
-  <div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="fFeatd" ${a.featured?'checked':''} style="width:20px;height:20px;accent-color:var(--pri)"> عرضه ضمن التطبيقات المميزة في الواجهة</label></div>
+  <div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="fFeatd" ${a.featured?'checked':''} style="width:20px;height:20px;accent-color:var(--pri-t)"> عرضه ضمن التطبيقات المميزة في الواجهة</label></div>
   <div class="acts"><button class="btn" data-close>إلغاء</button><button class="btn pri" id="fSave">حفظ التطبيق</button></div>`);
+  document.querySelectorAll('[data-cs]').forEach(b=>b.onclick=()=>{$('#fCat').value=b.dataset.cs});
   const drawLinks=()=>{$('#lnks').innerHTML=a.links.map((l,i)=>`<div class="lnk"><input class="inp" data-l="${i}" data-k="label" value="${esc(l.label)}" placeholder="نص الزر"><input class="inp u" data-l="${i}" data-k="url" value="${esc(l.url)}" placeholder="https://drive.google.com/..." dir="ltr"><button class="btn sm bad" data-rl="${i}">${I.x}</button></div>`).join('');
     document.querySelectorAll('#lnks input').forEach(n=>n.oninput=()=>a.links[n.dataset.l][n.dataset.k]=n.value);
     document.querySelectorAll('[data-rl]').forEach(b=>b.onclick=()=>{a.links.splice(+b.dataset.rl,1);drawLinks()})};drawLinks();
@@ -562,7 +584,7 @@ function appForm(id){
 
 /* ---------- top search suggestions ---------- */
 const tq=$('#topQ'),sg=$('#sugg');
-tq.oninput=()=>{const q=tq.value.trim();if(!q){sg.classList.remove('on');return}const r=smartSearch(q,S.apps).slice(0,6);sg.innerHTML=r.length?r.map(a=>`<a href="#app-${a.id}"><img src="${icon(a)}"><span><b>${esc(a.name)}</b><small>${esc(a.cat)}</small></span></a>`).join('')+`<a href="#search" style="color:var(--pri);font-weight:700;justify-content:center">عرض كل النتائج</a>`:`<a style="color:var(--mut)">لا نتائج</a>`;sg.classList.add('on')};
+tq.oninput=()=>{const q=tq.value.trim();if(!q){sg.classList.remove('on');return}const r=smartSearch(q,S.apps).slice(0,6);sg.innerHTML=r.length?r.map(a=>`<a href="#app-${a.id}"><img src="${icon(a)}"><span><b>${esc(a.name)}</b><small>${esc(a.cat)}</small></span></a>`).join('')+`<a href="#search" style="color:var(--pri-t);font-weight:700;justify-content:center">عرض كل النتائج</a>`:`<a style="color:var(--mut)">لا نتائج</a>`;sg.classList.add('on')};
 tq.onkeydown=e=>{if(e.key==='Enter'){st.q=tq.value;location.hash='search';sg.classList.remove('on')}};
 sg.onclick=e=>{if(e.target.closest('a[href="#search"]'))st.q=tq.value;sg.classList.remove('on');tq.value=''};
 document.addEventListener('click',e=>{if(!e.target.closest('.tsearch'))sg.classList.remove('on')});
