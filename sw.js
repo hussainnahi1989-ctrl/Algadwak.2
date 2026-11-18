@@ -7,7 +7,7 @@
    • باقي الملفات: المحفوظ فورًا مع تحديث صامت.
    • البيانات والتفعيل محفوظة في المتصفح ولا يمسّها التحديث.
    ========================================================================= */
-const CACHE = 'jadwal-cache-2026-11-v73';
+const CACHE = 'jadwal-cache-2026-11-v74';
 const CORE = ['./', './index.html', './assets/teacher-app-phone.png', './app-icon-192.png', './app-icon-180.png', './app-icon-512.png'];
 const PAGE_KEY = './index.html';
 const FLAG_KEY = './__nb_update_pending';   /* علامة «وصلت نسخة أحدث» يقرؤها البرنامج حتى لو فاتته الرسالة */
@@ -44,7 +44,22 @@ self.addEventListener('fetch', function(e){
   const url = new URL(req.url);
   if(url.origin !== self.location.origin) return;            /* روابط خارجية لا تُمس */
 
-  const isPage = req.mode === 'navigate' || /\/$|\.html$/.test(url.pathname);
+  /* الصفحة الرئيسية للجدول فقط (/ أو index.html). أي صفحة HTML أخرى في نفس المستودع
+     (مثل store.html المتجر أو admin.html) تُجلب من الموقع كما هي ولا تُستبدل بالجدول */
+  const BASE = new URL('./', self.location).pathname;
+  const isMain = url.pathname === BASE || url.pathname === BASE + 'index.html';
+  const isOtherPage = !isMain && (req.mode === 'navigate' || /\.html$/.test(url.pathname));
+  if(isOtherPage){
+    e.respondWith(
+      fetch(new Request(url.href, {cache:'no-store', credentials:'same-origin'})).then(function(res){
+        if(res && res.ok){ const copy = res.clone(); caches.open(CACHE).then(function(c){ c.put(url.href, copy); }); }
+        return res;
+      }).catch(function(){ return caches.match(url.href); })   /* بدون إنترنت: آخر نسخة محفوظة من نفس الصفحة */
+    );
+    return;
+  }
+
+  const isPage = isMain;
   if(isPage){
     e.respondWith(caches.open(CACHE).then(function(cache){
       return cache.match(PAGE_KEY).then(function(cached){
