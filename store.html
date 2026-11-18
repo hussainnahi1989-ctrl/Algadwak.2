@@ -293,6 +293,7 @@ const CAT_EMO=['📚','🧰','👨‍🏫','🎮','💼','🎨','🔐','📱','�
 /* ---------- data ---------- */
 const LS='smart-store-v1';
 const BASE=JSON.parse(document.getElementById('store-data').textContent);
+const BASE_UP=BASE.updated||0;
 let S=null;
 try{S=JSON.parse(localStorage.getItem(LS)||'null')}catch(e){}
 if(!S||!S.apps||(S.updated||0)<(BASE.updated||0))S=BASE;
@@ -424,10 +425,11 @@ function renderAdmin(){
   if(!authed){$('#view').innerHTML=`<div class="pin card fade"><div class="lk">${I.lock}</div><h2>لوحة إدارة المتجر</h2><p style="color:var(--mut)">أدخل الرمز السري للمتابعة</p><input class="inp" id="pinIn" type="password" inputmode="numeric" maxlength="12"><button class="btn pri" style="width:100%" id="pinGo">دخول</button></div>`;
     const go=()=>{if($('#pinIn').value===String(S.settings.pin||'8245310')){authed=true;try{sessionStorage.setItem('st-auth','1')}catch(e){}showAdminBtn();renderAdmin()}else{toast('رمز غير صحيح');$('#pinIn').value=''}};$('#pinGo').onclick=go;$('#pinIn').onkeydown=e=>{if(e.key==='Enter')go()};setTimeout(()=>$('#pinIn').focus(),50);return}
   let h=`<div class="lhead"><h1>${I.gear} لوحة الإدارة</h1><button class="btn pri" id="addApp">${I.plus} تطبيق جديد</button></div>
-  <div class="atabs">${[['apps','التطبيقات'],['settings','إعدادات المتجر'],['publish','النشر والنسخ الاحتياطي']].map(t=>`<button data-t="${t[0]}" class="${atab===t[0]?'on':''}">${t[1]}</button>`).join('')}</div><div id="apane" class="fade"></div>`;
+  <div class="atabs">${[['apps','التطبيقات'],['settings','إعدادات المتجر'],['publish','النشر والنسخ الاحتياطي']].map(t=>`<button data-t="${t[0]}" class="${atab===t[0]?'on':''}">${t[1]}</button>`).join('')}</div>${unpublished()?`<div class="note" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="flex:1;min-width:200px"><b>لديك تعديلات لم تُنشر بعد</b> — الزبائن لا يرونها حتى تضغط «نشر الآن».</span><button class="btn pri" id="pubNow">${I.dl} نشر الآن للزبائن</button></div>`:''}<div id="apane" class="fade"></div>`;
   $('#view').innerHTML=h;
   document.querySelectorAll('.atabs button').forEach(b=>b.onclick=()=>{atab=b.dataset.t;renderAdmin()});
   $('#addApp').onclick=()=>appForm();
+  if($('#pubNow'))$('#pubNow').onclick=()=>{if(getGh().token)ghPublish();else{atab='publish';renderAdmin();toast('أدخل بيانات GitHub مرة واحدة أولاً')}};
   const P=$('#apane');
   if(atab==='apps'){
     P.innerHTML=S.apps.length?S.apps.map((a,i)=>`<div class="arow"><img src="${icon(a)}" alt=""><div class="in"><b>${esc(a.name)} ${a.featured?'⭐':''}</b><small>${esc(a.cat)} · ${(a.platforms||[]).map(p=>PF[p]?.n).join('، ')} · ${(a.addons||[]).length?`${a.addons.length} ملحق`:''}</small></div><button class="ibtn" data-up="${i}" title="تحريك للأعلى">▲</button><a class="ibtn" href="#app-${a.id}" title="معاينة">👁</a><button class="ibtn" data-ed="${a.id}" title="تعديل">${I.edit}</button><button class="ibtn" data-del="${a.id}" style="color:var(--bad)" title="حذف">${I.trash}</button></div>`).join(''):`<div class="empty"><div class="big">📦</div><p>لا توجد تطبيقات بعد</p></div>`;
@@ -442,8 +444,22 @@ function renderAdmin(){
     $('#sSave').onclick=()=>{Object.assign(s,{name:$('#sName').value.trim()||'متجري',tagline:$('#sTag').value.trim(),footer:$('#sFoot').value.trim(),color:col,pin:$('#sPin').value.trim()||'8245310'});save();applySettings();toast('تم حفظ الإعدادات')};
   }
   if(atab==='publish'){
-    P.innerHTML=`<div class="note info"><b>كيف ينشر المتجر للزبائن؟</b><br>التعديلات التي تجريها هنا تُحفظ على هذا الجهاز فقط. لكي يراها الزبائن: اضغط «تصدير المتجر كاملاً» لتحصل على ملف HTML واحد يحتوي كل التطبيقات والصور، ثم ارفعه على استضافتك (مثل GitHub Pages) أو ضعه داخل تطبيق WebView.</div>
+    const g=getGh();
+    P.innerHTML=`<div class="card" style="margin-bottom:14px"><h3>${I.dl} النشر المباشر للزبائن (GitHub)</h3>
+    <p style="color:var(--mut);font-size:.9rem;margin-bottom:12px">بعد إدخال هذه البيانات مرة واحدة، يكفي الضغط على «نشر الآن» بعد كل إضافة أو تعديل، فيُرفع المتجر إلى مستودعك تلقائياً ويراه الزبائن خلال دقيقة أو دقيقتين.</p>
+    <div class="f2"><div class="fg"><label>اسم الحساب</label><input class="inp" id="gOwner" dir="ltr"></div><div class="fg"><label>اسم المستودع</label><input class="inp" id="gRepo" dir="ltr"></div></div>
+    <div class="f2"><div class="fg"><label>اسم الملف في المستودع</label><input class="inp" id="gPath" dir="ltr"></div><div class="fg"><label>الفرع</label><input class="inp" id="gBranch" dir="ltr"></div></div>
+    <div class="fg"><label>رمز GitHub (Token) <small>— يُحفظ على هذا الجهاز فقط ولا يدخل في الملف المنشور</small></label><input class="inp" id="gToken" type="password" dir="ltr" placeholder="github_pat_..."></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="gSave">حفظ البيانات</button><button class="btn pri" id="gPub">${I.dl} نشر الآن للزبائن</button></div>
+    <div id="gStat" style="margin-top:10px;font-weight:700"></div>
+    <details style="margin-top:12px;font-size:.88rem;color:var(--mut)"><summary style="cursor:pointer;font-weight:700;color:var(--pri)">كيف أحصل على الرمز (Token)؟</summary><ol style="padding-inline-start:20px;margin-top:8px;line-height:2">
+    <li>في GitHub: صورتك ← Settings ← Developer settings</li><li>Personal access tokens ← Fine-grained tokens ← Generate new token</li><li>Repository access: اختر Only select repositories ثم اختر مستودع المتجر فقط</li><li>Permissions ← Repository permissions ← Contents: Read and write</li><li>اضغط Generate token وانسخ الرمز والصقه هنا</li></ol></details></div>
+    <div class="note info"><b>طريقة يدوية بديلة</b><br>التعديلات التي تجريها هنا تُحفظ على هذا الجهاز فقط. لكي يراها الزبائن: اضغط «تصدير المتجر كاملاً» لتحصل على ملف HTML واحد يحتوي كل التطبيقات والصور، ثم ارفعه على استضافتك (مثل GitHub Pages) أو ضعه داخل تطبيق WebView.</div>
     <div class="card" style="display:grid;gap:10px"><button class="btn pri" id="expHtml">${I.dl} تصدير المتجر كاملاً (ملف HTML)</button><button class="btn" id="expJson">نسخ احتياطي للبيانات (JSON)</button><label class="btn" style="cursor:pointer">استيراد نسخة احتياطية<input type="file" id="impJson" accept=".json,application/json" hidden></label><button class="btn" id="pasteJson">لصق بيانات JSON يدوياً</button><button class="btn bad" id="resetAll">استعادة البيانات الأصلية للملف</button><button class="btn" id="logout">تسجيل الخروج من الإدارة</button></div>`;
+    $('#gOwner').value=g.owner;$('#gRepo').value=g.repo;$('#gPath').value=g.path;$('#gBranch').value=g.branch;$('#gToken').value=g.token;
+    const readG=()=>({owner:$('#gOwner').value.trim(),repo:$('#gRepo').value.trim(),path:$('#gPath').value.trim().replace(/^\/+/,''),branch:$('#gBranch').value.trim()||'main',token:$('#gToken').value.trim()});
+    $('#gSave').onclick=()=>{setGh(readG());toast('تم حفظ بيانات النشر')};
+    $('#gPub').onclick=()=>{setGh(readG());ghPublish()};
     $('#expHtml').onclick=()=>{const html=buildExport();downloadOrCopy(html,(S.settings.name||'store')+'.html','text/html','كود المتجر الكامل — احفظه باسم store.html')};
     $('#expJson').onclick=()=>downloadOrCopy(JSON.stringify(S),'store-backup.json','application/json','بيانات المتجر (JSON)');
     $('#impJson').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>importData(r.result);r.readAsText(f)};
@@ -451,6 +467,38 @@ function renderAdmin(){
     $('#resetAll').onclick=()=>confirmBox('سيتم حذف تعديلاتك المحلية والعودة لبيانات الملف الأصلية. متأكد؟',()=>{try{localStorage.removeItem(LS)}catch(e){}S=JSON.parse(document.getElementById('store-data').textContent);applySettings();renderAdmin();toast('تمت الاستعادة')});
     $('#logout').onclick=()=>{authed=false;unlocked=false;try{sessionStorage.removeItem('st-auth')}catch(e){}showAdminBtn();location.hash=''};
   }
+}
+/* ---------- GitHub publish ---------- */
+const GH_DEF={owner:'hussainnahi1989-ctrl',repo:'Algadwak.2',path:'store.html',branch:'main',token:''};
+function getGh(){try{return {...GH_DEF,...JSON.parse(localStorage.getItem('st-gh')||'{}')}}catch(e){return {...GH_DEF}}}
+function setGh(g){try{localStorage.setItem('st-gh',JSON.stringify(g))}catch(e){}}
+function pubAt(){let v=0;try{v=+localStorage.getItem('st-pubAt')||0}catch(e){}return Math.max(v,BASE_UP)}
+function unpublished(){return (S.updated||0)>pubAt()}
+function b64utf8(str){const by=new TextEncoder().encode(str);let bin='';for(let i=0;i<by.length;i+=0x8000)bin+=String.fromCharCode.apply(null,by.subarray(i,i+0x8000));return btoa(bin)}
+let publishing=false;
+async function ghPublish(){
+  if(publishing)return;const g=getGh();
+  const stat=m=>{const el=$('#gStat');if(el)el.innerHTML=m;toast(m.replace(/<[^>]+>/g,''))};
+  if(!g.owner||!g.repo||!g.path){stat('أكمل اسم الحساب والمستودع والملف');return}
+  if(!g.token){stat('أدخل رمز GitHub أولاً');return}
+  publishing=true;
+  const api=`https://api.github.com/repos/${encodeURIComponent(g.owner)}/${encodeURIComponent(g.repo)}/contents/${g.path.split('/').map(encodeURIComponent).join('/')}`;
+  const H={Authorization:'Bearer '+g.token,Accept:'application/vnd.github+json'};
+  const why=st=>st===401?'الرمز (Token) غير صحيح أو منتهي الصلاحية':st===403?'الرمز لا يملك صلاحية الكتابة (Contents: Read and write)':st===404?'لم يُعثر على المستودع أو الفرع — تأكد من الأسماء ومن أن الرمز يشمل هذا المستودع':st===409||st===422?'تعارض في الملف، حاول مرة أخرى':'خطأ رقم '+st;
+  try{
+    stat('⏳ جارٍ الاتصال بـ GitHub...');
+    let sha=null;
+    const r=await fetch(api+'?ref='+encodeURIComponent(g.branch)+'&t='+Date.now(),{headers:H,cache:'no-store'});
+    if(r.ok)sha=(await r.json()).sha;else if(r.status!==404)throw new Error(why(r.status));
+    stat('⏳ جارٍ رفع المتجر...');
+    S.updated=Date.now();try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}
+    const body={message:'تحديث المتجر — '+new Date().toLocaleString('ar-IQ'),content:b64utf8(buildExport()),branch:g.branch};if(sha)body.sha=sha;
+    const p=await fetch(api,{method:'PUT',headers:{...H,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!p.ok)throw new Error(why(p.status));
+    try{localStorage.setItem('st-pubAt',String(S.updated+1))}catch(e){}
+    publishing=false;stat('✅ تم النشر بنجاح — سيظهر للزبائن خلال دقيقة أو دقيقتين');
+    if(location.hash==='#admin')setTimeout(renderAdmin,1500);
+  }catch(e){publishing=false;stat('❌ فشل النشر: '+(e.message&&!/fetch/i.test(e.message)?e.message:'تحقق من اتصال الإنترنت'))}
 }
 function importData(txt){try{const d=JSON.parse(txt);if(!d.apps||!d.settings)throw 0;S=d;save();applySettings();renderAdmin();toast('تم الاستيراد بنجاح')}catch(e){toast('ملف غير صالح')}}
 function buildExport(){const clone=document.documentElement.cloneNode(true);clone.querySelector('#view').innerHTML='';clone.querySelector('#bnav').innerHTML='';['#modal','#lb','#toast'].forEach(s=>{const n=clone.querySelector(s);n.innerHTML='';n.className=''});clone.querySelector('body').classList.remove('dark');const sd=clone.querySelector('#store-data');const data={...S,updated:Date.now()};sd.textContent=JSON.stringify(data).replace(/<\//g,'<\\/');return '<!DOCTYPE html>\n'+clone.outerHTML}
