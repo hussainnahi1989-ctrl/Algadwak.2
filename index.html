@@ -5124,6 +5124,11 @@ html[data-theme="night"] .teacher-ban-head{background:linear-gradient(135deg,rgb
             <tr><th>التطبيق</th><th>الرابط</th><th>طلب</th></tr>
           </thead>
           <tbody>
+            <tr class="apps-row apps-store-row">
+              <td class="apps-name"><span class="apps-name-ico">🛍️</span><span class="apps-name-txt">المتجر — «تطبيقات نادرة»</span></td>
+              <td class="apps-link"><a id="nbStoreLink" href="https://hussainnahi1989-ctrl.github.io/Algadwak.2/store.html" target="_blank" rel="noopener noreferrer">فتح المتجر ↗</a></td>
+              <td class="apps-req-cell"></td>
+            </tr>
             <tr class="apps-row">
               <td class="apps-name"><span class="apps-name-ico">🏫</span><span class="apps-name-txt">إدارة المدرسة والامتحانات</span></td>
               <td class="apps-link"><a href="https://hussainnahi1989-ctrl.github.io/Daragat/" target="_blank" rel="noopener noreferrer">فتح التطبيق ↗</a></td>
@@ -22357,7 +22362,7 @@ function pexDoPrint(it){
         break;
       }
       case 'by_day': nbPrintByDay(it.paper||'A4'); break;
-      case 'dist_form': if(typeof window.nbDistOpenPrint==='function') window.nbDistOpenPrint(); break;
+      case 'dist_form': if(typeof window.nbDistOpenPrint==='function') window.nbDistOpenPrint(it.orient); break;
       case 'all_teachers': {
         const ts=nbPexTeachersInSchedule().map(function(t){ return buildTeacherTableHtml(t.id); });
         /* مدرّسان في كل ورقة A4 لتوفير الورق (أو مدرّس واحد إن اختير ذلك من المعاينة) */
@@ -26321,7 +26326,11 @@ function nbPromoShow(){
   /* ───────────── الحالة ───────────── */
   var DEF={fontT:100, fontH:100, family:'', thBg:'', thFg:'', dayBg:'', dayFg:'', grid:'', gridW:0, subjFg:'', teachFg:'', headBg:'', headFg:'', colorMode:'orig', tint:30, subjColors:{}, clsMode:'off', clsTint:22, clsColors:{}};
   function loadPrefs(){ var p={}; try{ p=JSON.parse(lsGet(LS_PREFS)||'{}')||{}; }catch(e){ p={}; } var o={}; for(var k in DEF) o[k]=(p[k]!==undefined)?p[k]:((k==='subjColors'||k==='clsColors')?{}:DEF[k]); if(typeof o.subjColors!=='object'||!o.subjColors) o.subjColors={}; if(typeof o.clsColors!=='object'||!o.clsColors) o.clsColors={}; return o; }
-  function savePrefs(){ var o={}; for(var k in DEF) o[k]=S[k]; lsSet(LS_PREFS, JSON.stringify(o)); }
+  function savePrefs(){ if(S && S.__fixed) return; var o={}; for(var k in DEF) o[k]=S[k]; lsSet(LS_PREFS, JSON.stringify(o)); }
+  /* وثائق بتصميم رسمي ثابت (جدول التربية): تُعرض بألوانها الحقيقية تمامًا، ولا تُطبَّق عليها ألوان/سمات المعاينة المحفوظة للجداول.
+     أي تعديل يجريه المستخدم عليها في المعاينة يبقى لهذه الطبعة فقط ولا يغيّر تفضيلات الجداول */
+  var FIXED_ACTS={dist_form:1};
+  function freshPrefs(){ var o={}; for(var k in DEF) o[k]=(k==='subjColors'||k==='clsColors')?{}:DEF[k]; o.__fixed=true; return o; }
   var S=null;              /* الحالة الحالية */
   var PV=null;             /* {root, frame, doc, win, it, name, kind, units, ...} */
 
@@ -26377,6 +26386,7 @@ function nbPromoShow(){
       '.nbpv-drag table,.nbpv-drag table *{touch-action:none}'+
       '@media print{html,body{background:#fff!important}#nbpvZoom{transform:none!important;padding:0!important;margin:0!important;gap:0!important;display:block!important;width:auto!important;min-width:0!important}'+
       '.nbpv-sheet{box-shadow:none!important;margin:0!important;break-after:page;page-break-after:always}.nbpv-sheet:last-child{break-after:auto;page-break-after:auto}'+
+      '.nbpv-sheet .dpage{break-after:auto!important;page-break-after:auto!important}'+
       '.nbpv-badge,.nbpv-guide{display:none!important}.nbpv-sel{outline:none!important}.nbpv-selrow{box-shadow:none!important}.nbpv-edit *:hover{outline:none!important}}'+
       '</style><style id="nbpv-page"></style><style id="nbpv-dyn"></style>';
     if(/<\/head>/i.test(html)) html=html.replace(/<\/head>/i, base+'</head>');
@@ -26486,7 +26496,7 @@ function nbPromoShow(){
   function isClassAct(){ return PV && PV.it && !!CLASS_ACTS[PV.it.act]; }
   function openUI(it, name, html, kind){
     injectUiCss();
-    S=loadPrefs();
+    S=(it && FIXED_ACTS[it.act])?freshPrefs():loadPrefs();
     var pg=parsePage(html);
     S.paper=pg.paper; S.orient=pg.orient; S.margin=pg.margin; S.split='none'; S.headH=100; S.footH=100; S.rowScale=100; S.colW={}; S.rowH={}; S.mode='select'; S.edit=false; S.zoom=0; S.paint=false; S.elColors=[];
     var root=document.createElement('div'); root.id='nbPvRoot'; root.setAttribute('role','dialog'); root.setAttribute('aria-label','معاينة قبل الطباعة');
@@ -26657,6 +26667,8 @@ function nbPromoShow(){
     if(k==='mode'){ S.mode=v; syncUI(); applyModeClass(); return; }
     if(k==='per'){ var per=(v==='1')?1:2; if(PV.it && PV.it.per!==per && !(PV.it.per===undefined && per===2)){ S.split='none'; S.orient=(per===1&&PV.it.act==='all_classes')?'landscape':'portrait'; recapture({per:per}); syncUI(); } return; }
     if(k==='split' && v!=='none' && PV.units && PV.units.some(function(u){ return u.type==='flow'; })){ T('هذه الوثيقة متعددة الصفحات بطبيعتها — القص متاح للجداول ذات الصفحة الواحدة','err'); return; }
+    /* جدول التربية: الاتجاه يُعاد بناؤه بتخطيط الورقة الأفقية/العمودية الخاص به (ليس تصغيرًا) */
+    if(k==='orient' && PV && PV.it && PV.it.act==='dist_form'){ S.orient=v; S.split='none'; syncUI(); recapture({orient:v}); return; }
     S[k]=v; if(k==='colorMode'||k==='clsMode') savePrefs();
     syncUI();
     /* الجدول الكامل: الورقة والاتجاه يُعاد بناؤهما بتخطيط الطباعة الأصلي لهذا القياس (ليس تكبيرًا فقط) */
@@ -26797,7 +26809,7 @@ function nbPromoShow(){
       if(!pages.length) pages=Array.prototype.slice.call(po.children).filter(function(x){ return !/^(SCRIPT|STYLE)$/.test(x.tagName); });
     }
     if(!pages.length){
-      var cand=Array.prototype.slice.call(body.querySelectorAll('.print-page, .pg, .page, .sheet'));
+      var cand=Array.prototype.slice.call(body.querySelectorAll('.print-page, .pg, .page, .sheet, .dpage'));
       pages=cand.filter(function(el){ for(var p=el.parentElement; p && p!==body; p=p.parentElement){ if(cand.indexOf(p)>=0) return false; } return true; });
     }
     if(!pages.length){
@@ -28613,11 +28625,26 @@ function nbPromoShow(){
      • 10 كتل في الصفحة الأولى، وتُكمَّل الأسطر الفارغة كما في الاستمارة
      • «مجموع الحصص» في الأسفل، والمجموع الكلي في الخانة المدمجة لآخر عمودين */
   var LINES=4, FIRST_LINES=40, NEXT_LINES=50, MIN_COLS=14;
+  /* اتجاه الورقة: عمودي (الاستمارة الأصلية) أو أفقي (للمدارس كثيرة الشعب) */
+  var ORIENT='portrait';
+  function curOrient(){ return F().orient==='landscape'?'landscape':'portrait'; }
+  /* ترتيب المدرّسين في جدول التربية (خاص بهذا القسم، لا يغيّر قسم المدرّسين) */
+  function orderedTeachers(){
+    var all=(DB.teachers||[]).slice(), ord=Array.isArray(F().order)?F().order:[];
+    if(!ord.length) return all;
+    var byId={}; all.forEach(function(t){ byId[t.id]=t; });
+    var out=[], seen={};
+    ord.forEach(function(id){ if(byId[id] && !seen[id]){ seen[id]=1; out.push(byId[id]); } });
+    all.forEach(function(t){ if(!seen[t.id]) out.push(t); });
+    return out;
+  }
   function pagesHtml(){
+    var LAND=ORIENT==='landscape';
+    var FIRST_LINES=LAND?26:40, NEXT_LINES=LAND?36:50;
     var M=model(), C=M.cls, nC=C.length, settings=DB.settings||{};
     var cols=Math.max(MIN_COLS-1, nC);   /* أعمدة الشعب، ويليها عمود «المجموع» */
     /* المدرّسون كلهم من قسم المدرّسين (بترتيبهم) */
-    var rows=(DB.teachers||[]).map(function(t){ return M.byT[t.id]; }).filter(Boolean);
+    var rows=orderedTeachers().map(function(t){ return M.byT[t.id]; }).filter(Boolean);
     var linesOf=function(r){ return Math.max(1, r.subs.length); };
     /* توزيع الكتل على الصفحات حسب عدد الأسطر */
     var pages=[], cur=[], used=0, cap=FIRST_LINES;
@@ -28634,10 +28661,10 @@ function nbPromoShow(){
     })();
     /* ارتفاع أسطر الجداول الجانبية بحيث تتسع في الورقة الأولى دائمًا */
     var nS=(DB.subjects||[]).filter(function(x){ return M.subjTot[x.id]; }).length, nSt=(DB.stages||[]).length;
-    var sideAvail=(pages.length===1?188:212)-57, sideRows=11+nS+1+nSt+1;
-    var SR=Math.max(3.1, Math.min(4.6, sideAvail/sideRows)).toFixed(2)+'mm';
+    var sideAvail=LAND?((pages.length===1?122:150)-37):((pages.length===1?188:212)-57), sideRows=11+nS+1+nSt+1;
+    var SR=Math.max(LAND?2.7:3.1, Math.min(4.6, sideAvail/sideRows)).toFixed(2)+'mm';
     /* عرض الأعمدة (مم) من قياس الاستمارة؛ عند كثرة الشعب تُضغط الأعمدة اليمنى */
-    var MAINW=146.5, right={seq:5, name:30, title:14.5, spec:14.5, subj:12};
+    var MAINW=LAND?229.5:146.5, right={seq:5, name:30, title:14.5, spec:14.5, subj:12};
     var rightSum=function(){ return right.seq+right.name+right.title+right.spec+right.subj; };
     var colW=(MAINW-rightSum())/(cols+1);
     if(colW<3.4){ var need=(cols+1)*3.4, k=Math.max(0.55,(MAINW-need)/rightSum()); Object.keys(right).forEach(function(x){ right[x]*=k; }); colW=(MAINW-rightSum())/(cols+1); }
@@ -28665,7 +28692,7 @@ function nbPromoShow(){
         h+='<tr class="ln'+(i===0?' tb':'')+'">';
         if(i===0){
           h+='<td rowspan="'+n+'" class="seq">'+(r?num(seq):'')+'</td>'+
-             '<td rowspan="'+n+'" class="nm'+nmCls+'">'+(r?E(getTeacherDisplayName(r.t)||r.t.name||''):'')+'</td>'+
+             '<td rowspan="'+n+'" class="nm'+nmCls+'"'+((EDIT&&r)?' data-tid="'+E(r.t.id)+'" data-pos="'+seq+'" title="اضغط لتحديد المدرّس ثم اسحبه أو استخدم أزرار الترتيب"':'')+'>'+(r?E(getTeacherDisplayName(r.t)||r.t.name||''):'')+'</td>'+
              '<td rowspan="'+n+'" class="tt'+(n===1?' one':'')+'">'+(r?tfield(r.t.id,'title',''):'')+'</td>'+
              '<td rowspan="'+n+'" class="sp'+(n===1?' one':'')+'">'+(r?tfield(r.t.id,'spec',''):'')+'</td>';
         }
@@ -28749,11 +28776,11 @@ function nbPromoShow(){
       var body=''; pg.list.forEach(function(r){ body+=block(r); });
       /* إكمال الأسطر الفارغة حتى نهاية الصفحة كما في الاستمارة */
       if(last) body+=totRow();
-      out+='<div class="dpage'+(first?' first':' next')+'">';
+      out+='<div class="dpage'+(first?' first':' next')+(LAND?' land':'')+'">';
       if(first) out+=head();
       else out+='<div class="cont">تابع — جدول توزيع الحصص'+(fv('no','')?' رقم ('+E(fv('no',''))+')':'')+' — الصفحة '+num(pi+1)+'</div>';
       var rh=Math.max(4.45, Math.min(6.2, (pg.cap-(last?7:0))*4.45/Math.max(1,pg.used)));
-      out+='<div class="bodyx"><div class="mainx"><table class="dt" style="--rh:'+rh.toFixed(2)+'mm">'+colgroup()+thead()+'<tbody>'+body+'</tbody></table></div>';
+      out+='<div class="bodyx"><div class="mainx"'+(LAND?' style="flex-basis:'+MAINW+'mm"':'')+'><table class="dt" style="--rh:'+rh.toFixed(2)+'mm">'+colgroup()+thead()+'<tbody>'+body+'</tbody></table></div>';
       out+='<div class="sidex" style="--sr:'+SR+'">'+(first?side():'')+'</div></div>';
       if(last) out+=foot();
       out+='</div>';
@@ -28768,6 +28795,15 @@ function nbPromoShow(){
     '.dwrap *{box-sizing:border-box}'+
     '.dpage{width:210mm;height:297mm;padding:6mm 7mm 5mm;background:#fff;color:#111;font-family:"Tajawal","Segoe UI",Tahoma,Arial,sans-serif;direction:rtl;position:relative;display:flex;flex-direction:column;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact;page-break-after:always;break-after:page}'+
     '.dpage:last-child{page-break-after:auto;break-after:auto}'+
+    /* الورقة الأفقية (A4 أفقي؛ الارتفاع 206 ليتّسع داخل هامش المعاينة 5 مم دون صفحات فارغة) مع ترويسة وجداول جانبية مضغوطة */
+    '.dpage.land{width:297mm;height:206mm;padding:5mm 7mm 3.5mm}'+
+    '.dpage.land .lg{height:15mm;width:20mm}'+
+    '.dpage.land .hlogos{margin-bottom:.5mm}.dpage.land .hdr{margin-bottom:2mm}.dpage.land .hdr .ln{min-height:4.3mm}'+
+    '.dpage.land .sidex{gap:2.5mm}'+
+    '.dpage.land .notes-pill{margin:0 0 2mm;padding:1.1mm 7mm;font-size:10pt}'+
+    '.dpage.land table.box{font-size:7.6pt}.dpage.land table.box th{font-size:8pt;padding:.3mm}'+
+    '.dpage.land table.box th.bh{height:7mm}.dpage.land table.box tr.gh th{height:8mm;font-size:7.4pt}'+
+    '.dpage.land .foot{margin-top:2mm;font-size:10pt}.dpage.land .foot .ln{margin:.8mm 0}.dpage.land .foot .sign{margin-top:1.5mm}'+
     /* الترويسة: كل عمود فوقه شعاره */
     '.hdr{display:grid;grid-template-columns:1fr .78fr 1fr;column-gap:4mm;flex:none;margin-bottom:2.5mm;font-size:9.4pt;align-items:end}'+
     '.hdr .col{display:flex;flex-direction:column;gap:.6mm}'+
@@ -28854,25 +28890,30 @@ function nbPromoShow(){
   function render(){
     var v=$('view-dist'); if(!v) return;
     if(!(DB.stages||[]).length){ v.innerHTML='<div class="card" style="margin:12px"><h2>📑 جدول التربية</h2><p class="hint">أضف المراحل والشعب والمعلمين ووزّع النصاب أولًا — ثم يُبنى جدول توزيع الحصص تلقائيًا.</p></div>'; return; }
-    EDIT=true;
+    EDIT=true; ORIENT=curOrient();
     var pages=pagesHtml();
     EDIT=false;
-    var dm=digitsMode();
+    var dm=digitsMode(), land=ORIENT==='landscape', hasOrd=Array.isArray(F().order)&&F().order.length>0;
     v.innerHTML=
       '<div class="dist-bar no-print">'+
         '<div class="dist-ttl"><span class="ic">📑</span><div><b>جدول التربية</b><small>جدول توزيع الحصص الرسمي — الحقول المظلّلة قابلة للكتابة — الأرقام تُحسب من النصاب تلقائيًا</small></div></div>'+
         '<div class="dist-acts">'+
           '<span class="dist-seg" role="group" aria-label="شكل الأرقام"><button type="button" data-dg="ar" class="'+(dm==='ar'?'on':'')+'">١٢٣</button><button type="button" data-dg="en" class="'+(dm==='en'?'on':'')+'">123</button></span>'+
+          '<span class="dist-seg" role="group" aria-label="اتجاه الورقة"><button type="button" data-or="portrait" class="'+(land?'':'on')+'" title="ورقة A4 عمودية (الاستمارة الأصلية)">▯ عمودي</button><button type="button" data-or="landscape" class="'+(land?'on':'')+'" title="ورقة A4 أفقية — للمدارس كثيرة الشعب">▭ أفقي</button></span>'+
+          (hasOrd?'<button type="button" class="btn btn-outline btn-sm" data-act="ordreset" title="إرجاع ترتيب المدرّسين كما في قسم المدرّسين">↺ الترتيب الأصلي</button>':'')+
           '<button type="button" class="btn btn-outline btn-sm" data-act="reset" title="إرجاع الحقول المكتوبة إلى القيم التلقائية">↺ القيم التلقائية</button>'+
           '<button type="button" class="btn btn-gold" data-act="print">🖨️ طباعة / PDF</button>'+
         '</div>'+
       '</div>'+
-      '<div class="dist-stage"><div class="dwrap dist-scale">'+pages+'</div></div>';
+      '<div class="dist-tip no-print">✋ لتغيير ترتيب المدرّسين: اضغط على اسم المدرّس لتحديده، ثم اسحبه إلى مكان مدرّس آخر — أو اضغط اسم المدرّس الآخر — أو استخدم أزرار الترتيب.</div>'+
+      '<div class="dist-stage"><div class="dwrap dist-scale">'+pages+'</div></div>'+
+      '<div class="dist-ord no-print" id="nbDistOrd" hidden></div>';
     fit();
+    markSel();
   }
   function fit(){
     var v=$('view-dist'); if(!v) return; var st=v.querySelector('.dist-stage'), w=v.querySelector('.dist-scale'); if(!st||!w) return;
-    var pw=210*96/25.4, avail=Math.max(260, st.clientWidth-8), s=Math.min(1.25, avail/pw);
+    var pw=(ORIENT==='landscape'?297:210)*96/25.4, avail=Math.max(260, st.clientWidth-8), s=Math.min(1.25, avail/pw);
     w.style.transform='scale('+s.toFixed(4)+')'; w.style.transformOrigin='top right';
     var h=0; Array.prototype.forEach.call(w.children, function(p){ h+=p.offsetHeight+16; });
     st.style.height=(h*s+10)+'px'; w.style.width=pw+'px';
@@ -28891,6 +28932,17 @@ function nbPromoShow(){
     if(el.hasAttribute('data-num') || el.hasAttribute('data-st')){ setTimeout(function(){ var a=document.activeElement; if(!(a && a.closest && a.closest('#view-dist [contenteditable]'))) render(); }, 30); }
   }
   function onClick(e){
+    if(DRAG.moved){ DRAG.moved=false; return; }
+    var orb=e.target.closest && e.target.closest('[data-or]');
+    if(orb){ var o=orb.getAttribute('data-or'); if(o!==curOrient()){ ensureF().orient=(o==='landscape'?'landscape':'portrait'); saveSoon(); render(); T(o==='landscape'?'الورقة أفقية الآن':'الورقة عمودية الآن','ok'); } return; }
+    var ob=e.target.closest && e.target.closest('[data-ord]');
+    if(ob){ ordAction(ob.getAttribute('data-ord')); return; }
+    var nm=e.target.closest && e.target.closest('td.nm[data-tid]');
+    if(nm){
+      var tid=nm.getAttribute('data-tid');
+      if(SEL && SEL!==tid){ moveTo(SEL, posOf(tid)); return; }
+      SEL=(SEL===tid)?null:tid; markSel(); return;
+    }
     var dg=e.target.closest && e.target.closest('[data-dg]');
     if(dg){ ensureF().digits=dg.getAttribute('data-dg'); saveSoon(); render(); return; }
     var x=e.target.closest && e.target.closest('[data-logo-x]');
@@ -28898,6 +28950,12 @@ function nbPromoShow(){
     var a=e.target.closest && e.target.closest('[data-act]'); if(!a) return;
     var act=a.getAttribute('data-act');
     if(act==='print'){ printIt(); return; }
+    if(act==='ordreset'){
+      Promise.resolve(confirmDialog('إرجاع الترتيب الأصلي؟','يعود ترتيب المدرّسين في جدول التربية كما هو في قسم المدرّسين.')).then(function(ok){
+        if(!ok) return; var D=ensureF(); delete D.order; SEL=null; saveSoon(); render(); T('عاد الترتيب الأصلي','ok');
+      });
+      return;
+    }
     if(act==='reset'){
       Promise.resolve(confirmDialog('إرجاع القيم التلقائية؟','تُمسح الحقول المكتوبة يدويًا (الأرقام وأسماء الدوائر والعناوين الوظيفية) وتعود القيم المحسوبة. الشعارات تبقى.')).then(function(ok){
         if(!ok) return; var D=ensureF(); D.f={}; D.t={}; D.st={}; saveSoon(); render(); T('أُعيدت القيم التلقائية','ok');
@@ -28914,21 +28972,110 @@ function nbPromoShow(){
     inp.value='';
   }
 
+  /* ───────────── ترتيب المدرّسين (تحديد بالضغط، ثم سحب أو أزرار) ───────────── */
+  var SEL=null, DRAG={on:false, moved:false};
+  function shownIds(){
+    var M=model();
+    return orderedTeachers().filter(function(t){ return M.byT[t.id]; }).map(function(t){ return t.id; });
+  }
+  function posOf(tid){ return shownIds().indexOf(tid); }
+  function moveTo(tid, to){
+    var ids=shownIds(), from=ids.indexOf(tid); if(from<0) return;
+    to=Math.max(0, Math.min(ids.length-1, to|0));
+    if(from===to){ markSel(); return; }
+    ids.splice(from,1); ids.splice(to,0,tid);
+    /* المدرّسون غير الظاهرين (بلا نصاب) يبقون بعدهم بترتيبهم */
+    var rest=orderedTeachers().map(function(t){ return t.id; }).filter(function(id){ return ids.indexOf(id)<0; });
+    ensureF().order=ids.concat(rest);
+    SEL=tid; saveSoon();
+    var sc=window.scrollY;
+    render();
+    try{ window.scrollTo(0, sc); }catch(_){ }
+    var c=document.querySelector('#view-dist td.nm[data-tid="'+cssEsc(tid)+'"]');
+    if(c){ c.classList.add('just'); setTimeout(function(){ c.classList.remove('just'); }, 900); try{ var r=c.getBoundingClientRect(); if(r.top<70||r.bottom>innerHeight-90) c.scrollIntoView({block:'center', behavior:'smooth'}); }catch(_){ } }
+    T('صار في المركز '+num(to+1),'ok');
+  }
+  function cssEsc(x){ return String(x).replace(/["\\]/g,'\\$&'); }
+  function ordAction(a){
+    if(!SEL) return;
+    var p=posOf(SEL), n=shownIds().length;
+    if(a==='x'){ SEL=null; markSel(); return; }
+    if(a==='first') moveTo(SEL, 0);
+    else if(a==='up') moveTo(SEL, p-1);
+    else if(a==='down') moveTo(SEL, p+1);
+    else if(a==='last') moveTo(SEL, n-1);
+    else if(a==='go'){ var inp=document.getElementById('nbDistOrdN'); var v=toInt(inp&&inp.value); if(v>=1) moveTo(SEL, v-1); }
+  }
+  function markSel(){
+    var v=$('view-dist'); if(!v) return;
+    Array.prototype.forEach.call(v.querySelectorAll('td.nm.sel'), function(c){ c.classList.remove('sel'); });
+    var bar=document.getElementById('nbDistOrd');
+    var ids=shownIds();
+    if(SEL && ids.indexOf(SEL)<0) SEL=null;
+    if(!SEL){ if(bar){ bar.hidden=true; bar.innerHTML=''; } return; }
+    var c=v.querySelector('td.nm[data-tid="'+cssEsc(SEL)+'"]'); if(c) c.classList.add('sel');
+    var p=ids.indexOf(SEL), t=(DB.teachers||[]).filter(function(x){ return x.id===SEL; })[0]||{};
+    if(!bar) return;
+    bar.hidden=false;
+    bar.innerHTML='<div class="dob-in">'+
+      '<div class="dob-who"><span class="dob-n">'+num(p+1)+'</span><b>'+E(getTeacherDisplayName(t)||t.name||'')+'</b><small>اسحبه أو اضغط اسم مدرّس آخر لوضعه مكانه</small></div>'+
+      '<div class="dob-btns">'+
+        '<button type="button" data-ord="first"'+(p===0?' disabled':'')+'>⏫ الأول</button>'+
+        '<button type="button" data-ord="up"'+(p===0?' disabled':'')+'>⬆️ أعلى</button>'+
+        '<button type="button" data-ord="down"'+(p===ids.length-1?' disabled':'')+'>⬇️ أسفل</button>'+
+        '<button type="button" data-ord="last"'+(p===ids.length-1?' disabled':'')+'>⏬ الأخير</button>'+
+        '<span class="dob-go"><label for="nbDistOrdN">إلى المركز</label><input id="nbDistOrdN" type="number" inputmode="numeric" min="1" max="'+ids.length+'" value="'+(p+1)+'"><button type="button" data-ord="go">نقل</button></span>'+
+        '<button type="button" data-ord="x" class="dob-x" title="إلغاء التحديد">✖</button>'+
+      '</div></div>';
+  }
+  /* السحب: يبدأ من المدرّس المحدَّد فقط (حتى لا يتعارض مع تمرير الصفحة باللمس) */
+  function onDown(e){
+    var c=e.target.closest && e.target.closest('td.nm[data-tid]'); if(!c || c.getAttribute('data-tid')!==SEL) return;
+    if(e.button!=null && e.button!==0) return;
+    DRAG={on:true, moved:false, x:e.clientX, y:e.clientY, tid:SEL, ghost:null, over:null, pid:e.pointerId};
+    try{ c.setPointerCapture && c.setPointerCapture(e.pointerId); }catch(_){ }
+  }
+  function onMove(e){
+    if(!DRAG.on) return;
+    if(!DRAG.moved){ if(Math.abs(e.clientX-DRAG.x)+Math.abs(e.clientY-DRAG.y)<8) return; DRAG.moved=true;
+      var g=document.createElement('div'); g.className='dist-ghost'; var t=(DB.teachers||[]).filter(function(x){ return x.id===DRAG.tid; })[0]||{}; g.textContent='↕ '+(getTeacherDisplayName(t)||t.name||''); document.body.appendChild(g); DRAG.ghost=g; }
+    e.preventDefault();
+    DRAG.ghost.style.left=(e.clientX+12)+'px'; DRAG.ghost.style.top=(e.clientY-18)+'px';
+    var el=document.elementFromPoint(e.clientX, e.clientY), tg=el && el.closest && el.closest('#view-dist td.nm[data-tid]');
+    if(DRAG.over && DRAG.over!==tg) DRAG.over.classList.remove('drop');
+    DRAG.over=(tg && tg.getAttribute('data-tid')!==DRAG.tid)?tg:null;
+    if(DRAG.over) DRAG.over.classList.add('drop');
+    /* تمرير تلقائي قرب حافتي الشاشة */
+    if(e.clientY<60) window.scrollBy(0,-14); else if(e.clientY>innerHeight-60) window.scrollBy(0,14);
+  }
+  function onUp(){
+    if(!DRAG.on) return;
+    var moved=DRAG.moved, over=DRAG.over, tid=DRAG.tid;
+    if(DRAG.ghost) DRAG.ghost.remove(); if(over) over.classList.remove('drop');
+    DRAG.on=false; DRAG.moved=moved;   /* يمنع النقرة التالية من إلغاء التحديد */
+    if(moved){ setTimeout(function(){ DRAG.moved=false; }, 60); if(over) moveTo(tid, posOf(over.getAttribute('data-tid'))); }
+  }
+
   /* ───────────── الطباعة (وثيقة مستقلة تمر عبر واجهة المعاينة) ───────────── */
-  function docHtml(){
-    EDIT=false;
+  function docHtml(orient){
+    EDIT=false; ORIENT=(orient==='landscape'||orient==='portrait')?orient:curOrient();
     return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>جدول التربية</title><style>'+
-      '@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff}'+css(false)+
+      '@page{size:A4 '+(ORIENT==='landscape'?'landscape':'portrait')+';margin:0}html,body{margin:0;padding:0;background:#fff}'+css(false)+
       '</style></head><body><div class="dwrap">'+pagesHtml()+'</div></body></html>';
   }
   function printIt(){
     try{ var a=document.activeElement; if(a && a.blur) a.blur(); }catch(e){}
-    try{ pexDoPrint({act:'dist_form', name:'جدول التربية', paper:'A4', orient:'portrait'}); }
+    try{ pexDoPrint({act:'dist_form', name:'جدول التربية', paper:'A4', orient:curOrient()}); }
     catch(e){ openDoc(); }
   }
-  function openDoc(){
+  function openDoc(orient){
+    /* الاتجاه المختار من واجهة المعاينة يُحفظ ليبقى نفسه في الشاشة والطباعة القادمة */
+    if((orient==='landscape'||orient==='portrait') && orient!==curOrient()){
+      ensureF().orient=orient; saveSoon();
+      try{ var vv=$('view-dist'); if(vv && vv.classList.contains('active')) setTimeout(render, 0); }catch(_){ }
+    }
     var w=window.open('', '_blank'); if(!w){ T('اسمح بالنوافذ المنبثقة للطباعة','err'); return; }
-    w.document.open(); w.document.write(docHtml()); w.document.close();
+    w.document.open(); w.document.write(docHtml(orient)); w.document.close();
     setTimeout(function(){ try{ w.focus(); w.print(); }catch(e){} }, 350);
   }
   window.nbDistOpenPrint=openDoc;
@@ -28948,12 +29095,34 @@ function nbPromoShow(){
       '#view-dist .dist-stage{position:relative;overflow:hidden;width:100%}'+
       '#view-dist .dist-scale{position:absolute;top:0;right:0}'+
       '#view-dist .dist-scale .dpage{margin:0 0 16px;box-shadow:0 10px 30px rgba(0,0,0,.18);border-radius:2px}'+
+      '#view-dist .dist-tip{margin:-4px 0 10px;padding:8px 12px;border-radius:12px;font-size:12.5px;font-weight:800;background:rgba(195,154,58,.12);border:1px dashed rgba(195,154,58,.55);color:inherit}'+
+      '#view-dist td.nm[data-tid]{cursor:pointer;transition:background .15s,box-shadow .15s}'+
+      '#view-dist td.nm[data-tid]:hover{background:#fff8dc!important}'+
+      '#view-dist td.nm.sel{background:#ffe58a!important;box-shadow:inset 0 0 0 .7mm #c39a3a;cursor:grab;touch-action:none}'+
+      '#view-dist td.nm.drop{background:#cfe8ff!important;box-shadow:inset 0 0 0 .7mm #1f5fbf}'+
+      '#view-dist td.nm.just{background:#c9f2d0!important}'+
+      '.dist-ghost{position:fixed;z-index:2147483000;pointer-events:none;padding:8px 14px;border-radius:12px;background:#0b1a46;color:#fff;font-weight:900;font-size:14px;box-shadow:0 10px 26px rgba(0,0,0,.35);border:2px solid #c39a3a;white-space:nowrap}'+
+      '#view-dist .dist-ord{position:fixed;left:12px;right:12px;bottom:12px;z-index:900;display:flex;justify-content:center;pointer-events:none}'+
+      '#view-dist .dist-ord[hidden]{display:none}'+
+      '#view-dist .dob-in{pointer-events:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;max-width:100%;padding:10px 12px;border-radius:16px;background:#0b1a46;color:#fff;box-shadow:0 14px 34px rgba(0,0,0,.35);border:2px solid #c39a3a}'+
+      '#view-dist .dob-who{display:flex;align-items:center;gap:8px;min-width:0}#view-dist .dob-who b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}#view-dist .dob-who small{font-size:11px;opacity:.75;font-weight:700}'+
+      '#view-dist .dob-n{display:inline-grid;place-items:center;min-width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#fff1b8,#e6c665 45%,#c99d38);color:#2b1a00;font-weight:900}'+
+      '#view-dist .dob-btns{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:center}'+
+      '#view-dist .dob-btns button{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;font:inherit;font-weight:800;font-size:13px;padding:7px 10px;border-radius:10px;cursor:pointer}'+
+      '#view-dist .dob-btns button:disabled{opacity:.35;cursor:default}'+
+      '#view-dist .dob-go{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:800}#view-dist .dob-go input{width:56px;padding:6px;border-radius:8px;border:1px solid #c39a3a;font:inherit;font-weight:900;text-align:center}'+
+      '#view-dist .dob-btns button.dob-x{background:#c0392b;border-color:#c0392b}'+
       '@media print{#view-dist{display:none!important}}';
     document.head.appendChild(st);
     v.addEventListener('input', onInput);
     v.addEventListener('focusout', onBlur);
     v.addEventListener('click', onClick);
     v.addEventListener('change', onChange);
+    v.addEventListener('pointerdown', onDown);
+    window.addEventListener('pointermove', onMove, {passive:false});
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    v.addEventListener('keydown', function(e){ if(e.target && e.target.id==='nbDistOrdN' && e.key==='Enter'){ e.preventDefault(); e.stopPropagation(); ordAction('go'); } });
     v.addEventListener('keydown', function(e){ if(e.key==='Enter' && e.target.closest && e.target.closest('[contenteditable]')){ e.preventDefault(); e.target.blur(); } });
     window.addEventListener('resize', function(){ if(v.classList.contains('active')) fit(); });
   }
@@ -29029,6 +29198,7 @@ function nbPromoShow(){
     if(!(window.NibrasAndroid && typeof window.NibrasAndroid.openExternal==='function')) return;
     e.preventDefault(); e.stopPropagation(); openExternal(a.href);
   }, true);
+  function storeLink(){ try{ return document.getElementById('nbStoreLink'); }catch(e){ return null; } }
   function daragatLink(){ try{ return document.querySelector('#view-apps a[href*="Daragat"]'); }catch(e){ return null; } }
   function curView(){ try{ return currentViewName; }catch(e){ return ''; } }
   function secName(view){ var s=sections().find(function(x){ return x.view===view; }); return s?s.name:''; }
@@ -29052,6 +29222,7 @@ function nbPromoShow(){
     /* أيقونات إضافية على الشاشة الرئيسية: ربط أجهزة المدرسة، وإدارة المدرسة والامتحانات */
     var extra=[{special:'link', icon:'📱', name:'ربط أجهزة المدرسة', desc:'باركود تطبيق «جدولي» للمعلمين'}];
     if(daragatLink()) extra.push({special:'daragat', icon:'🏫', name:'إدارة المدرسة والامتحانات', desc:'تطبيق الإدارة والدرجات'});
+    if(storeLink()) extra.push({special:'store', icon:'🛍️', name:'المتجر', desc:'«تطبيقات نادرة» — كل تطبيقاتنا'});
     var at=list.findIndex(function(x){ return x.view==='apps'; }); if(at<0) at=list.length;
     list=list.slice(0,at).concat(extra, list.slice(at));
     L.querySelector('.nbl-head').innerHTML=
@@ -29059,8 +29230,8 @@ function nbPromoShow(){
       '<button type="button" class="nbl-x" data-x aria-label="إغلاق القائمة">✕</button>';
     L.querySelector('.nbl-grid').innerHTML=list.map(function(s,i){
       var g=GRAD[i%GRAD.length], has=!!SUBS[s.view] && subItems(s.view).length>1;
-      if(s.special) return '<button type="button" class="nbl-tile'+(s.special==='link'?' phone':'')+'" role="listitem" data-special="'+s.special+'" style="--g1:'+g[0]+';--g2:'+g[1]+';--d:'+(i*22)+'ms">'+
-        '<span class="nbl-ic"><i>'+E(s.icon)+'</i></span><b>'+E(s.name)+'</b><small>'+E(s.desc)+'</small>'+(s.special==='daragat'?'<em class="nbl-more" aria-hidden="true">↗</em>':'')+'</button>';
+      if(s.special) return '<button type="button" class="nbl-tile'+(s.special==='link'?' phone':'')+(s.special==='store'?' store':'')+'" role="listitem" data-special="'+s.special+'" style="--g1:'+g[0]+';--g2:'+g[1]+';--d:'+(i*22)+'ms">'+
+        '<span class="nbl-ic"><i>'+E(s.icon)+'</i></span><b>'+E(s.name)+'</b><small>'+E(s.desc)+'</small>'+((s.special==='daragat'||s.special==='store')?'<em class="nbl-more" aria-hidden="true">↗</em>':'')+'</button>';
       return '<button type="button" class="nbl-tile'+(s.view===cv?' cur':'')+'" role="listitem" data-view="'+E(s.view)+'" style="--g1:'+g[0]+';--g2:'+g[1]+';--d:'+(i*22)+'ms">'+
         '<span class="nbl-ic"><i>'+E(s.icon)+'</i></span><b>'+E(s.name)+'</b><small>'+E(DESC[s.view]||'')+'</small>'+(has?'<em class="nbl-more" aria-hidden="true">◂</em>':'')+'</button>';
     }).join('');
@@ -29103,6 +29274,7 @@ function nbPromoShow(){
     if(tile.hasAttribute('data-special')){
       var sp=tile.getAttribute('data-special');
       if(sp==='link'){ var lb=document.querySelector('#settingsNav [data-set="link"]'); go('settings', lb); return; }
+      if(sp==='store'){ var sl=storeLink(); close(); if(sl){ if(openExternal(sl.href)) return; try{ sl.click(); }catch(_){ try{ window.open(sl.href,'_blank'); }catch(__){} } } return; }
       if(sp==='daragat'){ var a=daragatLink(); close(); if(a){ if(openExternal(a.href)) return; try{ a.click(); }catch(_){ try{ window.open(a.href,'_blank'); }catch(__){} } } return; }
     }
     if(tile.hasAttribute('data-sub')){
@@ -29174,6 +29346,8 @@ function nbPromoShow(){
     'html.nb-gridnav.nb-side:not(.nb-side-drawer) main,html.nb-gridnav.nb-side.nb-side-compact:not(.nb-side-drawer) main,html.nb-gridnav main{padding-right:14px!important}'+
     'html.nb-gridnav #buildSubTabs,html.nb-gridnav #ttTeachAria,html.nb-gridnav #schedSubTabs,html.nb-gridnav #settingsNav{display:none!important}'+
     /* أيقونة الموبايل لربط الأجهزة: إطار هاتف أنيق حول الرمز */
+    '.nbl-tile.store .nbl-ic{background:radial-gradient(120% 120% at 30% 15%,rgba(255,255,255,.55),transparent 45%),conic-gradient(from 210deg,#10b981,#0e7490,#7c3aed,#db2777,#f59e0b,#10b981)!important;box-shadow:0 12px 24px rgba(0,0,0,.35), inset 0 0 0 2.5px rgba(255,236,170,.9), 0 0 0 3px rgba(230,198,101,.35)!important}'+
+    '.nbl-tile.store{border-color:rgba(255,226,140,.6)}.nbl-tile.store b{color:#ffe7a3}'+
     '.nbl-tile.phone .nbl-ic{width:70px;border-radius:18px}.nbl-tile.phone .nbl-ic::after{content:"";position:absolute;top:7px;left:50%;width:18px;height:4px;margin-left:-9px;border-radius:3px;background:rgba(255,255,255,.55)}'+
     'html.nbl-open{overflow:hidden}'+
     'html.nb-gridnav .demo-mode-bar{display:flex!important;justify-content:flex-end;align-items:center;min-height:0!important;margin:0 0 8px!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important}'+
