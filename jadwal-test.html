@@ -30402,7 +30402,7 @@ function nbPromoShow(){
       var L=lsGet();
       if(!L){ say(nibrasIsActivated()?'وثّق اشتراكك أولًا ليصلك تفعيل الإدارة أونلاين':'فعّل البرنامج أونلاين أولًا (من نافذة التفعيل)','err'); if(needLegacy()) showLegacy(); return; }
       b.disabled=true; b.textContent='⏳ جارٍ التحقق…';
-      syncNow(true,true).then(function(r){ b.disabled=false; b.textContent='🌐 تحقق من التفعيل أونلاين'; if(qrlCur()) return; say(r&&r.err?netMsg(r.err):'لم تُفعَّل الميزة بعد من الإدارة — راسل الدعم على واتساب','err'); });
+      syncNow(true,true).then(function(r){ b.disabled=false; b.textContent='🌐 تحقق من التفعيل أونلاين'; if(qrlCur()) return; var L2=lsGet(); say(r&&r.err?netMsg(r.err):(L2?'لم تُفعَّل الميزة بعد لهذا الحساب: '+L2.email+' — رمز الجهاز '+obGetDeviceCode():'هذا الجهاز لم يعد مرتبطًا بحساب — سجّل الدخول من «تفعيل أونلاين»'),'err'); });
     };
     row.appendChild(b);
   }
