@@ -30029,6 +30029,397 @@ function nbPromoShow(){
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', hook); else setTimeout(hook, 0);
 })();
 
+
+/* =========================================================================
+   التفعيل الأونلاين للجدول (حساب + موافقة الإدارة من لوحة التفعيل الموحّدة)
+   • لا يغيّر شيئًا في التفعيل بالمفتاح: الموافقة من اللوحة تُرسل للجهاز مفتاحًا
+     صحيحًا لهذا الجهاز (دائم أو مؤقت) فيُحفظ بنفس طريقة المفتاح اليدوي تمامًا.
+   • المفعّلون سابقًا: استمارة توثيق (المدرسة + واتساب + Gmail) تُسجّلهم مفعّلين فورًا.
+   • الحسابات في مسار مستقل: activation/jadwal/accounts — لا تمسّ حسابات تطبيق الإدارة.
+   ========================================================================= */
+(function nbOnlineActivation(){
+  var FB_CFG={apiKey:"AIzaSyAyPSUK_8kOGGCBc2fy1pPNSOzBtwenMi0",authDomain:"daragat.firebaseapp.com",databaseURL:"https://daragat-default-rtdb.europe-west1.firebasedatabase.app",projectId:"daragat",storageBucket:"daragat.firebasestorage.app",messagingSenderId:"123733341266",appId:"1:123733341266:web:fce19012a0781f96b29b8b"};
+  var PATH='activation/jadwal/accounts';
+  var LS='nibras-jadwal-online-v1', LS_FIRST='nibras-jadwal-legacy-first-v1', LS_SEEN='nibras-jadwal-online-seen-v1';
+  var GRACE=3*86400000;
+  var SUPPORT_WA='9647712080871';
+  var live=null;
+
+  /* ---------- أدوات ---------- */
+  function $(id){ return document.getElementById(id); }
+  function h(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function say(m,k){ try{ toast(m,k||'ok'); }catch(e){} }
+  function lsGet(){ try{ return JSON.parse(localStorage.getItem(LS)||'null'); }catch(e){ return null; } }
+  function lsSet(o){ try{ if(o) localStorage.setItem(LS,JSON.stringify(o)); else localStorage.removeItem(LS); }catch(e){} }
+  function normEmail(e){ return String(e||'').trim().toLowerCase(); }
+  function ekey(e){ return normEmail(e).replace(/\./g,','); }
+  function emailOk(e){ return /^[^\s@#$\[\]\/]+@[^\s@#$\[\]\/]+\.[a-z]{2,}$/i.test(normEmail(e)); }
+  function digits(p){ return String(p||'').replace(/[٠-٩]/g,function(d){return String(d.charCodeAt(0)-0x0660);}).replace(/[۰-۹]/g,function(d){return String(d.charCodeAt(0)-0x06F0);}).replace(/\D/g,''); }
+  function normPhone(p){ var d=digits(p); if(d.indexOf('00964')===0) d=d.slice(2); if(d.indexOf('964')===0) d='0'+d.slice(3); if(d.length===10&&d.charAt(0)==='7') d='0'+d; return d; }
+  function phoneOk(p){ return /^07\d{9}$/.test(normPhone(p)); }
+  function myDev(){ return obNormKeyStr(obGetDeviceCode()); }
+  function curKey(){ try{ var o=JSON.parse(localStorage.getItem(NIBRAS_ACT_LS)||'null'); return o&&o.key?obNormKeyStr(o.key):''; }catch(e){ return ''; } }
+  function curActDate(){ try{ var o=JSON.parse(localStorage.getItem(NIBRAS_ACT_LS)||'null'); var t=Date.parse(o&&o.date); return isFinite(t)?t:0; }catch(e){ return 0; } }
+  function pwHash(email,pw){ return obHashWide(OB_SECRET+'#PW#'+normEmail(email)+'#'+String(pw||''),6); }
+  function school(){ try{ return String((DB&&DB.settings&&DB.settings.schoolName)||'').trim(); }catch(e){ return ''; } }
+  function principal(){ try{ var s=DB&&DB.settings||{}; return String(s.principalName||s.principal||s.managerName||'').trim(); }catch(e){ return ''; } }
+  function devInfo(){
+    var ua=navigator.userAgent||'', w=(screen&&screen.width)||0, ht=(screen&&screen.height)||0;
+    var os=/Android/i.test(ua)?'Android':/iPhone|iPad|iPod/i.test(ua)?'iOS':/Windows/i.test(ua)?'Windows':/Mac OS/i.test(ua)?'macOS':/Linux/i.test(ua)?'Linux':'';
+    var type=/iPad|Tablet/i.test(ua)||(/Android/i.test(ua)&&!/Mobile/i.test(ua))?'تابلت':/Mobi|iPhone|Android/i.test(ua)?'هاتف':'حاسوب';
+    var br=/EdgA?\//.test(ua)?'Edge':/SamsungBrowser/.test(ua)?'Samsung':/Firefox\//.test(ua)?'Firefox':/; wv\)/.test(ua)?'تطبيق':/Chrome\//.test(ua)?'Chrome':/Safari\//.test(ua)?'Safari':'';
+    return {type:type,os:os,browser:br,screen:w+'×'+ht};
+  }
+  function planOfInfo(){
+    try{
+      var i=nibrasActivationInfo();
+      if(i.state==='permanent') return {plan:'permanent',expiresAt:0};
+      if(i.state==='timed') return {plan:{D:'daily',M:'monthly',Y:'yearly'}[i.type]||'monthly',expiresAt:i.expMs};
+    }catch(e){}
+    return null;
+  }
+  function keyValidHere(k){
+    k=obNormKeyStr(k); var d=myDev();
+    if(k.length===16) return k===obNormKeyStr(obKeyFor(d));
+    if(k.length===18) return !!obParseTimedKey(k,d);
+    return false;
+  }
+  /* ---- الجهاز الملحق (ربط جهاز المعلم — QRL): تفعيل مستقل يصل أيضًا من الإدارة ---- */
+  function qrlCur(){ try{ var o=JSON.parse(localStorage.getItem(NBJL_LS)||'null'); return o&&o.key?obNormKeyStr(o.key):''; }catch(e){ return ''; } }
+  function refreshLink(){ try{ nbLinkLockRender(); }catch(e){} try{ nbLinkRender(); }catch(e){} try{ renderPexTeacherQrHub(); }catch(e){} }
+  function qrlApply(rec){
+    try{
+      if(rec.qrlActive && rec.qrlKey){
+        var k=obNormKeyStr(rec.qrlKey);
+        if(jlKeyValid(k) && k!==qrlCur()){
+          localStorage.setItem(NBJL_LS, JSON.stringify({key:k, device:myDev(), date:new Date().toISOString(), online:true}));
+          refreshLink(); say('✅ تم تفعيل «ربط جهاز المعلم» (الجهاز الملحق) من الإدارة','ok');
+        }
+      } else if(rec.qrlRevoked && qrlCur()){
+        localStorage.removeItem(NBJL_LS); refreshLink(); say('أُلغي تفعيل «ربط جهاز المعلم» من الإدارة','err');
+      }
+    }catch(e){}
+  }
+  function waUrl(text){ return 'https://wa.me/'+SUPPORT_WA+'?text='+encodeURIComponent(text); }
+
+  /* ---------- الاتصال بقاعدة التفعيل عبر REST مباشرة ----------
+     كل قراءة تأتي من الخادم نفسه (بلا نسخة مخزّنة قديمة)، ولا حاجة لتحميل مكتبة Firebase */
+  var TS={'.sv':'timestamp'};
+  function url(k){ return FB_CFG.databaseURL+'/'+PATH+'/'+encodeURIComponent(k)+'.json'; }
+  function rest(method,k,body){
+    if(!navigator.onLine) return Promise.reject(new Error('offline'));
+    var ctl=window.AbortController?new AbortController():null, t=setTimeout(function(){ try{ ctl&&ctl.abort(); }catch(e){} },15000);
+    return fetch(url(k)+(method==='GET'?'?t='+Date.now():''),{method:method,cache:'no-store',headers:body?{'Content-Type':'application/json'}:undefined,body:body?JSON.stringify(body):undefined,signal:ctl?ctl.signal:undefined})
+      .then(function(r){ clearTimeout(t); if(!r.ok) throw new Error(r.status===401||r.status===403?'permission':'http '+r.status); return r.json(); },
+            function(e){ clearTimeout(t); throw new Error('net'); });
+  }
+  function readRec(k){ return rest('GET',k); }
+  function putRec(k,data){ return rest('PUT',k,data); }
+  function patchRec(k,data){ return rest('PATCH',k,data); }
+  function netMsg(e){ var m=String(e&&e.message||e||''); if(/offline|net|timeout/i.test(m)) return 'لا يوجد اتصال بالإنترنت — تأكد من الاتصال ثم حاول مرة أخرى'; if(/permission/i.test(m)) return 'تعذّر الوصول لخادم التفعيل (صلاحيات) — تواصل مع الدعم'; return 'تعذّر الاتصال بخادم التفعيل — حاول لاحقًا'; }
+
+  /* ---------- تطبيق حالة الحساب القادمة من الإدارة ---------- */
+  function revoke(msg){
+    try{ localStorage.removeItem(NIBRAS_ACT_LS); localStorage.removeItem(NBJL_LS); }catch(e){}
+    refreshLink();
+    try{ syncTrialMode(); }catch(e){}
+    say(msg,'err');
+  }
+  function apply(rec){
+    var L=lsGet(); if(!L) return;
+    var me=myDev();
+    if(!rec){
+      /* سجل غير موجود: فقط الطلب المنتظر الذي تأكدنا من وجوده سابقًا يُعتبر محذوفًا من الإدارة */
+      if(L.confirmed && L.status!=='approved'){ lsSet(null); stopLive(); closeModal(); say('أُلغي طلب التفعيل من الإدارة — يمكنك إرسال طلب جديد','err'); }
+      return;
+    }
+    L.confirmed=true;
+    var mine=(rec.deviceCode===me)||(rec.pendingDeviceCode===me);
+    if(!mine){ lsSet(null); stopLive(); if(nibrasIsActivated()&&curKey()===obNormKeyStr(rec.licKey||'')) revoke('نُقل اشتراكك إلى جهاز آخر بموافقة الإدارة'); else if(qrlCur()&&rec.qrlKey&&qrlCur()===obNormKeyStr(rec.qrlKey)){ try{ localStorage.removeItem(NBJL_LS); }catch(e){} refreshLink(); } return; }
+    if(rec.accountDisabled||['suspended','deleted','cancelled'].indexOf(rec.status)>=0){
+      L.status='suspended'; lsSet(L); stopLive();
+      if(nibrasIsActivated()) revoke('⛔ '+(rec.disabledReason||'تم إيقاف الحساب من الإدارة'));
+      if($('nbOnModal')) showWaiting(rec);
+      return;
+    }
+    if(rec.status==='approved' && rec.deviceCode===me){
+      var k=obNormKeyStr(rec.licKey||'');
+      if(k && keyValidHere(k) && k!==curKey()){
+        nibrasSaveActivation(k);
+        try{ syncTrialMode(); }catch(e){} try{ hideActivateGate(); }catch(e){} try{ applySchoolTerms(); }catch(e){}
+        var i=nibrasActivationInfo();
+        say(i.state==='permanent'?'✅ تم تفعيل البرنامج — اشتراك دائم':'✅ تم تفعيل البرنامج — '+(i.label||'')+' حتى '+nibrasFmtExpiry(i.expMs),'ok');
+        closeModal();
+      }
+      qrlApply(rec);
+      L.status='approved'; lsSet(L); stopLive();
+      return;
+    }
+    L.status=rec.status||'pending'; lsSet(L);
+    if($('nbOnModal')) showWaiting(rec);
+  }
+  /* متابعة الطلب المنتظر: فحص كل 8 ثوانٍ حتى الموافقة */
+  function startLive(){
+    var L=lsGet(); if(!L||L.status==='approved'||live) return;
+    live=setInterval(function(){
+      var L2=lsGet(); if(!L2||L2.status==='approved'){ stopLive(); return; }
+      readRec(L2.key).then(apply).catch(function(){});
+    },8000);
+  }
+  function stopLive(){ if(live){ clearInterval(live); live=null; } }
+  function syncNow(force,report){
+    var L=lsGet(); if(!L) return Promise.resolve(); if(!navigator.onLine) return Promise.resolve({err:new Error('offline')});
+    return readRec(L.key).then(function(rec){
+      apply(rec);
+      /* آخر ظهور: مرة يوميًا فقط */
+      try{
+        var day=new Date().toDateString();
+        if(rec && rec.deviceCode===myDev() && (force||localStorage.getItem(LS_SEEN)!==day)){
+          localStorage.setItem(LS_SEEN,day);
+          patchRec(L.key,{lastSeenAt:TS,lastSeenDevice:devInfo()}).catch(function(){});
+        }
+      }catch(e){}
+      if(lsGet()&&lsGet().status!=='approved') startLive();
+    }).catch(function(e){ return {err:e}; });
+  }
+
+  /* ---------- الواجهة ---------- */
+  function css(){
+    if($('nbOnCss')) return;
+    var st=document.createElement('style'); st.id='nbOnCss';
+    st.textContent=''
+      +'#nbOnModal{position:fixed;inset:0;z-index:2147483640;background:rgba(10,20,45,.62);display:flex;align-items:center;justify-content:center;padding:14px;direction:rtl;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}'
+      +'#nbOnModal .nbo-card{background:#fff;color:#14213d;width:100%;max-width:460px;max-height:94vh;overflow:auto;border-radius:22px;padding:22px 18px 18px;box-shadow:0 30px 80px rgba(0,0,0,.35);font-family:inherit}'
+      +'#nbOnModal .nbo-ic{width:64px;height:64px;margin:0 auto 10px;border-radius:20px;display:grid;place-items:center;font-size:32px;background:linear-gradient(135deg,#1d4fd7,#06b6d4);color:#fff;box-shadow:0 10px 24px rgba(29,79,215,.3)}'
+      +'#nbOnModal h2{margin:0;text-align:center;font-size:20px;font-weight:900}'
+      +'#nbOnModal .nbo-sub{text-align:center;color:#5b6a8f;font-size:13px;line-height:1.85;margin:8px 0 14px;font-weight:700}'
+      +'#nbOnModal label{display:block;font-weight:800;font-size:13px;margin:10px 0 5px;color:#25345a}'
+      +'#nbOnModal input{width:100%;box-sizing:border-box;padding:12px 13px;border:1.5px solid #d6deec;border-radius:13px;font-size:16px;font-family:inherit;background:#fff!important;color:#14213d!important;color-scheme:light}'
+      +'#nbOnModal input:focus{outline:0;border-color:#1d4fd7;box-shadow:0 0 0 4px rgba(29,79,215,.12)}'
+      +'#nbOnModal .nbo-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:12px;padding:13px;border:0;border-radius:14px;font-weight:900;font-size:15px;cursor:pointer;font-family:inherit;text-decoration:none;box-sizing:border-box}'
+      +'#nbOnModal .nbo-pri{background:linear-gradient(135deg,#1d4fd7,#1640b0);color:#fff;box-shadow:0 10px 22px rgba(29,79,215,.28)}'
+      +'#nbOnModal .nbo-wa{background:#25D366;color:#fff}'
+      +'#nbOnModal .nbo-ghost{background:#eef2fb;color:#25345a}'
+      +'#nbOnModal .nbo-link{background:none;border:0;color:#1d4fd7;font-weight:800;cursor:pointer;font-family:inherit;font-size:13px;margin-top:10px;width:100%}'
+      +'#nbOnModal .nbo-err{display:none;margin-top:10px;padding:10px 12px;border-radius:12px;background:#fdecea;color:#8a1c12;font-weight:800;font-size:13px;line-height:1.7}'
+      +'#nbOnModal .nbo-note{margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff6e0;color:#7a5200;font-weight:700;font-size:12.5px;line-height:1.8}'
+      +'#nbOnModal .nbo-dev{direction:ltr;text-align:center;font-family:monospace;font-weight:900;letter-spacing:2px;background:#f2f5fb;border-radius:12px;padding:10px;margin-top:6px}'
+      +'#nbOnModal .nbo-st{display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;background:#f2f5fb;font-weight:800;font-size:13.5px;line-height:1.7;margin-top:6px}'
+      +'#nbOnModal .nbo-spin{width:22px;height:22px;border:3px solid #c9d6f3;border-top-color:#1d4fd7;border-radius:50%;animation:nboSpin 1s linear infinite;flex-shrink:0}'
+      +'@keyframes nboSpin{to{transform:rotate(360deg)}}'
+      +'.act-or{display:flex;align-items:center;gap:10px;color:#8a96b3;font-weight:800;font-size:12px;margin:12px 0 2px}.act-or:before,.act-or:after{content:"";flex:1;height:1px;background:#dfe5f0}'
+      +'#btnOnlineAct{background:linear-gradient(135deg,#0ea5e9,#1d4fd7)!important;color:#fff!important}'
+      +'html[data-theme="night"] #nbOnModal .nbo-card{background:#121c33;color:#e8eefb}html[data-theme="night"] #nbOnModal label{color:#c9d6f3}html[data-theme="night"] #nbOnModal .nbo-sub{color:#9fb0d3}html[data-theme="night"] #nbOnModal .nbo-ghost,html[data-theme="night"] #nbOnModal .nbo-st,html[data-theme="night"] #nbOnModal .nbo-dev{background:#1b2742;color:#e8eefb}';
+    document.head.appendChild(st);
+  }
+  function modal(html){
+    css();
+    var m=$('nbOnModal');
+    if(!m){ m=document.createElement('div'); m.id='nbOnModal'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); document.body.appendChild(m); }
+    m.innerHTML='<div class="nbo-card">'+html+'</div>';
+    return m;
+  }
+  function closeModal(){ var m=$('nbOnModal'); if(m) m.remove(); }
+  function err(t){ var e=$('nboErr'); if(e){ e.textContent=t; e.style.display=t?'block':'none'; } }
+  function busy(on,label){ var b=$('nboGo'); if(b){ b.disabled=!!on; if(label) b.textContent=label; } }
+  function fmtDev(){ return obGetDeviceCode(); }
+
+  /* --- اختيار: حساب جديد / لدي حساب --- */
+  function showRegister(){
+    modal('<div class="nbo-ic">🌐</div><h2>تفعيل أونلاين</h2>'
+      +'<p class="nbo-sub">أنشئ حسابًا لمدرستك، وسيُرسل طلب التفعيل للإدارة. بعد الموافقة يتفعّل البرنامج على هذا الجهاز <b>تلقائيًا</b>.</p>'
+      +'<label>🏫 اسم المدرسة</label><input id="nboSchool" value="'+h(school())+'" autocomplete="organization">'
+      +'<label>👤 اسم المدير / المديرة</label><input id="nboPrin" value="'+h(principal())+'" autocomplete="name">'
+      +'<label>📱 رقم الواتساب</label><input id="nboPhone" type="tel" inputmode="numeric" dir="ltr" placeholder="07XXXXXXXXX" maxlength="14">'
+      +'<label>✉️ البريد (Gmail)</label><input id="nboEmail" type="email" dir="ltr" placeholder="name@gmail.com" autocomplete="email">'
+      +'<label>🔒 كلمة السر</label><input id="nboPw" type="password" autocomplete="new-password" placeholder="6 أحرف على الأقل">'
+      +'<label>🔒 تأكيد كلمة السر</label><input id="nboPw2" type="password" autocomplete="new-password">'
+      +'<div class="nbo-err" id="nboErr"></div>'
+      +'<button type="button" class="nbo-btn nbo-pri" id="nboGo">إرسال طلب التفعيل</button>'
+      +'<button type="button" class="nbo-link" id="nboHave">لدي حساب — تسجيل الدخول</button>'
+      +'<button type="button" class="nbo-btn nbo-ghost" id="nboClose">رجوع</button>');
+    $('nboClose').onclick=function(){ closeModal(); try{ showActivateGate(); }catch(e){} };
+    $('nboHave').onclick=showLogin;
+    $('nboGo').onclick=doRegister;
+  }
+  function showLogin(){
+    modal('<div class="nbo-ic">🔑</div><h2>تسجيل الدخول</h2>'
+      +'<p class="nbo-sub">ادخل بحسابك الذي أنشأته سابقًا. إذا كان حسابك مستخدمًا على جهاز آخر يُرسل طلب نقل توافق عليه الإدارة.</p>'
+      +'<label>✉️ البريد (Gmail)</label><input id="nboEmail" type="email" dir="ltr" autocomplete="email">'
+      +'<label>🔒 كلمة السر</label><input id="nboPw" type="password" autocomplete="current-password">'
+      +'<div class="nbo-err" id="nboErr"></div>'
+      +'<button type="button" class="nbo-btn nbo-pri" id="nboGo">دخول</button>'
+      +'<button type="button" class="nbo-link" id="nboNew">ليس لدي حساب — إنشاء حساب</button>'
+      +'<button type="button" class="nbo-btn nbo-ghost" id="nboClose">رجوع</button>');
+    $('nboClose').onclick=function(){ closeModal(); try{ showActivateGate(); }catch(e){} };
+    $('nboNew').onclick=showRegister;
+    $('nboGo').onclick=doLogin;
+  }
+  function showWaiting(rec){
+    var L=lsGet()||{}; rec=rec||{};
+    var st=rec.status||L.status||'pending';
+    var map={
+      pending:['⏳','تم إرسال طلبك وهو بانتظار موافقة الإدارة. سيتفعّل البرنامج هنا تلقائيًا فور الموافقة — يمكنك إغلاق هذه النافذة ومتابعة العمل.',1],
+      device_transfer_pending:['🔄','طلب نقل الاشتراك إلى هذا الجهاز بانتظار موافقة الإدارة. سيتفعّل تلقائيًا فور الموافقة.',1],
+      rejected:['✖️','رُفض طلب التفعيل. تواصل مع الدعم على واتساب للاستفسار.',0],
+      suspended:['⛔',(rec.disabledReason||'تم إيقاف الحساب من الإدارة')+' — تواصل مع الدعم.',0]
+    };
+    var v=map[st]||map.pending;
+    var txt='السلام عليكم\nأرسلت طلب تفعيل أونلاين لبرنامج الجدول الأسبوعي الذكي\n\nالمدرسة: '+(rec.schoolName||school()||'—')+'\nالبريد: '+(rec.email||L.email||'—')+'\nرمز الجهاز: '+fmtDev()+'\n\nأرجو الموافقة على الطلب.';
+    modal('<div class="nbo-ic">'+v[0]+'</div><h2>حالة التفعيل</h2>'
+      +'<div class="nbo-st">'+(v[2]?'<span class="nbo-spin"></span>':'')+'<span>'+h(v[1])+'</span></div>'
+      +'<label>الحساب</label><div class="nbo-dev" style="letter-spacing:0">'+h(rec.email||L.email||'')+'</div>'
+      +'<label>رمز هذا الجهاز</label><div class="nbo-dev">'+h(fmtDev())+'</div>'
+      +'<a class="nbo-btn nbo-wa" href="'+h(waUrl(txt))+'" target="_blank" rel="noopener">💬 مراسلة الإدارة على واتساب</a>'
+      +'<button type="button" class="nbo-btn nbo-ghost" id="nboRefresh">🔄 تحديث الحالة</button>'
+      +(st==='rejected'?'<button type="button" class="nbo-link" id="nboAgain">إرسال طلب جديد بحساب آخر</button>':'')
+      +'<button type="button" class="nbo-btn nbo-ghost" id="nboClose">إغلاق</button>');
+    $('nboClose').onclick=closeModal;
+    $('nboRefresh').onclick=function(){ syncNow(true).then(function(){ if($('nbOnModal')&&lsGet()&&lsGet().status!=='approved') say('ما زال الطلب بانتظار الموافقة','ok'); }); };
+    if($('nboAgain')) $('nboAgain').onclick=function(){ lsSet(null); stopLive(); showRegister(); };
+  }
+
+  /* --- إنشاء حساب --- */
+  function doRegister(){
+    var sc=$('nboSchool').value.trim(), pr=$('nboPrin').value.trim(), ph=normPhone($('nboPhone').value), em=normEmail($('nboEmail').value), pw=$('nboPw').value, pw2=$('nboPw2').value;
+    if(!sc) return err('اكتب اسم المدرسة');
+    if(!phoneOk(ph)) return err('رقم الواتساب غير صحيح — مثال: 07712345678');
+    if(!emailOk(em)) return err('البريد الإلكتروني غير صحيح');
+    if(pw.length<6) return err('كلمة السر 6 أحرف على الأقل');
+    if(pw!==pw2) return err('كلمتا السر غير متطابقتين');
+    err(''); busy(true,'جارٍ الإرسال…');
+    var k=ekey(em), me=myDev();
+    readRec(k).then(function(rec){
+      if(rec){
+        if(rec.deviceCode===me && rec.pwHash===pwHash(em,pw)){ lsSet({email:em,key:k,status:rec.status,confirmed:true}); apply(rec); if(lsGet()&&lsGet().status!=='approved'){ showWaiting(rec); startLive(); } return; }
+        busy(false,'إرسال طلب التفعيل'); return err('هذا البريد مسجّل مسبقًا — اضغط «لدي حساب» لتسجيل الدخول');
+      }
+      var T=TS;
+      return putRec(k,{
+        app:'jadwal', source:'online', email:em, schoolName:sc, principalName:pr, name:pr, phone:ph,
+        pwHash:pwHash(em,pw), deviceCode:me, lastSeenDevice:devInfo(),
+        status:'pending', registeredAt:T, requestedAt:T
+      }).then(function(){
+        lsSet({email:em,key:k,status:'pending',confirmed:false});
+        showWaiting({status:'pending',email:em,schoolName:sc}); startLive();
+      });
+    }).catch(function(e){ busy(false,'إرسال طلب التفعيل'); err(netMsg(e)); });
+  }
+  /* --- تسجيل الدخول --- */
+  function doLogin(){
+    var em=normEmail($('nboEmail').value), pw=$('nboPw').value;
+    if(!emailOk(em)) return err('البريد الإلكتروني غير صحيح');
+    if(!pw) return err('اكتب كلمة السر');
+    err(''); busy(true,'جارٍ الدخول…');
+    var k=ekey(em), me=myDev();
+    readRec(k).then(function(rec){
+      busy(false,'دخول');
+      if(!rec) return err('لا يوجد حساب بهذا البريد — أنشئ حسابًا جديدًا');
+      if(!rec.pwHash) return err('هذا الحساب مسجّل بدون كلمة سر — تواصل مع الدعم لنقله');
+      if(rec.pwHash!==pwHash(em,pw)) return err('كلمة السر غير صحيحة');
+      if(rec.accountDisabled||['suspended','deleted','cancelled'].indexOf(rec.status)>=0) return err('⛔ '+(rec.disabledReason||'الحساب موقوف من الإدارة'));
+      lsSet({email:em,key:k,status:rec.status,confirmed:true});
+      if(rec.deviceCode===me){ apply(rec); if(lsGet()&&lsGet().status!=='approved'){ showWaiting(rec); startLive(); } return; }
+      var T=TS;
+      return patchRec(k,{
+        status:'device_transfer_pending', statusBeforeTransfer:(rec.status==='device_transfer_pending'?(rec.statusBeforeTransfer||'pending'):(rec.status||'pending')),
+        pendingDeviceCode:me, pendingDeviceInfo:devInfo(), transferRequestedAt:T
+      }).then(function(){ var L=lsGet(); L.status='device_transfer_pending'; lsSet(L); showWaiting({status:'device_transfer_pending',email:em,schoolName:rec.schoolName}); startLive(); });
+    }).catch(function(e){ busy(false,'دخول'); err(netMsg(e)); });
+  }
+
+  /* --- المفعّلون سابقًا: استمارة توثيق إجبارية --- */
+  function graceLeft(){
+    var f=0; try{ f=parseInt(localStorage.getItem(LS_FIRST),10)||0; if(!f){ f=Date.now(); localStorage.setItem(LS_FIRST,String(f)); } }catch(e){}
+    return Math.max(0, f+GRACE-Date.now());
+  }
+  function needLegacy(){ try{ return nibrasIsActivated() && !lsGet(); }catch(e){ return false; } }
+  function showLegacy(){
+    if(!needLegacy()) return;
+    graceLeft();
+    modal('<div class="nbo-ic">🛡️</div><h2>توثيق اشتراكك</h2>'
+      +'<p class="nbo-sub">برنامجك <b>مفعّل</b> ✅ — نحتاج بياناتك مرة واحدة لتسجيل اشتراكك في نظام التفعيل الجديد وحمايته. <b>اشتراكك وبياناتك لن تتأثر.</b></p>'
+      +'<label>🏫 اسم المدرسة</label><input id="nboSchool" value="'+h(school())+'" autocomplete="organization">'
+      +'<label>📱 رقم الواتساب</label><input id="nboPhone" type="tel" inputmode="numeric" dir="ltr" placeholder="07XXXXXXXXX" maxlength="14">'
+      +'<label>✉️ البريد (Gmail)</label><input id="nboEmail" type="email" dir="ltr" placeholder="name@gmail.com" autocomplete="email">'
+      +'<div class="nbo-err" id="nboErr"></div>'
+      +'<button type="button" class="nbo-btn nbo-pri" id="nboGo">توثيق الاشتراك</button>'
+      +'<div id="nboLaterBox"></div>');
+    laterBox(!navigator.onLine);
+    $('nboGo').onclick=doLegacy;
+  }
+  /* «متابعة لاحقًا» تظهر فقط عند عدم وجود إنترنت، وخلال مهلة 3 أيام */
+  function laterBox(noNet){
+    var box=$('nboLaterBox'); if(!box) return;
+    var left=graceLeft(), days=Math.ceil(left/86400000);
+    if(!noNet){ box.innerHTML=''; return; }
+    box.innerHTML=left>0
+      ?'<div class="nbo-note">لا يوجد اتصال بالإنترنت. التوثيق يحتاج إنترنت مرة واحدة فقط.</div><button type="button" class="nbo-link" id="nboLater">متابعة الآن — يُطلب مجددًا (باقي '+days+' '+(days>2?'أيام':'يوم')+')</button>'
+      :'<div class="nbo-note">انتهت مهلة التوثيق. اتصل بالإنترنت ثم اضغط «توثيق الاشتراك» لمتابعة استخدام البرنامج.</div>';
+    var l=$('nboLater'); if(l) l.onclick=closeModal;
+  }
+  function doLegacy(){
+    var sc=$('nboSchool').value.trim(), ph=normPhone($('nboPhone').value), em=normEmail($('nboEmail').value);
+    if(!sc) return err('اكتب اسم المدرسة');
+    if(!phoneOk(ph)) return err('رقم الواتساب غير صحيح — مثال: 07712345678');
+    if(!emailOk(em)) return err('البريد الإلكتروني غير صحيح');
+    var P=planOfInfo(); if(!P){ closeModal(); return; }
+    err(''); busy(true,'جارٍ التوثيق…');
+    var k=ekey(em), me=myDev();
+    readRec(k).then(function(rec){
+      if(rec && rec.deviceCode && rec.deviceCode!==me){ busy(false,'توثيق الاشتراك'); return err('هذا البريد مسجّل لجهاز آخر — استخدم بريدًا آخر'); }
+      var T=TS, at=curActDate();
+      var data={
+        app:'jadwal', source:'legacy', legacy:true, email:em, schoolName:sc, principalName:principal(), name:principal(), phone:ph,
+        deviceCode:me, lastSeenDevice:devInfo(), status:'approved', accountDisabled:false,
+        plan:P.plan, expiresAt:P.expiresAt||0, licKey:curKey(),
+        qrlActive:!!qrlCur(), qrlKey:qrlCur()||null,
+        activatedAt:at||T, legacyRegisteredAt:T
+      };
+      if(!rec) data.registeredAt=T;
+      return (rec?patchRec(k,data):putRec(k,data)).then(function(){
+        lsSet({email:em,key:k,status:'approved',legacy:true,confirmed:true});
+        closeModal(); say('✅ تم توثيق اشتراكك — شكرًا لك','ok');
+      });
+    }).catch(function(e){ busy(false,'توثيق الاشتراك'); err(netMsg(e)); if(/offline|net|timeout/i.test(String(e&&e.message||e))) laterBox(true); });
+  }
+
+  /* ---------- الربط بنافذة التفعيل الحالية (بدون تغيير طريقة المفتاح) ---------- */
+  function addButton(){
+    var card=document.querySelector('#activateGate .act-card'); if(!card||$('btnOnlineAct')) return;
+    var later=$('btnActivateLater');
+    var or=document.createElement('div'); or.className='act-or'; or.textContent='أو';
+    var b=document.createElement('button'); b.type='button'; b.id='btnOnlineAct'; b.className='act-enter'; b.textContent='🌐 تفعيل أونلاين — إنشاء حساب';
+    b.onclick=function(){ try{ hideActivateGate(); }catch(e){} var L=lsGet(); if(L&&L.status!=='approved'){ showWaiting({status:L.status,email:L.email}); syncNow(true); } else showRegister(); };
+    if(later){ card.insertBefore(or,later); card.insertBefore(b,later); } else { card.appendChild(or); card.appendChild(b); }
+  }
+
+  function addLinkCheck(){
+    var lock=$('nbLinkLock'); if(!lock||$('nbLinkOnline')) return;
+    var row=lock.querySelector('.row'); if(!row) return;
+    var b=document.createElement('button'); b.type='button'; b.id='nbLinkOnline'; b.className='btn btn-outline'; b.textContent='🌐 تحقق من التفعيل أونلاين';
+    b.onclick=function(){
+      var L=lsGet();
+      if(!L){ say(nibrasIsActivated()?'وثّق اشتراكك أولًا ليصلك تفعيل الإدارة أونلاين':'فعّل البرنامج أونلاين أولًا (من نافذة التفعيل)','err'); if(needLegacy()) showLegacy(); return; }
+      b.disabled=true; b.textContent='⏳ جارٍ التحقق…';
+      syncNow(true,true).then(function(r){ b.disabled=false; b.textContent='🌐 تحقق من التفعيل أونلاين'; if(qrlCur()) return; var L2=lsGet(); say(r&&r.err?netMsg(r.err):(L2?'لم تُفعَّل الميزة بعد لهذا الحساب: '+L2.email+' — رمز الجهاز '+obGetDeviceCode():'هذا الجهاز لم يعد مرتبطًا بحساب — سجّل الدخول من «تفعيل أونلاين»'),'err'); });
+    };
+    row.appendChild(b);
+  }
+  function boot(){
+    css(); addButton(); addLinkCheck();
+    setTimeout(function(){
+      if(needLegacy()) showLegacy();
+      else syncNow(false);
+    },2500);
+    setInterval(function(){ syncNow(false); }, 3600000);
+    window.addEventListener('online',function(){ if(needLegacy()) showLegacy(); else syncNow(false); });
+  }
+  window.__nbOnline={sync:syncNow,register:showRegister,login:showLogin,legacy:showLegacy,state:lsGet};
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else setTimeout(boot,0);
+})();
+
+
 init();
 
 })();
