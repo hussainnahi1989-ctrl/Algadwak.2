@@ -19581,6 +19581,21 @@ function daysForShift(key){
   const want = (key==='evening') ? 'evening' : 'morning';
   return names.filter(function(_,i){ return T.dayShifts[i]===want; });
 }
+/* الوضع الثنائي مع تحديد «دوام كل يوم»: اليوم يتبع فترته فقط (صباحي أو مسائي).
+   إذا لم يُعيَّن أي يوم مسائيًا يبقى العرض القديم (الفترتان معًا) كما هو. */
+function perDayShiftOf(T, dayIdx){
+  T = T || getTimings();
+  if(!T || T.shiftMode!=='both' || dayIdx==null || dayIdx<0) return null;
+  ensureDayShifts(T);
+  if(!T.dayShifts.some(function(x){ return x==='evening'; })) return null;
+  return T.dayShifts[dayIdx]==='evening' ? 'evening' : 'morning';
+}
+/* خانة صالحة في الجدول: ضمن أيام الدوام الحالية وضمن عدد حصص ذلك اليوم
+   (تُستبعد بقايا خانات قديمة بعد تقليل الأيام أو الحصص) */
+function nbValidCell(d, p){
+  const n=((DB.settings&&DB.settings.days)||[]).length;
+  return d>=0 && d<n && p>=0 && p<dayCapacityOf(DB, d);
+}
 function todayShiftKey(){
   const T = getTimings();
   if(T.shiftMode==='evening') return 'evening';
@@ -19637,7 +19652,7 @@ function currentTimingState(){
   /* الوضع الثنائي (صباحي ومسائي): تُدمج فترتا الصباح والمساء معًا فتظهر التوقيتان معًا —
      صباحي فقط يُظهر الصباحية، ومسائي فقط يُظهر المسائية (مطلب م47) */
   let shifts;
-  if(T.shiftMode==='both') shifts = ['morning','evening'];
+  if(T.shiftMode==='both'){ const k0 = perDayShiftOf(T, dayIdx); shifts = k0 ? [k0] : ['morning','evening']; }
   else if(T.shiftMode==='evening') shifts = ['evening'];
   else shifts = ['morning'];
   const slots = [];
@@ -19714,12 +19729,13 @@ function dashTeachersPeriodsHtml(){
         const row = g[d] || [];
         for(let p=0; p<row.length; p++){
           const cell = row[p];
-          if(cell && cell.teacherId) tpCounts[cell.teacherId] = (tpCounts[cell.teacherId]||0)+1;
+          if(cell && cell.teacherId && nbValidCell(d,p)) tpCounts[cell.teacherId] = (tpCounts[cell.teacherId]||0)+1;
         }
       }
     });
   }catch(e){}
-  let rows = (DB.teachers||[]).map(t=>({id:t.id, name:t.name, n:tpCounts[t.id]||0}));
+  let rows = (DB.teachers||[]).map(t=>({id:t.id, name:t.name, n:tpCounts[t.id]||0, q:(function(){ try{ return (DB.assignments||[]).filter(a=>a.teacherId===t.id).reduce((x,a)=>x+(parseInt(a.periodsPerWeek,10)||0),0); }catch(e){ return 0; } })()}));
+  const qPill=function(r){ return '<span class="cnt-pill"'+(r.q!==r.n?' style="background:#fdecec;color:#b3261e;border-color:#f3c1bd"':'')+'>'+r.n+'</span>'+(r.q!==r.n?'<small style="display:block;font-size:10.5px;font-weight:800;color:#b3261e;margin-top:2px" title="النصاب في «توزيع النصاب» '+r.q+' — الموزّع في الجدول '+r.n+'">النصاب '+r.q+'</small>':''); };
   const theOne = (function(){ try{ return schoolTerms().theOne; }catch(e){ return 'المعلم'; } })();
   if(!rows.length) return '<div class="card"><h2>👥 الحصص المسندة إلى كل '+esc(theOne)+'</h2><div class="dash-empty">لم يتم إدخال معلمين بعد.</div></div>';
   rows.sort((a,b)=> (b.n-a.n) || String(a.name).localeCompare(String(b.name),'ar'));
@@ -19729,17 +19745,17 @@ function dashTeachersPeriodsHtml(){
     const aId=esc(A.id), aTitle=esc('اضغط لعرض تفاصيل حصص '+A.name);
     body += '<tr>'+
       '<td class="name" data-tid="'+aId+'" title="'+aTitle+'">'+esc(A.name)+'</td>'+
-      '<td class="cnt" data-tid="'+aId+'" title="'+aTitle+'"><span class="cnt-pill">'+A.n+'</span></td>'+
+      '<td class="cnt" data-tid="'+aId+'" title="'+aTitle+'">'+qPill(A)+'</td>'+
       (B ? (function(){
         const bId=esc(B.id), bTitle=esc('اضغط لعرض تفاصيل حصص '+B.name);
         return '<td class="name" data-tid="'+bId+'" title="'+bTitle+'">'+esc(B.name)+'</td>'+
-          '<td class="cnt" data-tid="'+bId+'" title="'+bTitle+'"><span class="cnt-pill">'+B.n+'</span></td>';
+          '<td class="cnt" data-tid="'+bId+'" title="'+bTitle+'">'+qPill(B)+'</td>';
       })()
          : '<td class="name empty">—</td><td class="cnt empty"><span class="cnt-pill" style="opacity:.4">—</span></td>')+
     '</tr>';
   }
   return '<div class="card"><h2>👥 الحصص المسندة إلى كل '+esc(theOne)+'</h2>'+
-    '<div class="ta-hint">💡 اضغط على اسم أي '+esc(theOne)+' في الجدول لعرض بطاقة تفاصيل حصصه المسندة (اليوم والحصة والمادة والشعبة)</div>'+
+    '<div class="ta-hint">💡 اضغط على اسم أي '+esc(theOne)+' في الجدول لعرض بطاقة تفاصيل حصصه المسندة (اليوم والحصة والمادة والشعبة). العدد = الحصص الموزّعة فعلًا في الجدول؛ وإذا اختلف عن نصابه في «توزيع النصاب» يظهر بالأحمر مع النصاب تحته (أعد التوليد أو أكمل الحصص الناقصة).</div>'+
     '<div class="dash-tp-wrap"><table class="dash-tp"><thead><tr>'+
       '<th>اسم '+esc(theOne)+'</th><th>عدد الحصص</th>'+
       '<th class="g2">اسم '+esc(theOne)+'</th><th class="g2">عدد الحصص</th>'+
@@ -19762,7 +19778,7 @@ function openTeacherAssignedModal(teacherId){
         const row = g[d] || [];
         for(let p=0; p<row.length; p++){
           const cell = row[p];
-          if(cell && cell.teacherId===teacherId){
+          if(cell && cell.teacherId===teacherId && nbValidCell(d,p)){
             total++;
             if(!groups.has(c.key)) groups.set(c.key, {c:c, items:[]});
             groups.get(c.key).items.push({d:d, p:p, subject:getSubject(cell.subjectId)});
@@ -19950,6 +19966,8 @@ function dashTimingsTableHtml(){
     if(h) return h+' س';
     return m+' د';
   }
+  let todayKey = null;
+  try{ todayKey = perDayShiftOf(T, todaySchoolDayIndex()); }catch(e){ todayKey = null; }
   function panelFor(cfg, key){
     let slots = [];
     try{ slots = buildShiftSlots(cfg).filter(function(s){ return s.kind==='lesson'; }); }catch(e){ slots = []; }
@@ -19961,7 +19979,7 @@ function dashTimingsTableHtml(){
       if(names && names.length) daysNote = '<span class="dt-days" title="أيام هذا الدوام">'+esc(names.join('، '))+'</span>';
     }
     const rows = slots.map(s=>{
-      const on = (nowM!=null && nowM>=s.start && nowM<s.end);
+      const on = (nowM!=null && nowM>=s.start && nowM<s.end) && (!todayKey || todayKey===key);
       return '<tr class="'+(on?'dt-now':'')+'">'+
         '<td><span class="p-badge">'+s.n+'</span></td>'+
         '<td class="p-time">'+fmtHM(s.start)+(on?'<span class="now-tag">الآن</span>':'')+'</td>'+
@@ -19973,6 +19991,7 @@ function dashTimingsTableHtml(){
       '<div class="dt-head">'+
         '<span class="dt-ico">'+(isM?'\u2600\uFE0F':'\uD83C\uDF06')+'</span>'+
         '<span class="dt-title">'+(isM?'الدوام الصباحي':'الدوام المسائي')+'</span>'+
+        (todayKey===key?'<span class="dt-days" style="background:#1e7d3c;color:#fff;border-color:#1e7d3c">دوام اليوم</span>':'')+
         daysNote+
       '</div>'+
       '<div class="dt-wrap"><table class="dt-table"><thead><tr><th>الحصة</th><th>بداية الحصة</th><th>نهاية الحصة</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
@@ -20373,8 +20392,9 @@ function renderTimingsTab(){
     } else {
       /* الوضع الثنائي: يُبحث في فترتي الصباح والمساء معًا — يظهر التوقيتان (مطلب م47) */
       let hit0 = null;
-      if(!eveOnly0){ const f0 = mSlots.find(s=> nowM>=s.start && nowM<s.end); if(f0) hit0 = {sh:'morning', slot:f0}; }
-      if(!hit0 && (both0 || eveOnly0)){ const f0 = eSlots.find(s=> nowM>=s.start && nowM<s.end); if(f0) hit0 = {sh:'evening', slot:f0}; }
+      const pd0 = perDayShiftOf(T, dIdx0);   /* دوام اليوم إن كانت الأيام موزّعة صباحي/مسائي */
+      if(!eveOnly0 && pd0!=='evening'){ const f0 = mSlots.find(s=> nowM>=s.start && nowM<s.end); if(f0) hit0 = {sh:'morning', slot:f0}; }
+      if(!hit0 && (both0 || eveOnly0) && pd0!=='morning'){ const f0 = eSlots.find(s=> nowM>=s.start && nowM<s.end); if(f0) hit0 = {sh:'evening', slot:f0}; }
       const nm0 = hit0 ? (hit0.sh==='evening'?'مسائي':'صباحي') : null;
       nowBox.innerHTML = hit0
         ? ('الآن: <b>'+nm0+' — '+esc(hit0.slot.label)+'</b> من '+fmtHM(hit0.slot.start)+' إلى '+fmtHM(hit0.slot.end))
@@ -30030,6 +30050,7 @@ function nbPromoShow(){
 })();
 
 
+
 /* =========================================================================
    التفعيل الأونلاين للجدول (حساب + موافقة الإدارة من لوحة التفعيل الموحّدة)
    • لا يغيّر شيئًا في التفعيل بالمفتاح: الموافقة من اللوحة تُرسل للجهاز مفتاحًا
@@ -30406,8 +30427,25 @@ function nbPromoShow(){
     };
     row.appendChild(b);
   }
+  /* ---------- انتهاء التفعيل: قفل كامل حتى التجديد ----------
+     يخص فقط من كان مفعّلًا بتفعيل مؤقت (يومي/شهري/سنوي) وانتهت مدته.
+     المفعّل الدائم أو المؤقت الساري وغير المفعّل أصلًا (التجريبي) لا يتأثرون إطلاقًا. */
+  function expiredLock(){ try{ return nibrasActivationInfo().state==='expired'; }catch(e){ return false; } }
+  var origHide=hideActivateGate;
+  hideActivateGate=function(){ if(expiredLock()){ document.documentElement.classList.add('act-locked'); return; } document.documentElement.classList.remove('act-locked'); return origHide.apply(this,arguments); };
+  function lockCheck(){
+    var h=document.documentElement;
+    if(expiredLock()){
+      h.classList.add('act-locked');
+      if(!h.classList.contains('activate-open')){ try{ showActivateGate(); }catch(e){} }
+    } else if(h.classList.contains('act-locked')){
+      h.classList.remove('act-locked');
+    }
+  }
   function boot(){
     css(); addButton(); addLinkCheck();
+    try{ var lk=document.createElement('style'); lk.textContent='html.act-locked #btnActivateLater{display:none!important}html.act-locked #activateGate{z-index:2147483000!important}'; document.head.appendChild(lk); }catch(e){}
+    lockCheck(); setTimeout(lockCheck,1600); setInterval(lockCheck,20000);
     setTimeout(function(){
       if(needLegacy()) showLegacy();
       else syncNow(false);
