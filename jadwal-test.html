@@ -30043,8 +30043,7 @@ function nbPromoShow(){
   var LS='nibras-jadwal-online-v1', LS_FIRST='nibras-jadwal-legacy-first-v1', LS_SEEN='nibras-jadwal-online-seen-v1';
   var GRACE=3*86400000;
   var SUPPORT_WA='9647712080871';
-  var SDK='https://www.gstatic.com/firebasejs/9.23.0/';
-  var fbApp=null, fdb=null, loading=null, live=null, liveKey='', idleT=0;
+  var live=null;
 
   /* ---------- أدوات ---------- */
   function $(id){ return document.getElementById(id); }
@@ -30103,24 +30102,20 @@ function nbPromoShow(){
   }
   function waUrl(text){ return 'https://wa.me/'+SUPPORT_WA+'?text='+encodeURIComponent(text); }
 
-  /* ---------- Firebase (يُحمَّل عند الحاجة فقط) ---------- */
-  function addScript(src){ return new Promise(function(res,rej){ var s=document.createElement('script'); s.src=src; s.async=true; s.onload=res; s.onerror=function(){ rej(new Error('net')); }; document.head.appendChild(s); }); }
-  function fb(){
-    if(fdb){ try{ fdb.goOnline(); }catch(e){} idle(); return Promise.resolve(fdb); }
+  /* ---------- الاتصال بقاعدة التفعيل عبر REST مباشرة ----------
+     كل قراءة تأتي من الخادم نفسه (بلا نسخة مخزّنة قديمة)، ولا حاجة لتحميل مكتبة Firebase */
+  var TS={'.sv':'timestamp'};
+  function url(k){ return FB_CFG.databaseURL+'/'+PATH+'/'+encodeURIComponent(k)+'.json'; }
+  function rest(method,k,body){
     if(!navigator.onLine) return Promise.reject(new Error('offline'));
-    if(!loading){
-      loading=(window.firebase&&window.firebase.database?Promise.resolve():addScript(SDK+'firebase-app-compat.js').then(function(){ return addScript(SDK+'firebase-database-compat.js'); }))
-        .then(function(){
-          try{ fbApp=firebase.app('nbJadwal'); }catch(e){ fbApp=firebase.initializeApp(FB_CFG,'nbJadwal'); }
-          fdb=fbApp.database(); idle(); return fdb;
-        }).catch(function(e){ loading=null; throw e; });
-    }
-    return Promise.race([loading,new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('timeout')); },15000); })]);
+    var ctl=window.AbortController?new AbortController():null, t=setTimeout(function(){ try{ ctl&&ctl.abort(); }catch(e){} },15000);
+    return fetch(url(k)+(method==='GET'?'?t='+Date.now():''),{method:method,cache:'no-store',headers:body?{'Content-Type':'application/json'}:undefined,body:body?JSON.stringify(body):undefined,signal:ctl?ctl.signal:undefined})
+      .then(function(r){ clearTimeout(t); if(!r.ok) throw new Error(r.status===401||r.status===403?'permission':'http '+r.status); return r.json(); },
+            function(e){ clearTimeout(t); throw new Error('net'); });
   }
-  /* لا نترك اتصالًا مفتوحًا بلا داعٍ (حد الاتصالات المتزامنة في الخطة المجانية) */
-  function idle(){ clearTimeout(idleT); idleT=setTimeout(function(){ try{ if(fdb&&!live) fdb.goOffline(); }catch(e){} },25000); }
-  function ref(k){ return fdb.ref(PATH+'/'+k); }
-  function readRec(k){ return fb().then(function(){ return new Promise(function(res,rej){ var done=false; var t=setTimeout(function(){ if(!done){ done=true; rej(new Error('timeout')); } },12000); ref(k).once('value',function(s){ if(done) return; done=true; clearTimeout(t); res(s.val()); },function(e){ if(done) return; done=true; clearTimeout(t); rej(e); }); }); }); }
+  function readRec(k){ return rest('GET',k); }
+  function putRec(k,data){ return rest('PUT',k,data); }
+  function patchRec(k,data){ return rest('PATCH',k,data); }
   function netMsg(e){ var m=String(e&&e.message||e||''); if(/offline|net|timeout/i.test(m)) return 'لا يوجد اتصال بالإنترنت — تأكد من الاتصال ثم حاول مرة أخرى'; if(/permission/i.test(m)) return 'تعذّر الوصول لخادم التفعيل (صلاحيات) — تواصل مع الدعم'; return 'تعذّر الاتصال بخادم التفعيل — حاول لاحقًا'; }
 
   /* ---------- تطبيق حالة الحساب القادمة من الإدارة ---------- */
@@ -30163,17 +30158,17 @@ function nbPromoShow(){
     L.status=rec.status||'pending'; lsSet(L);
     if($('nbOnModal')) showWaiting(rec);
   }
+  /* متابعة الطلب المنتظر: فحص كل 8 ثوانٍ حتى الموافقة */
   function startLive(){
-    var L=lsGet(); if(!L||L.status==='approved') return;
-    fb().then(function(){
-      if(live&&liveKey===L.key) return;
-      stopLive(); liveKey=L.key; live=ref(L.key);
-      live.on('value',function(s){ apply(s.val()); },function(){});
-    }).catch(function(){});
+    var L=lsGet(); if(!L||L.status==='approved'||live) return;
+    live=setInterval(function(){
+      var L2=lsGet(); if(!L2||L2.status==='approved'){ stopLive(); return; }
+      readRec(L2.key).then(apply).catch(function(){});
+    },8000);
   }
-  function stopLive(){ if(live){ try{ live.off('value'); }catch(e){} live=null; liveKey=''; idle(); } }
-  function syncNow(force){
-    var L=lsGet(); if(!L||!navigator.onLine) return Promise.resolve();
+  function stopLive(){ if(live){ clearInterval(live); live=null; } }
+  function syncNow(force,report){
+    var L=lsGet(); if(!L) return Promise.resolve(); if(!navigator.onLine) return Promise.resolve({err:new Error('offline')});
     return readRec(L.key).then(function(rec){
       apply(rec);
       /* آخر ظهور: مرة يوميًا فقط */
@@ -30181,11 +30176,11 @@ function nbPromoShow(){
         var day=new Date().toDateString();
         if(rec && rec.deviceCode===myDev() && (force||localStorage.getItem(LS_SEEN)!==day)){
           localStorage.setItem(LS_SEEN,day);
-          ref(L.key).update({lastSeenAt:firebase.database.ServerValue.TIMESTAMP,lastSeenDevice:devInfo()});
+          patchRec(L.key,{lastSeenAt:TS,lastSeenDevice:devInfo()}).catch(function(){});
         }
       }catch(e){}
       if(lsGet()&&lsGet().status!=='approved') startLive();
-    }).catch(function(){});
+    }).catch(function(e){ return {err:e}; });
   }
 
   /* ---------- الواجهة ---------- */
@@ -30299,8 +30294,8 @@ function nbPromoShow(){
         if(rec.deviceCode===me && rec.pwHash===pwHash(em,pw)){ lsSet({email:em,key:k,status:rec.status,confirmed:true}); apply(rec); if(lsGet()&&lsGet().status!=='approved'){ showWaiting(rec); startLive(); } return; }
         busy(false,'إرسال طلب التفعيل'); return err('هذا البريد مسجّل مسبقًا — اضغط «لدي حساب» لتسجيل الدخول');
       }
-      var T=firebase.database.ServerValue.TIMESTAMP;
-      return ref(k).set({
+      var T=TS;
+      return putRec(k,{
         app:'jadwal', source:'online', email:em, schoolName:sc, principalName:pr, name:pr, phone:ph,
         pwHash:pwHash(em,pw), deviceCode:me, lastSeenDevice:devInfo(),
         status:'pending', registeredAt:T, requestedAt:T
@@ -30325,8 +30320,8 @@ function nbPromoShow(){
       if(rec.accountDisabled||['suspended','deleted','cancelled'].indexOf(rec.status)>=0) return err('⛔ '+(rec.disabledReason||'الحساب موقوف من الإدارة'));
       lsSet({email:em,key:k,status:rec.status,confirmed:true});
       if(rec.deviceCode===me){ apply(rec); if(lsGet()&&lsGet().status!=='approved'){ showWaiting(rec); startLive(); } return; }
-      var T=firebase.database.ServerValue.TIMESTAMP;
-      return ref(k).update({
+      var T=TS;
+      return patchRec(k,{
         status:'device_transfer_pending', statusBeforeTransfer:(rec.status==='device_transfer_pending'?(rec.statusBeforeTransfer||'pending'):(rec.status||'pending')),
         pendingDeviceCode:me, pendingDeviceInfo:devInfo(), transferRequestedAt:T
       }).then(function(){ var L=lsGet(); L.status='device_transfer_pending'; lsSet(L); showWaiting({status:'device_transfer_pending',email:em,schoolName:rec.schoolName}); startLive(); });
@@ -30373,7 +30368,7 @@ function nbPromoShow(){
     var k=ekey(em), me=myDev();
     readRec(k).then(function(rec){
       if(rec && rec.deviceCode && rec.deviceCode!==me){ busy(false,'توثيق الاشتراك'); return err('هذا البريد مسجّل لجهاز آخر — استخدم بريدًا آخر'); }
-      var T=firebase.database.ServerValue.TIMESTAMP, at=curActDate();
+      var T=TS, at=curActDate();
       var data={
         app:'jadwal', source:'legacy', legacy:true, email:em, schoolName:sc, principalName:principal(), name:principal(), phone:ph,
         deviceCode:me, lastSeenDevice:devInfo(), status:'approved', accountDisabled:false,
@@ -30382,7 +30377,7 @@ function nbPromoShow(){
         activatedAt:at||T, legacyRegisteredAt:T
       };
       if(!rec) data.registeredAt=T;
-      return (rec?ref(k).update(data):ref(k).set(data)).then(function(){
+      return (rec?patchRec(k,data):putRec(k,data)).then(function(){
         lsSet({email:em,key:k,status:'approved',legacy:true,confirmed:true});
         closeModal(); say('✅ تم توثيق اشتراكك — شكرًا لك','ok');
       });
@@ -30407,7 +30402,7 @@ function nbPromoShow(){
       var L=lsGet();
       if(!L){ say(nibrasIsActivated()?'وثّق اشتراكك أولًا ليصلك تفعيل الإدارة أونلاين':'فعّل البرنامج أونلاين أولًا (من نافذة التفعيل)','err'); if(needLegacy()) showLegacy(); return; }
       b.disabled=true; b.textContent='⏳ جارٍ التحقق…';
-      syncNow(true).then(function(){ b.disabled=false; b.textContent='🌐 تحقق من التفعيل أونلاين'; if(!qrlCur()) say('لم تُفعَّل الميزة بعد من الإدارة — راسل الدعم على واتساب','err'); });
+      syncNow(true,true).then(function(r){ b.disabled=false; b.textContent='🌐 تحقق من التفعيل أونلاين'; if(qrlCur()) return; say(r&&r.err?netMsg(r.err):'لم تُفعَّل الميزة بعد من الإدارة — راسل الدعم على واتساب','err'); });
     };
     row.appendChild(b);
   }
