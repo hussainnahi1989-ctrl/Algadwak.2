@@ -30085,6 +30085,22 @@ function nbPromoShow(){
     if(k.length===18) return !!obParseTimedKey(k,d);
     return false;
   }
+  /* ---- الجهاز الملحق (ربط جهاز المعلم — QRL): تفعيل مستقل يصل أيضًا من الإدارة ---- */
+  function qrlCur(){ try{ var o=JSON.parse(localStorage.getItem(NBJL_LS)||'null'); return o&&o.key?obNormKeyStr(o.key):''; }catch(e){ return ''; } }
+  function refreshLink(){ try{ nbLinkLockRender(); }catch(e){} try{ nbLinkRender(); }catch(e){} try{ renderPexTeacherQrHub(); }catch(e){} }
+  function qrlApply(rec){
+    try{
+      if(rec.qrlActive && rec.qrlKey){
+        var k=obNormKeyStr(rec.qrlKey);
+        if(jlKeyValid(k) && k!==qrlCur()){
+          localStorage.setItem(NBJL_LS, JSON.stringify({key:k, device:myDev(), date:new Date().toISOString(), online:true}));
+          refreshLink(); say('✅ تم تفعيل «ربط جهاز المعلم» (الجهاز الملحق) من الإدارة','ok');
+        }
+      } else if(rec.qrlRevoked && qrlCur()){
+        localStorage.removeItem(NBJL_LS); refreshLink(); say('أُلغي تفعيل «ربط جهاز المعلم» من الإدارة','err');
+      }
+    }catch(e){}
+  }
   function waUrl(text){ return 'https://wa.me/'+SUPPORT_WA+'?text='+encodeURIComponent(text); }
 
   /* ---------- Firebase (يُحمَّل عند الحاجة فقط) ---------- */
@@ -30109,7 +30125,8 @@ function nbPromoShow(){
 
   /* ---------- تطبيق حالة الحساب القادمة من الإدارة ---------- */
   function revoke(msg){
-    try{ localStorage.removeItem(NIBRAS_ACT_LS); }catch(e){}
+    try{ localStorage.removeItem(NIBRAS_ACT_LS); localStorage.removeItem(NBJL_LS); }catch(e){}
+    refreshLink();
     try{ syncTrialMode(); }catch(e){}
     say(msg,'err');
   }
@@ -30123,7 +30140,7 @@ function nbPromoShow(){
     }
     L.confirmed=true;
     var mine=(rec.deviceCode===me)||(rec.pendingDeviceCode===me);
-    if(!mine){ lsSet(null); stopLive(); if(nibrasIsActivated()&&curKey()===obNormKeyStr(rec.licKey||'')) revoke('نُقل اشتراكك إلى جهاز آخر بموافقة الإدارة'); return; }
+    if(!mine){ lsSet(null); stopLive(); if(nibrasIsActivated()&&curKey()===obNormKeyStr(rec.licKey||'')) revoke('نُقل اشتراكك إلى جهاز آخر بموافقة الإدارة'); else if(qrlCur()&&rec.qrlKey&&qrlCur()===obNormKeyStr(rec.qrlKey)){ try{ localStorage.removeItem(NBJL_LS); }catch(e){} refreshLink(); } return; }
     if(rec.accountDisabled||['suspended','deleted','cancelled'].indexOf(rec.status)>=0){
       L.status='suspended'; lsSet(L); stopLive();
       if(nibrasIsActivated()) revoke('⛔ '+(rec.disabledReason||'تم إيقاف الحساب من الإدارة'));
@@ -30139,6 +30156,7 @@ function nbPromoShow(){
         say(i.state==='permanent'?'✅ تم تفعيل البرنامج — اشتراك دائم':'✅ تم تفعيل البرنامج — '+(i.label||'')+' حتى '+nibrasFmtExpiry(i.expMs),'ok');
         closeModal();
       }
+      qrlApply(rec);
       L.status='approved'; lsSet(L); stopLive();
       return;
     }
@@ -30360,6 +30378,7 @@ function nbPromoShow(){
         app:'jadwal', source:'legacy', legacy:true, email:em, schoolName:sc, principalName:principal(), name:principal(), phone:ph,
         deviceCode:me, lastSeenDevice:devInfo(), status:'approved', accountDisabled:false,
         plan:P.plan, expiresAt:P.expiresAt||0, licKey:curKey(),
+        qrlActive:!!qrlCur(), qrlKey:qrlCur()||null,
         activatedAt:at||T, legacyRegisteredAt:T
       };
       if(!rec) data.registeredAt=T;
@@ -30380,8 +30399,20 @@ function nbPromoShow(){
     if(later){ card.insertBefore(or,later); card.insertBefore(b,later); } else { card.appendChild(or); card.appendChild(b); }
   }
 
+  function addLinkCheck(){
+    var lock=$('nbLinkLock'); if(!lock||$('nbLinkOnline')) return;
+    var row=lock.querySelector('.row'); if(!row) return;
+    var b=document.createElement('button'); b.type='button'; b.id='nbLinkOnline'; b.className='btn btn-outline'; b.textContent='🌐 تحقق من التفعيل أونلاين';
+    b.onclick=function(){
+      var L=lsGet();
+      if(!L){ say(nibrasIsActivated()?'وثّق اشتراكك أولًا ليصلك تفعيل الإدارة أونلاين':'فعّل البرنامج أونلاين أولًا (من نافذة التفعيل)','err'); if(needLegacy()) showLegacy(); return; }
+      b.disabled=true; b.textContent='⏳ جارٍ التحقق…';
+      syncNow(true).then(function(){ b.disabled=false; b.textContent='🌐 تحقق من التفعيل أونلاين'; if(!qrlCur()) say('لم تُفعَّل الميزة بعد من الإدارة — راسل الدعم على واتساب','err'); });
+    };
+    row.appendChild(b);
+  }
   function boot(){
-    css(); addButton();
+    css(); addButton(); addLinkCheck();
     setTimeout(function(){
       if(needLegacy()) showLegacy();
       else syncNow(false);
