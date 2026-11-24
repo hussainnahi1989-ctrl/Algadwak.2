@@ -27383,8 +27383,10 @@ function nbPromoShow(){
       var w=measureCols(t, m.cols); if(m.cols<3) return null;
       var sorted=w.slice().sort(function(a,b){ return a-b; }), med=sorted[Math.floor(sorted.length/2)]||1;
       var frozen=0; while(frozen<2 && frozen<m.cols-2 && w[frozen]<med*0.6) frozen++;
-      var tot=0; for(var i=frozen;i<m.cols;i++) tot+=w[i];
+      /* v83: أعمدة اليوم/الحصة في الورقة الأولى فقط، والقص عند منتصف العرض الكلي فتتساوى الورقتان عند لصقهما */
+      var tot=0; for(var i=0;i<m.cols;i++) tot+=w[i];
       var acc=0, cut=frozen, bestD=1e9;
+      for(var i2=0;i2<frozen;i2++) acc+=w[i2];
       for(var c=frozen;c<m.cols-1;c++){ acc+=w[c]; var dd=Math.abs(acc-tot/2); if(dd<bestD){ bestD=dd; cut=c; } }
       return {ax:'v', ti:mt.i, frozen:frozen, cut:cut, cols:m.cols};
     }
@@ -27404,7 +27406,7 @@ function nbPromoShow(){
     var mt=mainTableOf(root); if(!mt) return;
     var t=mt.all[plan.ti]||mt.t; tableMap(t);
     if(plan.ax==='v'){
-      var hidden=function(c){ if(c<plan.frozen) return false; return part===1 ? c>plan.cut : c<=plan.cut; };
+      var hidden=function(c){ return part===1 ? c>plan.cut : c<=plan.cut; };
       Array.prototype.forEach.call(t.querySelectorAll('col'), function(col, ci){ if(hidden(ci)){ if(orig) touch(col); col.style.setProperty('display','none','important'); col.style.setProperty('width','0','important'); } });
       Array.prototype.forEach.call(t.rows, function(r){ Array.prototype.forEach.call(r.cells, function(cell){
         var c0=cell.__nbc, cs=cell.__nbcs||cell.colSpan||1, vis=0;
@@ -27454,6 +27456,141 @@ function nbPromoShow(){
     fit.style.width=nw+'px'; fit.style.height=nh+'px'; fit.style.transform='scale('+s+')';
     fit.style.right=Math.max(0,(boxW-nw*s)/2)+'px'; fit.style.top='0px';
   }
+  /* ترويسة/تذييل الورقة عند القص:
+     عمودي: الشريط يُقسم نصفين — عناصره الأولى (اليمنى) في الورقة الأولى والباقية في الثانية، دون قطع أي نص،
+            وخلفيته المتدرجة تُرسم بعرض ورقتين فتتصل عند لصق الورقتين جنبًا إلى جنب.
+     أفقي: الترويسة في الورقة الأولى فقط والتذييل في الثانية فقط. */
+  function hfIn(root, list, orig){
+    var out=[];
+    (list||[]).forEach(function(x){ var el=x.el; if(!el) return;
+      if(orig){ if(root.contains(el)) out.push(el); }
+      else { var k=el.getAttribute('data-nbk'); var c=k&&root.querySelector('[data-nbk="'+k+'"]'); if(c) out.push(c); }
+    });
+    return out;
+  }
+  function barOf(H){
+    var bar=H, guard=0;
+    while(guard++<6){
+      var kids=Array.prototype.filter.call(bar.children, function(c){ return !/^(SCRIPT|STYLE|BR)$/i.test(c.tagName) && PV.win.getComputedStyle(c).display!=='none'; });
+      var txt=Array.prototype.some.call(bar.childNodes, function(n){ return n.nodeType===3 && n.textContent.trim(); });
+      if(kids.length===1 && !txt) bar=kids[0]; else break;
+    }
+    return bar;
+  }
+  function splitBar(H, part, orig, isHead){
+    var S_=function(el,k,v){ if(orig) touch(el); el.style.setProperty(k,v,'important'); };
+    var bar=barOf(H);
+    var items=Array.prototype.filter.call(bar.children, function(c){ return !/^(SCRIPT|STYLE|BR)$/i.test(c.tagName) && PV.win.getComputedStyle(c).display!=='none'; });
+    var n=items.length, m=Math.max(1, Math.ceil(n/2));
+    var right=items.slice(0,m), left=items.slice(m);
+    S_(bar,'display','grid'); S_(bar,'grid-template-columns','repeat('+m+',minmax(0,1fr))'); S_(bar,'align-items','center'); S_(bar,'column-gap','8px');
+    items.forEach(function(it){
+      var mine = part===1 ? right.indexOf(it)>=0 : left.indexOf(it)>=0;
+      if(!mine){ S_(it,'display','none'); return; }
+      var col = part===1 ? right.indexOf(it)+1 : (m-left.length)+left.indexOf(it)+1;
+      S_(it,'grid-column',String(col)); S_(it,'grid-row','1'); S_(it,'min-width','0');
+      if(isHead){ var js = (part===1 && col===1) ? 'start' : (part===2 && col===m) ? 'end' : 'center'; S_(it,'justify-self',js); }
+    });
+    /* خلفية متصلة: تُرسم بعرض ورقتين ويظهر نصفها المناسب، وتُلغى الحواف المستديرة عند خط اللصق */
+    [H, bar].concat(Array.prototype.slice.call(H.querySelectorAll('*')).filter(function(c){ return c!==bar && (c.offsetWidth>=bar.offsetWidth*0.9); })).forEach(function(el){
+      var cs=PV.win.getComputedStyle(el);
+      if(cs.backgroundImage && cs.backgroundImage!=='none'){ S_(el,'background-size','200% 100%'); S_(el,'background-position', part===1?'right center':'left center'); }
+      if(part===1){ S_(el,'border-top-left-radius','0'); S_(el,'border-bottom-left-radius','0'); S_(el,'border-left-width','0'); }
+      else { S_(el,'border-top-right-radius','0'); S_(el,'border-bottom-right-radius','0'); S_(el,'border-right-width','0'); }
+    });
+    return bar;
+  }
+  function splitHF(root, plan, part, orig){
+    var I=PV.info||{};
+    var heads=hfIn(root, I.pheads, orig), feet=hfIn(root, I.pfeet, orig), bars=[];
+    var hide=function(el){ if(orig) touch(el); el.style.setProperty('display','none','important'); };
+    if(plan.ax==='h'){
+      if(part===1) feet.forEach(hide); else heads.forEach(hide);
+      return bars;
+    }
+    heads.forEach(function(H){ try{ bars.push({k:'h', bar:splitBar(H, part, orig, true)}); }catch(e){} });
+    feet.forEach(function(F){ try{ bars.push({k:'f', bar:splitBar(F, part, orig, false)}); }catch(e){} });
+    return bars;
+  }
+  /* نصوص خلايا الجدول: لا تُقص ولا تلتف — تُصغَّر الخلية التي لا يتسع لها سطر واحد فقط (حتى 50%).
+     يعمل بعد أي تكبير يختاره المستخدم، فيبقى التكبير لكن دون قص أو التفاف. */
+  function fitCellText(root){
+    var win=PV.win, doc=PV.doc;
+    var cells=[];
+    Array.prototype.forEach.call(root.querySelectorAll('table td, table th'), function(td){
+      if((td.rowSpan||1)>1) return;
+      if(!td.offsetWidth || !td.offsetHeight) return;
+      var wm=win.getComputedStyle(td).writingMode; if(wm && wm.indexOf('vertical')===0) return;
+      if(td.querySelector('table,img,svg,canvas,input,textarea')) return;
+      var leaves=[];
+      var hasTxt=Array.prototype.some.call(td.childNodes, function(n){ return n.nodeType===3 && n.textContent.trim(); });
+      if(hasTxt) leaves.push(td);
+      else Array.prototype.forEach.call(td.querySelectorAll('*'), function(e){
+        if(/^(BR|SCRIPT|STYLE)$/i.test(e.tagName)) return;
+        var ownTxt=Array.prototype.some.call(e.childNodes, function(n){ return n.nodeType===3 && n.textContent.trim(); });
+        if(ownTxt && e.offsetWidth){ var w2=win.getComputedStyle(e).writingMode; if(!(w2 && w2.indexOf('vertical')===0)) leaves.push(e); }
+      });
+      leaves=leaves.filter(function(l){ return !leaves.some(function(o){ return o!==l && o.contains(l); }); });
+      if(leaves.length) cells.push({td:td, leaves:leaves});
+    });
+    if(!cells.length) return;
+    /* صفحة الجدول الكامل تُلائم بمقياس أفقي مستقل: إن صار الجدول أعرض من الصفحة تُضغط الحروف أفقيًا،
+       لذا تُحسب المساحة المتاحة بنسبة عرض الصفحة إلى عرض الجدول فيبقى الخط بشكله الطبيعي */
+    var mpage=root.querySelector('.print-page.master-one');
+    var kOf=function(){ if(!mpage) return 1; var bd=mpage.querySelector('.master-abs-body'), tb=mpage.querySelector('table.master-print')||mpage.querySelector('table'); if(!bd||!tb) return 1; var tw=Math.max(tb.offsetWidth, tb.scrollWidth, 1); return Math.min(1, (bd.clientWidth||tw)/tw); };
+    var K=1;
+    var measure=function(c){
+      var r=c.td.getBoundingClientRect(); var sx=(r.width/(c.td.offsetWidth||r.width))||1;
+      var cs=win.getComputedStyle(c.td), avail=c.td.clientWidth-(parseFloat(cs.paddingLeft)||0)-(parseFloat(cs.paddingRight)||0)-2;
+      var rows=[];
+      c.leaves.forEach(function(l){
+        var rg=doc.createRange(); rg.selectNodeContents(l); var rs=rg.getClientRects(), w=0, top=null, bot=null, tops={};
+        for(var i=0;i<rs.length;i++){ if(!rs[i].width) continue; w+=rs[i].width; tops[Math.round(rs[i].top)]=1; top=top==null?rs[i].top:Math.min(top,rs[i].top); bot=bot==null?rs[i].bottom:Math.max(bot,rs[i].bottom); }
+        var L=Object.keys(tops).length; if(L>1) w+= (L-1)*3*sx;
+        if(!w) return;
+        var row=null; for(var j=0;j<rows.length;j++){ if(top < rows[j].bot-1 && bot > rows[j].top+1 && L===1 && rows[j].single){ row=rows[j]; break; } }
+        if(row){ row.w+=w+4*sx; } else rows.push({w:w, top:top, bot:bot, single:L===1});
+        l.__nbLines=L;
+      });
+      var need=0; rows.forEach(function(x){ if(x.w>need) need=x.w; }); need=need/sx;
+      return {avail:avail*K, need:need};
+    };
+    for(var pass=0; pass<3; pass++){
+      K=kOf();
+      var plan=cells.map(function(c){ var m=measure(c); var f=m.need>0? (m.avail*0.97)/m.need : 1; var wrapped=c.leaves.some(function(l){ return l.__nbLines>1; }); return {c:c, f:f, wrapped:wrapped}; });
+      var changed=false;
+      plan.forEach(function(x){
+        if(x.f>=1 && !x.wrapped) return;
+        if(x.f<0.5) return;          /* نص طويل جدًا (قوائم): يبقى كما صُمم */
+        var f=Math.min(1, x.f);
+        x.c.leaves.forEach(function(l){
+          var fs=parseFloat(win.getComputedStyle(l).fontSize)||0; if(!fs) return;
+          if(f<0.999) setI(l,'font-size',(fs*f).toFixed(2)+'px');
+          setI(l,'white-space','nowrap');
+        });
+        changed=true;
+      });
+      if(mpage){ try{ fitMasterPage(mpage); }catch(e){} }
+      if(!changed && kOf()>0.995) break;
+    }
+    /* ارتفاع: إن كان الخط أكبر مما تتسع له الصفحة عموديًا تُضغط الحروف رأسيًا — يُصغَّر الخط (أكبر حجم يتسع) بدل ذلك */
+    if(mpage){
+      var ratio=function(){ var sc=mpage.querySelector('.master-abs-scale'), mm=sc && /scale\(([\d.]+)\s*,\s*([\d.]+)\)/.exec(sc.style.transform||''); if(!mm) return 1; var sx=+mm[1], sy=+mm[2]; return (sx>0&&sy>0)? sy/sx : 1; };
+      if(ratio()<0.97){
+        var tb=mpage.querySelector('table.master-print')||mpage.querySelector('table');
+        var L=[];
+        Array.prototype.forEach.call(tb.querySelectorAll('*'), function(e){
+          if(/^(BR|SCRIPT|STYLE|COL|COLGROUP)$/i.test(e.tagName)) return;
+          if(!Array.prototype.some.call(e.childNodes, function(n){ return n.nodeType===3 && n.textContent.trim(); })) return;
+          var fs=parseFloat(win.getComputedStyle(e).fontSize)||0; if(fs) L.push({e:e, fs:fs});
+        });
+        var setG=function(g){ L.forEach(function(x){ setI(x.e,'font-size',(x.fs*g).toFixed(2)+'px'); }); try{ fitMasterPage(mpage); }catch(e){} };
+        var lo=0.4, hi=1, ok=0.4;
+        for(var it=0; it<7; it++){ var mid=(lo+hi)/2; setG(mid); if(ratio()>=0.97){ ok=mid; lo=mid; } else hi=mid; }
+        setG(ok);
+      }
+    }
+  }
   function applySplitClones(){
     var split=PV.units.some(function(u){ return u.type==='flow'; })?'none':S.split;
     PV.cut=null;
@@ -27468,12 +27605,21 @@ function nbPromoShow(){
       var b=sh.el.cloneNode(true);
       b.classList.add('nbpv-clone');
       zoom.insertBefore(b, sh.el.nextSibling);
+      var root2=b.querySelector('.nbpv-virt')||b;
       try{ applyPlan(root, plan, 1, true); }catch(e){}
-      try{ applyPlan(b.querySelector('.nbpv-virt')||b, plan, 2, false); }catch(e){}
+      try{ applyPlan(root2, plan, 2, false); }catch(e){}
+      var b1=[], b2=[];
+      try{ b1=splitHF(root, plan, 1, true); }catch(e){}
+      try{ b2=splitHF(root2, plan, 2, false); }catch(e){}
+      /* ارتفاع متساوٍ لنصفي الشريط في الورقتين */
+      try{ for(var q=0;q<Math.min(b1.length,b2.length);q++){ var h1=b1[q].bar.offsetHeight, h2=b2[q].bar.offsetHeight, hm=Math.max(h1,h2); if(hm){ touch(b1[q].bar); b1[q].bar.style.setProperty('min-height',hm+'px','important'); b2[q].bar.style.setProperty('min-height',hm+'px','important'); } } }catch(e){}
       try{ fitSheet(sh.el, sh.unit); }catch(e){}
       try{ fitSheet(b, sh.unit); }catch(e){}
-      var ba=doc.createElement('div'); ba.className='nbpv-badge'; ba.textContent=split==='v'?'الورقة ١ — الجزء الأيمن':'الورقة ١ — الجزء العلوي'; sh.el.appendChild(ba);
-      var bb=doc.createElement('div'); bb.className='nbpv-badge'; bb.textContent=split==='v'?'الورقة ٢ — الجزء الأيسر':'الورقة ٢ — الجزء السفلي'; b.appendChild(bb);
+      try{ fitCellText(root); fitCellText(root2); }catch(e){}
+      try{ fitSheet(sh.el, sh.unit); }catch(e){}
+      try{ fitSheet(b, sh.unit); }catch(e){}
+      var ba=doc.createElement('div'); ba.className='nbpv-badge'; ba.textContent=split==='v'?'الورقة ١ — اليمنى (فيها الأيام والحصص)':'الورقة ١ — العليا (فيها الترويسة)'; sh.el.appendChild(ba);
+      var bb=doc.createElement('div'); bb.className='nbpv-badge'; bb.textContent=split==='v'?'الورقة ٢ — اليسرى (تُلصق بجانب الأولى)':'الورقة ٢ — السفلى (فيها التذييل)'; b.appendChild(bb);
       PV.sheets.push(sh, {el:b, unit:sh.unit, clone:true, virt:b.querySelector('.nbpv-virt')});
     });
     if(failed && failed===list.length) T('لا يوجد جدول يمكن قسمته في هذه الوثيقة','err');
@@ -27491,6 +27637,9 @@ function nbPromoShow(){
     applyDims();
     applyLayout();
     applyStyles();          /* بعد الملاءمة: بعض عناصر الترويسة يُعاد ضبط نمطها أثناء الملاءمة */
+    if(S.split==='none' || PV.units.some(function(u){ return u.type==='flow'; })){
+      try{ (PV.sheets||[]).forEach(function(sh){ if(!sh.flow){ fitCellText(sh.el.querySelector('.nbpv-virt')||sh.el); } }); }catch(e){}
+    }
     markSel();
     applySplitClones();
     setEditable();
