@@ -4273,7 +4273,9 @@ html[data-theme="night"] .teacher-ban-head{background:linear-gradient(135deg,rgb
     <button class="tab-btn" data-view="settings">⚙️ الإعدادات</button>
     <button class="tab-btn" data-view="teachers">👤 <span id="ttTabTeachers">المعلمون</span></button>
     <button class="tab-btn" data-view="subjects">📘 المواد</button>
-    <button class="tab-btn" data-view="build">🛠️ إنشاء الجدول</button>
+    <button class="tab-btn" data-view="build" data-bsub="stages">🏷️ المراحل والشعب</button>
+    <button class="tab-btn" data-view="build" data-bsub="assign">🧩 توزيع النصاب</button>
+    <button class="tab-btn" data-view="build" data-bsub="gen">🛠️ إنشاء الجدول</button>
     <button class="tab-btn" data-view="full">📋 الجدول الكامل</button>
     <button class="tab-btn" data-view="att">🧑‍🏫 حضور الملاك</button>
     <button class="tab-btn" data-view="pex">🖨️ طباعة وتصدير</button>
@@ -29725,7 +29727,7 @@ function nbPromoShow(){
   var LS='nibras-nav-mode';
   var $=function(id){ return document.getElementById(id); };
   var E=function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
-  var get=function(){ try{ return localStorage.getItem(LS)==='side'?'side':'grid'; }catch(e){ return 'grid'; } };
+  var get=function(){ try{ var v=localStorage.getItem(LS); return v==='side'?'side':(v==='tabs'?'tabs':'grid'); }catch(e){ return 'grid'; } };
   var set=function(v){ try{ localStorage.setItem(LS, v); }catch(e){} };
   var on=function(){ return document.documentElement.classList.contains('nb-gridnav'); };
 
@@ -29748,7 +29750,7 @@ function nbPromoShow(){
       var ic=b.querySelector('.tb-ico'), tx=b.querySelector('.tb-tx');
       var icon=ic?ic.textContent.trim():'', name=(tx?tx.textContent:b.textContent).trim();
       if(!icon){ var m=name.match(/^(\S+)\s+(.*)$/); if(m){ icon=m[1]; name=m[2]; } }
-      out.push({view:b.getAttribute('data-view'), icon:icon||'•', name:name});
+      out.push({view:b.getAttribute('data-view'), icon:icon||'•', name:name, bsub:b.getAttribute('data-bsub')||'', active:b.classList.contains('active')});
     });
     return out;
   }
@@ -29799,8 +29801,12 @@ function nbPromoShow(){
   function storeLink(){ try{ return document.getElementById('nbStoreLink'); }catch(e){ return null; } }
   function daragatLink(){ try{ return document.querySelector('#view-apps a[href*="Daragat"]'); }catch(e){ return null; } }
   function curView(){ try{ return currentViewName; }catch(e){ return ''; } }
-  function secName(view){ var s=sections().find(function(x){ return x.view===view; }); return s?s.name:''; }
-  function secIcon(view){ var s=sections().find(function(x){ return x.view===view; }); return s?s.icon:''; }
+  function secOf(view){ var L0=sections(); return L0.find(function(x){ return x.view===view && x.active; }) || L0.find(function(x){ return x.view===view && (!x.bsub || x.bsub==='gen'); }) || L0.find(function(x){ return x.view===view; }); }
+  function secName(view){ var s=secOf(view); return s?s.name:''; }
+  function secIcon(view){ var s=secOf(view); return s?s.icon:''; }
+  /* v87: «المراحل والشعب» و«توزيع النصاب» قسمان مستقلان في القائمة (خارج «إنشاء الجدول») */
+  var DESCB={stages:'المراحل الدراسية وشعب كل مرحلة', assign:'المادة والمدرّس وعدد الحصص لكل شعبة'};
+  function pseudoOn(){ try{ if(currentViewName!=='build') return false; var a=document.getElementById('build-stages'), b=document.getElementById('build-assign'); return !!((a&&a.classList.contains('active'))||(b&&b.classList.contains('active'))); }catch(e){ return false; } }
 
   /* ───────────── اللوحة بملء الشاشة ───────────── */
   var L=null;
@@ -29830,8 +29836,10 @@ function nbPromoShow(){
       var g=GRAD[i%GRAD.length], has=!!SUBS[s.view] && subItems(s.view).length>1;
       if(s.special) return '<button type="button" class="nbl-tile'+(s.special==='link'?' phone':'')+(s.special==='store'?' store':'')+'" role="listitem" data-special="'+s.special+'" style="--g1:'+g[0]+';--g2:'+g[1]+';--d:'+(i*22)+'ms">'+
         '<span class="nbl-ic"><i>'+E(s.icon)+'</i></span><b>'+E(s.name)+'</b><small>'+E(s.desc)+'</small>'+((s.special==='daragat'||s.special==='store')?'<em class="nbl-more" aria-hidden="true">↗</em>':'')+'</button>';
-      return '<button type="button" class="nbl-tile'+(s.view===cv?' cur':'')+'" role="listitem" data-view="'+E(s.view)+'" style="--g1:'+g[0]+';--g2:'+g[1]+';--d:'+(i*22)+'ms">'+
-        '<span class="nbl-ic"><i>'+E(s.icon)+'</i></span><b>'+E(s.name)+'</b><small>'+E(DESC[s.view]||'')+'</small>'+(has?'<em class="nbl-more" aria-hidden="true">◂</em>':'')+'</button>';
+      var ps=(s.bsub==='stages'||s.bsub==='assign'); if(ps) has=false;
+      var isCur=s.bsub?s.active:(s.view===cv);
+      return '<button type="button" class="nbl-tile'+(isCur?' cur':'')+'" role="listitem" data-view="'+E(s.view)+'"'+(ps?' data-bsub="'+E(s.bsub)+'"':'')+' style="--g1:'+g[0]+';--g2:'+g[1]+';--d:'+(i*22)+'ms">'+
+        '<span class="nbl-ic"><i>'+E(s.icon)+'</i></span><b>'+E(s.name)+'</b><small>'+E(ps?DESCB[s.bsub]:(s.view==='build'?'التوليد التلقائي والحصص المشتركة':(DESC[s.view]||'')))+'</small>'+(has?'<em class="nbl-more" aria-hidden="true">◂</em>':'')+'</button>';
     }).join('');
     show();
   }
@@ -29870,6 +29878,11 @@ function nbPromoShow(){
     if(t===L.querySelector('.nbl-bg') || (t.closest && t.closest('[data-x]'))){ close(); return; }
     if(t.closest && t.closest('[data-back]')){ openMain(); return; }
     var tile=t.closest && t.closest('.nbl-tile'); if(!tile) return;
+    if(tile.hasAttribute('data-bsub')){
+      var bs=tile.getAttribute('data-bsub'); close();
+      try{ showView('build'); setBuildSubTab(bs); }catch(e){}
+      try{ window.scrollTo(0,0); }catch(e){} setTimeout(crumb, 60); return;
+    }
     if(tile.hasAttribute('data-view')){
       var v=tile.getAttribute('data-view');
       if(SUBS[v] && subItems(v).length>1){ openSub(v); return; }
@@ -29895,7 +29908,7 @@ function nbPromoShow(){
     if(!C){ C=document.createElement('nav'); C.id='nbCrumb'; C.className='nbc no-print'; C.setAttribute('aria-label','المسار'); main.insertBefore(C, main.firstChild); C.addEventListener('click', onCrumb); }
     var v=curView(), h='<button type="button" class="nbc-home" data-c="home"><span class="g" aria-hidden="true"><i></i><i></i><i></i><i></i></span>القائمة</button>';
     if(v){
-      var hasSub=SUBS[v] && subItems(v).length>1;
+      var hasSub=SUBS[v] && subItems(v).length>1 && !(v==='build' && pseudoOn());
       h+='<span class="nbc-sep">‹</span><button type="button" class="nbc-it'+(hasSub?'':' cur')+'" data-c="sec">'+E(secIcon(v))+' '+E(secName(v))+'</button>';
       if(hasSub){ var a=subItems(v).find(function(x){ return x.active; }); if(a) h+='<span class="nbc-sep">‹</span><span class="nbc-it cur">'+E(a.icon)+' '+E(a.name)+'</span>'; }
     }
@@ -29926,15 +29939,27 @@ function nbPromoShow(){
       '<div class="nbnm-row">'+
         '<button type="button" class="nbnm-opt" data-nav="side"><span class="pv side" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>📚 القائمة الجانبية</b><small>كما هو الآن</small></button>'+
         '<button type="button" class="nbnm-opt" data-nav="grid"><span class="pv grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span><b>▦ قائمة الأيقونات</b><small>بملء الشاشة بأيقونات كبيرة</small></button>'+
+        '<button type="button" class="nbnm-opt" data-nav="tabs"><span class="pv tabs" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>▭ تبويبات</b><small>شريط الأقسام أعلى الشاشة</small></button>'+
       '</div>';
     var first=pane.querySelector('.card'); if(first && first.nextSibling) pane.insertBefore(card, first.nextSibling); else pane.appendChild(card);
-    card.addEventListener('click', function(e){ var b=e.target.closest && e.target.closest('[data-nav]'); if(!b) return; set(b.getAttribute('data-nav')); apply(); syncCard(); try{ toast(get()==='grid'?'تم تفعيل قائمة الأيقونات — اضغط «القائمة» في الأعلى':'عادت القائمة الجانبية','ok'); }catch(_){ } });
+    card.addEventListener('click', function(e){ var b=e.target.closest && e.target.closest('[data-nav]'); if(!b) return; set(b.getAttribute('data-nav')); apply(); syncCard(); try{ toast(get()==='grid'?'تم تفعيل قائمة الأيقونات — اضغط «القائمة» في الأعلى':(get()==='tabs'?'تم تفعيل التبويبات أعلى الشاشة':'عادت القائمة الجانبية'),'ok'); }catch(_){ } try{ window.nbViewSwSync&&window.nbViewSwSync(); }catch(_){ } });
     syncCard();
   }
   function syncCard(){ document.querySelectorAll('#nbNavModeCard [data-nav]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-nav')===get()); }); }
 
+  /* v87: «تبويبات» — شريط التبويبات القديم أعلى الشاشة (نقل عقدة #tabs نفسها فتبقى كل معالجات النقر تعمل) */
+  function placeTabs(t){
+    try{
+      var tabs=$('tabs'); if(!tabs) return;
+      if(t){ var tb=document.querySelector('.topbar'); if(tb && tabs.parentNode!==tb) tb.appendChild(tabs); }
+      else { var sd=$('nbSidebar'); if(sd && tabs.parentNode!==sd) sd.appendChild(tabs); }
+      var a=tabs.querySelector('.tab-btn.active'); if(t && a && a.scrollIntoView) a.scrollIntoView({block:'nearest',inline:'center'});
+    }catch(e){}
+  }
   function apply(){
-    var g=get()==='grid', H=document.documentElement;
+    var m=get(), g=m==='grid', H=document.documentElement;
+    if(H.classList.contains('nb-tabsnav')!==(m==='tabs')) H.classList.toggle('nb-tabsnav', m==='tabs');
+    placeTabs(m==='tabs');
     if(H.classList.contains('nb-gridnav')!==g) H.classList.toggle('nb-gridnav', g);
     if(g){ topBtn(); H.classList.remove('nb-side-open'); }
     else close();
@@ -30079,7 +30104,8 @@ function nbPromoShow(){
     '.nbnm-opt.on{border-color:#c39a3a;box-shadow:0 0 0 3px rgba(195,154,58,.25), 0 8px 20px rgba(6,16,44,.1)}'+
     '.nbnm-opt .pv{display:grid;gap:4px;width:120px;height:70px;padding:7px;border-radius:12px;background:linear-gradient(160deg,#0b1f5e,#040b26)}'+
     '.nbnm-opt .pv.side{grid-template-columns:1fr 34px}.nbnm-opt .pv.side i{background:rgba(255,255,255,.18);border-radius:4px}.nbnm-opt .pv.side i:nth-child(1){grid-row:1/5;grid-column:1;background:rgba(255,255,255,.08)}.nbnm-opt .pv.side i:nth-child(n+2){grid-column:2}'+
-    '.nbnm-opt .pv.grid{grid-template-columns:repeat(3,1fr)}.nbnm-opt .pv.grid i{border-radius:6px;background:linear-gradient(150deg,#e6c665,#2a52c9)}';
+    '.nbnm-opt .pv.grid{grid-template-columns:repeat(3,1fr)}.nbnm-opt .pv.grid i{border-radius:6px;background:linear-gradient(150deg,#e6c665,#2a52c9)}'+
+    '.nbnm-opt .pv.tabs{grid-template-columns:repeat(4,1fr);grid-template-rows:14px 1fr}.nbnm-opt .pv.tabs i{border-radius:999px;background:rgba(255,255,255,.22)}.nbnm-opt .pv.tabs i:nth-child(1){background:linear-gradient(90deg,#e6c665,#c99d38)}';
     document.head.appendChild(st);
   }
 
@@ -30562,6 +30588,33 @@ function nbPromoShow(){
     },8000);
   }
   function stopLive(){ if(live){ clearInterval(live); live=null; } }
+  /* v87: المفعّلون الموثّقون سابقًا بلا كلمة سر — يُطلب منهم إنشاء كلمة سر على جهازهم (مرة يوميًا حتى تُنشأ) */
+  var LS_PWASK='nibras-jadwal-pwask-v1';
+  function askPw(rec){
+    try{
+      if(!rec || rec.pwHash || rec.deviceCode!==myDev() || rec.status!=='approved' || $('nbOnModal')) return;
+      var day=new Date().toDateString(); if(localStorage.getItem(LS_PWASK)===day) return;
+      localStorage.setItem(LS_PWASK,day);
+    }catch(e){ return; }
+    var L=lsGet()||{};
+    modal('<div class="nbo-ic">🔐</div><h2>كلمة سر لحسابك</h2>'
+      +'<p class="nbo-sub">اشتراكك موثّق ✅ — أنشئ كلمة سر لتستطيع الدخول بحسابك من «تسجيل الدخول» عند تغيير الجهاز.</p>'
+      +'<label>الحساب</label><div class="nbo-dev" style="letter-spacing:0">'+h(rec.email||L.email||'')+'</div>'
+      +'<label>🔒 كلمة السر</label><input id="nboPw" type="password" autocomplete="new-password" placeholder="6 أحرف على الأقل">'
+      +'<label>🔒 تأكيد كلمة السر</label><input id="nboPw2" type="password" autocomplete="new-password">'
+      +'<div class="nbo-err" id="nboErr"></div>'
+      +'<button type="button" class="nbo-btn nbo-pri" id="nboGo">حفظ كلمة السر</button>'
+      +'<button type="button" class="nbo-link" id="nboClose">لاحقًا</button>');
+    $('nboClose').onclick=closeModal;
+    $('nboGo').onclick=function(){
+      var pw=$('nboPw').value, pw2=$('nboPw2').value, em=normEmail(rec.email||L.email);
+      if(pw.length<6) return err('كلمة السر 6 أحرف على الأقل');
+      if(pw!==pw2) return err('كلمتا السر غير متطابقتين');
+      err(''); busy(true,'جارٍ الحفظ…');
+      patchRec(L.key,{pwHash:pwHash(em,pw), pwSetAt:TS}).then(function(){ closeModal(); say('✅ تم حفظ كلمة السر','ok'); try{ localStorage.removeItem(LS_PWASK); }catch(e){} })
+        .catch(function(e){ busy(false,'حفظ كلمة السر'); err(netMsg(e)); });
+    };
+  }
   function syncNow(force,report){
     var L=lsGet(); if(!L) return Promise.resolve(); if(!navigator.onLine) return Promise.resolve({err:new Error('offline')});
     return readRec(L.key).then(function(rec){
@@ -30655,7 +30708,7 @@ function nbPromoShow(){
     var st=rec.status||L.status||'pending';
     var map={
       pending:['⏳','تم إرسال طلبك وهو بانتظار موافقة الإدارة. سيتفعّل البرنامج هنا تلقائيًا فور الموافقة — يمكنك إغلاق هذه النافذة ومتابعة العمل.',1],
-      device_transfer_pending:['🔄','طلب نقل الاشتراك إلى هذا الجهاز بانتظار موافقة الإدارة. سيتفعّل تلقائيًا فور الموافقة.',1],
+      device_transfer_pending:['🔄','طلب تسجيل الدخول بانتظار موافقة الإدارة. سيتفعّل البرنامج على هذا الجهاز تلقائيًا فور الموافقة.',1],
       rejected:['✖️','رُفض طلب التفعيل. تواصل مع الدعم على واتساب للاستفسار.',0],
       suspended:['⛔',(rec.disabledReason||'تم إيقاف الحساب من الإدارة')+' — تواصل مع الدعم.',0]
     };
@@ -30710,16 +30763,18 @@ function nbPromoShow(){
     readRec(k).then(function(rec){
       busy(false,'دخول');
       if(!rec) return err('لا يوجد حساب بهذا البريد — أنشئ حسابًا جديدًا');
-      if(!rec.pwHash) return err('هذا الحساب مسجّل بدون كلمة سر — تواصل مع الدعم لنقله');
+      /* v87: حساب موثّق بلا كلمة سر (المفعّلون سابقًا) — كلمة السر المكتوبة تُرسل مع طلب الدخول وتُعتمد بموافقة الإدارة */
+      /* v88: الحساب الموثّق قبل إضافة كلمة السر — كلمة السر تُعيَّن من الإدارة وتُرسل للزبون */
+      if(!rec.pwHash) return err('لا توجد كلمة سر لهذا الحساب بعد — راسل الإدارة على واتساب لتحصل على كلمة السر ثم سجّل الدخول');
       if(rec.pwHash!==pwHash(em,pw)) return err('كلمة السر غير صحيحة');
       if(rec.accountDisabled||['suspended','deleted','cancelled'].indexOf(rec.status)>=0) return err('⛔ '+(rec.disabledReason||'الحساب موقوف من الإدارة'));
       lsSet({email:em,key:k,status:rec.status,confirmed:true});
-      if(rec.deviceCode===me){ apply(rec); if(lsGet()&&lsGet().status!=='approved'){ showWaiting(rec); startLive(); } return; }
-      var T=TS;
-      return patchRec(k,{
+      /* v87: كل تسجيل دخول يحتاج موافقة الإدارة (حتى على الجهاز نفسه) */
+      var T=TS, data={
         status:'device_transfer_pending', statusBeforeTransfer:(rec.status==='device_transfer_pending'?(rec.statusBeforeTransfer||'pending'):(rec.status||'pending')),
-        pendingDeviceCode:me, pendingDeviceInfo:devInfo(), transferRequestedAt:T
-      }).then(function(){ var L=lsGet(); L.status='device_transfer_pending'; lsSet(L); showWaiting({status:'device_transfer_pending',email:em,schoolName:rec.schoolName}); startLive(); });
+        pendingDeviceCode:me, pendingDeviceInfo:devInfo(), transferRequestedAt:T, loginRequest:true
+      };
+      return patchRec(k,data).then(function(){ var L=lsGet(); L.status='device_transfer_pending'; lsSet(L); showWaiting({status:'device_transfer_pending',email:em,schoolName:rec.schoolName}); startLive(); });
     }).catch(function(e){ busy(false,'دخول'); err(netMsg(e)); });
   }
 
@@ -30749,6 +30804,8 @@ function nbPromoShow(){
       +'<label>🏫 اسم المدرسة</label><input id="nboSchool" value="'+h(school())+'" autocomplete="organization">'
       +'<label>📱 رقم الواتساب</label><input id="nboPhone" type="tel" inputmode="numeric" dir="ltr" placeholder="07XXXXXXXXX" maxlength="14">'
       +'<label>✉️ البريد (Gmail)</label><input id="nboEmail" type="email" dir="ltr" placeholder="name@gmail.com" autocomplete="email">'
+      +'<label>🔒 كلمة السر (للدخول بحسابك لاحقًا)</label><input id="nboPw" type="password" autocomplete="new-password" placeholder="6 أحرف على الأقل">'
+      +'<label>🔒 تأكيد كلمة السر</label><input id="nboPw2" type="password" autocomplete="new-password">'
       +'<div class="nbo-err" id="nboErr"></div>'
       +'<button type="button" class="nbo-btn nbo-pri" id="nboGo">توثيق الاشتراك</button>'
       +'<div id="nboLaterBox"></div>');
@@ -30766,10 +30823,12 @@ function nbPromoShow(){
     var l=$('nboLater'); if(l) l.onclick=closeModal;
   }
   function doLegacy(){
-    var sc=$('nboSchool').value.trim(), ph=normPhone($('nboPhone').value), em=normEmail($('nboEmail').value);
+    var sc=$('nboSchool').value.trim(), ph=normPhone($('nboPhone').value), em=normEmail($('nboEmail').value), pw=($('nboPw')||{}).value||'', pw2=($('nboPw2')||{}).value||'';
     if(!sc) return err('اكتب اسم المدرسة');
     if(!phoneOk(ph)) return err('رقم الواتساب غير صحيح — مثال: 07712345678');
     if(!emailOk(em)) return err('البريد الإلكتروني غير صحيح');
+    if(pw.length<6) return err('كلمة السر 6 أحرف على الأقل');
+    if(pw!==pw2) return err('كلمتا السر غير متطابقتين');
     var P=planOfInfo(); if(!P){ closeModal(); return; }
     err(''); busy(true,'جارٍ التوثيق…');
     var k=ekey(em), me=myDev();
@@ -30781,7 +30840,7 @@ function nbPromoShow(){
         deviceCode:me, lastSeenDevice:devInfo(), status:'approved', accountDisabled:false,
         plan:P.plan, expiresAt:P.expiresAt||0, licKey:curKey(),
         qrlActive:!!qrlCur(), qrlKey:qrlCur()||null,
-        activatedAt:at||T, legacyRegisteredAt:T
+        activatedAt:at||T, legacyRegisteredAt:T, pwHash:pwHash(em,pw)
       };
       if(!rec) data.registeredAt=T;
       return (rec?patchRec(k,data):putRec(k,data)).then(function(){
@@ -30843,6 +30902,91 @@ function nbPromoShow(){
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else setTimeout(boot,0);
 })();
 
+
+/* v87 — أقسام «المراحل والشعب» و«توزيع النصاب» وزر تبديل طريقة العرض */
+
+(function(){
+  'use strict';
+  /* ── تمييز التبويب الصحيح: «المراحل والشعب» / «توزيع النصاب» / «إنشاء الجدول» ── */
+  function syncBuildTabs(){
+    try{
+      var inB=(typeof currentViewName!=='undefined') && currentViewName==='build';
+      var a=document.getElementById('build-stages'), b=document.getElementById('build-assign');
+      var st=!!(a&&a.classList.contains('active')), as=!!(b&&b.classList.contains('active'));
+      document.querySelectorAll('.tab-btn[data-view="build"]').forEach(function(x){
+        var k=x.getAttribute('data-bsub')||'gen';
+        var on=inB && (k==='stages'?st:(k==='assign'?as:(!st&&!as)));
+        if(x.classList.contains('active')!==on) x.classList.toggle('active', on);
+      });
+      var ps=inB && (st||as), H=document.documentElement;
+      if(H.classList.contains('nb-bpseudo')!==ps) H.classList.toggle('nb-bpseudo', ps);
+    }catch(e){}
+  }
+  window.nbSyncBuildTabs=syncBuildTabs;
+  function hookTabs(){
+    var tabs=document.getElementById('tabs'); if(!tabs) return;
+    /* بعد معالج النقر الأصلي (showView) نختار القسم الفرعي المطلوب */
+    tabs.addEventListener('click', function(e){
+      var t=e.target.closest && e.target.closest('.tab-btn[data-view="build"]'); if(!t) return;
+      var k=t.getAttribute('data-bsub')||'gen';
+      try{
+        if(k==='stages'||k==='assign') setBuildSubTab(k);
+        else { var a=document.getElementById('build-stages'), b=document.getElementById('build-assign');
+          if((a&&a.classList.contains('active'))||(b&&b.classList.contains('active'))) setBuildSubTab('gen'); }
+      }catch(_){}
+      setTimeout(syncBuildTabs, 0);
+    });
+    try{
+      var mo=new MutationObserver(syncBuildTabs);
+      document.querySelectorAll('#view-build .build-pane, #view-build').forEach(function(el){ mo.observe(el,{attributes:true,attributeFilter:['class']}); });
+      var vb=document.getElementById('view-build'); if(vb) mo.observe(vb,{childList:true,subtree:false});
+    }catch(_){}
+    syncBuildTabs();
+  }
+  /* ── زر صغير في الشريط العلوي لتبديل طريقة العرض ── */
+  var MODES=[{k:'side',i:'📚',t:'القائمة الجانبية'},{k:'grid',i:'▦',t:'قائمة الأيقونات'},{k:'tabs',i:'▭',t:'تبويبات أعلى الشاشة'}];
+  var btn=null, menu=null;
+  function mode(){ try{ return window.__nbNav ? window.__nbNav.mode() : 'grid'; }catch(e){ return 'grid'; } }
+  function syncMenu(){ if(!menu) return; menu.querySelectorAll('[data-m]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-m')===mode()); }); }
+  window.nbViewSwSync=syncMenu;
+  function closeMenu(){ if(menu) menu.hidden=true; if(btn) btn.setAttribute('aria-expanded','false'); }
+  function openMenu(){
+    if(!menu){
+      menu=document.createElement('div'); menu.className='nb-vsw-menu no-print'; menu.hidden=true; menu.setAttribute('role','menu');
+      menu.innerHTML='<div class="h">طريقة عرض القوائم</div>'+MODES.map(function(m){ return '<button type="button" role="menuitemradio" data-m="'+m.k+'"><span class="i">'+m.i+'</span><span>'+m.t+'</span><span class="k">✓</span></button>'; }).join('');
+      document.body.appendChild(menu);
+      menu.addEventListener('click', function(e){
+        var b=e.target.closest && e.target.closest('[data-m]'); if(!b) return;
+        var m=b.getAttribute('data-m'); closeMenu();
+        if(m===mode()) return;
+        try{ window.__nbNav.setMode(m); }catch(_){}
+        try{ document.querySelectorAll('#nbNavModeCard [data-nav]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-nav')===m); }); }catch(_){}
+        try{ toast(m==='grid'?'قائمة الأيقونات — اضغط «القائمة» في الأعلى':(m==='tabs'?'التبويبات أعلى الشاشة':'القائمة الجانبية'),'ok'); }catch(_){}
+        setTimeout(syncBuildTabs, 50);
+      });
+    }
+    syncMenu();
+    var r=btn.getBoundingClientRect();
+    menu.hidden=false;
+    var w=menu.offsetWidth||220, left=Math.min(Math.max(8, r.left), (window.innerWidth||800)-w-8);
+    menu.style.top=Math.round(r.bottom+6)+'px'; menu.style.left=Math.round(left)+'px';
+    btn.setAttribute('aria-expanded','true');
+  }
+  function addBtn(){
+    if(document.getElementById('nbViewSw')) return;
+    var anchor=document.getElementById('btnThemeToggle'); if(!anchor||!anchor.parentNode) return;
+    btn=document.createElement('button'); btn.type='button'; btn.id='nbViewSw'; btn.className='nb-vsw no-print';
+    btn.title='طريقة عرض القوائم'; btn.setAttribute('aria-label','طريقة عرض القوائم'); btn.setAttribute('aria-haspopup','menu'); btn.setAttribute('aria-expanded','false');
+    btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3.5" y="4" width="17" height="16" rx="3"/><path d="M9.5 4v16M12.5 9h5M12.5 13h5"/></svg><span class="c">▾</span>';
+    anchor.parentNode.insertBefore(btn, anchor);
+    btn.addEventListener('click', function(e){ e.stopPropagation(); if(menu && !menu.hidden) closeMenu(); else openMenu(); });
+    document.addEventListener('click', function(e){ if(menu && !menu.hidden && !menu.contains(e.target) && e.target!==btn) closeMenu(); }, true);
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeMenu(); });
+    window.addEventListener('resize', closeMenu); window.addEventListener('scroll', closeMenu, {passive:true});
+  }
+  function boot(){ hookTabs(); addBtn(); setTimeout(addBtn, 800); setTimeout(syncBuildTabs, 400); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else setTimeout(boot, 0);
+})();
 
 init();
 
@@ -31880,6 +32024,40 @@ html:not(.nb-act-on) .nb-act-only{display:none !important}
 }
 </style>
 
+<style id="nb-viewsw">
+/* v87 — «المراحل والشعب» و«توزيع النصاب» قسمان مستقلان: يُخفيان من شريط «إنشاء الجدول» الفرعي */
+#buildSubTabs [data-build="stages"],#buildSubTabs [data-build="assign"]{display:none!important}
+html.nb-bpseudo #buildSubTabs{display:none!important}
+html[data-theme="night"] .tab-btn[data-bsub="stages"]::before,html[data-theme="night"] .tab-btn[data-bsub="assign"]::before{display:none!important}
+/* v87 — وضع «تبويبات»: الشريط القديم أعلى الشاشة */
+html.nb-tabsnav .nb-sidebar,html.nb-tabsnav .nb-side-scrim,html.nb-tabsnav .nb-side-burger{display:none!important}
+html.nb-tabsnav.nb-side:not(.nb-side-drawer) main,html.nb-tabsnav.nb-side.nb-side-compact:not(.nb-side-drawer) main,html.nb-tabsnav main{padding-right:14px!important}
+html.nb-tabsnav:not(.nb-side-drawer) body::before{display:none!important}
+html.nb-tabsnav .topbar .tabs{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;gap:6px!important;overflow-x:auto!important;overflow-y:hidden!important;padding:6px 12px 8px!important;margin:0!important;max-height:none!important;height:auto!important;width:auto!important;position:static!important;background:none!important;border:0!important}
+html.nb-tabsnav .topbar .tabs .tab-btn{flex:none!important;width:auto!important;display:inline-flex!important;align-items:center;gap:6px;white-space:nowrap;padding:8px 14px!important;border-radius:999px!important;justify-content:center!important}
+html.nb-tabsnav .topbar .tabs .tab-btn .tb-ico{display:inline!important;position:static!important;font-size:15px}
+html.nb-tabsnav .topbar .tabs .tab-btn .tb-tx{display:inline!important}
+html.nb-tabsnav .topbar .tabs .tab-btn.active{background:linear-gradient(135deg,#fff1b8,#e6c665 45%,#c99d38)!important;color:#2b1a00!important;border-color:#e6c665!important}
+html.nb-tabsnav .topbar .tabs .tab-btn.active *{color:#2b1a00!important;-webkit-text-fill-color:#2b1a00!important}
+/* زر تبديل طريقة العرض (صغير جدًا في الشريط العلوي) */
+.nb-vsw{position:relative;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:2px;width:34px;height:30px;padding:0;margin-inline-start:6px;border-radius:10px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font:inherit}
+.nb-vsw:hover{background:rgba(255,255,255,.16)}
+.nb-vsw svg{width:16px;height:16px;display:block}
+.nb-vsw .c{font-size:8px;opacity:.8;line-height:1}
+.nb-vsw-menu{position:fixed;z-index:2147482500;min-width:210px;padding:6px;border-radius:14px;background:#fff;color:#14213d;box-shadow:0 18px 44px rgba(6,16,44,.28),0 0 0 1px rgba(20,33,61,.08);direction:rtl;font-family:inherit;animation:nbVsw .14s ease-out}
+@keyframes nbVsw{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.nb-vsw-menu[hidden]{display:none}
+.nb-vsw-menu .h{font-size:11px;font-weight:900;color:#7a86a3;padding:4px 10px 6px}
+.nb-vsw-menu button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;border-radius:10px;background:none;color:inherit;font:inherit;font-weight:800;font-size:14px;cursor:pointer;text-align:start}
+.nb-vsw-menu button:hover{background:#f1f4fb}
+.nb-vsw-menu button .i{width:26px;height:26px;flex:none;border-radius:8px;display:grid;place-items:center;font-size:14px;background:#eef2fb}
+.nb-vsw-menu button .k{margin-inline-start:auto;color:#1d4fd7;font-weight:900;visibility:hidden}
+.nb-vsw-menu button.on{background:#eef4ff}.nb-vsw-menu button.on .k{visibility:visible}
+html[data-theme="night"] .nb-vsw-menu{background:#111c33;color:#e8eefb;box-shadow:0 18px 44px rgba(0,0,0,.5),0 0 0 1px rgba(126,196,255,.14)}
+html[data-theme="night"] .nb-vsw-menu button:hover,html[data-theme="night"] .nb-vsw-menu button.on{background:#1b2742}
+html[data-theme="night"] .nb-vsw-menu button .i{background:#1b2742}
+@media print{.nb-vsw,.nb-vsw-menu{display:none!important}}
+</style>
 <style id="nb-winter">
 /* v86 — «سكون الشتاء»: خلفية متحركة للقائمة الرئيسية فقط (ثلج هادئ، شفق قطبي، جبال مثلجة، صقيع على الحواف).
    كل الطبقات خلف البطاقات وبلا لمس (pointer-events:none) فلا تتأثر الأيقونات ولا العناوين ولا الضغط. */
