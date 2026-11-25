@@ -5094,13 +5094,16 @@ html[data-theme="night"] .teacher-ban-head{background:linear-gradient(135deg,rgb
     <p class="pex-note">💡 «طباعة» تفتح نافذة الطباعة مباشرة · «PDF» يُنزّل ملفًا جاهزًا إلى ملفات جهازك · «إكسل» يُنزّل ملف <b>.xlsx ملوّن بنفس تصميم الطباعة وألوانها</b> يفتح في Microsoft Excel وGoogle Sheets وWPS وكل برامج الإكسل — جميعها تعمل ببياناتك الحالية تلقائيًا.</p>
   </section>
   <section class="view" id="view-timings">
-    <div class="card">
-      <h2>📋 جداول تواقيت الدروس</h2>
-      <p class="hint">عرض جداول التواقيت حسب الإعدادات. لتعديل الأوقات ادخل <b>الإعدادات ← تواقيت الدروس</b>.</p>
+    <div class="card tm2-view">
+      <div class="tm2-top">
+        <div class="tm2-top-ic">⏰</div>
+        <div class="tm2-top-t"><h2>تواقيت الدروس</h2>
+        <p class="hint">مواعيد الحصص والاستراحات حسب الإعدادات. للتعديل: <b>الإعدادات ← تواقيت الدروس</b>.</p></div>
+      </div>
       <div id="timingTables"></div>
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button type="button" class="btn btn-gold" id="btnPrintTimings" style="flex:1">🖨️ طباعة التواقيت</button>
-        <button type="button" class="btn btn-primary" id="btnPdfTimings" style="flex:1">📄 PDF التواقيت</button>
+      <div class="tm2-actions">
+        <button type="button" class="btn btn-gold" id="btnPrintTimings">🖨️ معاينة وطباعة</button>
+        <button type="button" class="btn btn-primary" id="btnPdfTimings">📄 PDF التواقيت</button>
       </div>
       <p class="hint" id="tmPrintHint" style="margin-top:8px;margin-bottom:0"></p>
     </div>
@@ -6004,10 +6007,70 @@ function formatTeacherTwoPartName(fullName){
   return tokens[0] + " " + tokens[1];
 }
 
+/* v86 — أسماء المدرّسين الذكية داخل الجداول:
+   • الاسم الأول وحده إذا لم يتكرر بين المدرّسين، والثنائي إذا تكرر الاسم الأول،
+     والثلاثي فقط إذا تكرر الثنائي أيضًا (حتى لا يلتبس مدرّسان).
+   • الأسماء المركبة (عبد الله، نور الدين، أبو بكر…) تُعامل كلمة واحدة.
+   • جدول التربية يأخذ الاسم الكامل كما كُتب (getTeacherFullName)، والعناوين تبقى ثنائية (getTeacherTitleName). */
+function nbNameTokens(fullName){
+  const words = String(fullName||'').trim().split(/\s+/).filter(Boolean);
+  const pre = new Set(["عبد", "عبده", "أبو", "ابو", "ابن", "آل"]);
+  const suf = new Set(["الدين", "دين", "الإسلام", "الاسلام", "الله", "الهدى"]);
+  const out = []; let i = 0;
+  while(i < words.length){
+    const w = words[i];
+    if(pre.has(w) && i + 1 < words.length){ out.push(w + " " + words[i+1]); i += 2; continue; }
+    if(i + 1 < words.length && suf.has(words[i+1])){ out.push(w + " " + words[i+1]); i += 2; continue; }
+    out.push(w); i++;
+  }
+  return out;
+}
+var __nbNameCache = { sig:null, map:null };
+function nbSmartNameMap(){
+  const list = (typeof DB!=='undefined' && DB && Array.isArray(DB.teachers)) ? DB.teachers : [];
+  const sig = list.map(function(t){ return (t&&t.id)+'='+(t&&t.name||''); }).join('|');
+  if(__nbNameCache.sig === sig && __nbNameCache.map) return __nbNameCache.map;
+  const norm = function(x){ return String(x||'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/\s+/g,' ').trim(); };
+  const toks = list.map(function(t){ return nbNameTokens(t && t.name); });
+  const keyN = function(tk, n){ return norm(tk.slice(0, n).join(' ')); };
+  const map = {};
+  toks.forEach(function(tk, i){
+    const t = list[i]; if(!t) return;
+    if(tk.length <= 1){ map[t.id] = tk.join(' '); return; }
+    let n = 1;
+    while(n < Math.min(tk.length, 3)){
+      const k = keyN(tk, n);
+      const dup = toks.some(function(o, j){ return j !== i && o.length && keyN(o, n) === k; });
+      if(!dup) break;
+      n++;
+    }
+    map[t.id] = tk.slice(0, n).join(' ');
+  });
+  __nbNameCache = { sig:sig, map:map };
+  return map;
+}
 function getTeacherDisplayName(teacherOrName){
   if(!teacherOrName) return "";
+  try{
+    if(typeof teacherOrName === "string"){
+      const nm = teacherOrName.trim();
+      const t = ((typeof DB!=='undefined' && DB && DB.teachers) || []).find(function(x){ return x && String(x.name||'').trim() === nm; });
+      if(t){ const m = nbSmartNameMap(); if(m[t.id]) return m[t.id]; }
+      return formatTeacherTwoPartName(nm);
+    }
+    const m = nbSmartNameMap();
+    if(teacherOrName.id && m[teacherOrName.id]) return m[teacherOrName.id];
+  }catch(e){}
   const name = typeof teacherOrName === "string" ? teacherOrName : (teacherOrName.name || "");
   return formatTeacherTwoPartName(name);
+}
+function getTeacherTitleName(teacherOrName){
+  if(!teacherOrName) return "";
+  return formatTeacherTwoPartName(typeof teacherOrName === "string" ? teacherOrName : (teacherOrName.name || ""));
+}
+function getTeacherFullName(teacherOrName){
+  if(!teacherOrName) return "";
+  return String(typeof teacherOrName === "string" ? teacherOrName : (teacherOrName.name || "")).replace(/\s+/g,' ').trim();
 }
 
 function getPreferredTheme(){
@@ -7982,7 +8045,7 @@ async function teacherSchedulePdfBlob(teacherId){
 }
 async function shareTeacherSchedule(teacherId){
   const t = getTeacher(teacherId); if(!t) return;
-  const displayName = getTeacherDisplayName(t);
+  const displayName = getTeacherTitleName(t);
   const school = (DB.settings.schoolName||'مدرستي');
   const year = (DB.settings.academicYear||'');
   const msg = 'جدول '+displayName+' — '+school+(year?' — العام '+year:'');
@@ -10593,7 +10656,7 @@ function renderTeacherSchedTab(){
 
 function updateTeacherSchedTopButtons(teacherId){
   const teacher = getTeacher(teacherId);
-  const tDisplayName = teacher ? getTeacherDisplayName(teacher) : 'المعلم';
+  const tDisplayName = teacher ? getTeacherTitleName(teacher) : 'المعلم';
   const bPrint = document.getElementById('btnSchedPrintTeacher');
   const bPdf = document.getElementById('btnSchedPdfTeacher');
   if(bPrint) bPrint.innerHTML = '🖨️ طباعة جدول ' + esc(tDisplayName);
@@ -10685,7 +10748,7 @@ function renderTeacherGrid(teacherId){
   });
   /* أزرار طباعة/PDF المعلم موجودة أعلى التبويب؛ هذا الشريط القديم كان يتعطل (دالة مفقودة) فلم يظهر قط — نبقيه مخفيًا كما يراه الزبائن */
   if(acts && !document.getElementById('btnSchedPrintTeacher')){
-    const tDisplayName = teacher ? getTeacherDisplayName(teacher) : 'المعلم';
+    const tDisplayName = teacher ? getTeacherTitleName(teacher) : 'المعلم';
     acts.innerHTML = '<div style="display:flex;align-items:center;gap:10px;margin:12px 0 0;flex-wrap:wrap;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper-2)">'
       + '<b style="font-size:12.5px;color:var(--ink)">🔠 حجم خط الطباعة:</b>'
       + '<input type="range" min="10" max="50" step="1" id="ptFontTeach" aria-label="حجم خط الطباعة" style="flex:1;min-width:130px;max-width:240px;accent-color:var(--gold)">'
@@ -11527,7 +11590,7 @@ function renderTeachersList(){
       const tid = b.dataset.pdfT;
       if(!tid) return;
       const t = getTeacher(tid);
-      const safeName = 'جدول_معلم_' + (t ? getTeacherDisplayName(t).replace(/\s+/g,'_') : tid);
+      const safeName = 'جدول_معلم_' + (t ? getTeacherTitleName(t).replace(/\s+/g,'_') : tid);
       try{ await exportTableListAsPdf([buildTeacherTableHtml(tid)], safeName, printPaper||'A4', 'portrait', 2, 'col'); }
       catch(err){ toast('تعذّر تنزيل ملف PDF','err'); }
     });
@@ -16814,7 +16877,7 @@ function buildTeacherTableHtml(teacherId){
   const teacher = getTeacher(teacherId);
   const days = DB.settings.days, periods = DB.settings.periodsPerDay;
   const cls = allClasses();
-  const tName = teacher ? getTeacherDisplayName(teacher) : '';
+  const tName = teacher ? getTeacherTitleName(teacher) : '';
   let html = `<div class="print-table-wrap pt-teacher-wrap"><div class="pt-title">جدول المعلم: ${esc(tName)}</div><table class="pt pt-teacher"><thead><tr><th class="dayh">اليوم</th>`;
   for(let p=0;p<periods;p++) html += `<th>الحصة ${p+1}</th>`;
   html += '</tr></thead><tbody>';
@@ -19439,7 +19502,7 @@ function buildDemoTeacherTableHtml(teacherId){
   const teacher = demoGetTeacher(teacherId);
   const days = DEMO.settings.days, periods = DEMO.settings.periodsPerDay;
   const cls = demoAllClasses();
-  const tName = teacher ? getTeacherDisplayName(teacher) : '';
+  const tName = teacher ? getTeacherTitleName(teacher) : '';
   let html = `<div class="print-table-wrap pt-teacher-wrap"><div class="pt-title">جدول المعلم: ${esc(tName)}</div><table class="pt pt-teacher"><thead><tr><th class="dayh">اليوم</th>`;
   for(let p=0;p<periods;p++) html += `<th>الحصة ${p+1}</th>`;
   html += '</tr></thead><tbody>';
@@ -20230,6 +20293,31 @@ function timingNowMinutes(){
   const d = new Date();
   return d.getHours()*60 + d.getMinutes();
 }
+/* v86 — عرض تبويب التواقيت بتصميم بطاقات وخط زمني (العرض فقط؛ الطباعة كما هي) */
+function renderTimingCardHtml(kind, title, days, slots, nowM){
+  const lessons = slots.filter(function(x){ return x.kind==='lesson'; });
+  const first = slots.length ? slots[0].start : 0, last = slots.length ? slots[slots.length-1].end : 0;
+  const longs = slots.filter(function(x){ return x.kind==='long'; }).length;
+  const rows = slots.map(function(sl){
+    const on = (nowM!=null && nowM>=sl.start && nowM<sl.end);
+    const dur = sl.end-sl.start;
+    const pct = on ? Math.max(0, Math.min(100, Math.round((nowM-sl.start)*100/Math.max(1,dur)))) : 0;
+    if(sl.kind==='lesson'){
+      return '<div class="tm2-row lesson'+(on?' now':'')+'"><span class="tm2-n">'+(sl.n||'')+'</span>'
+        +'<div class="tm2-main"><b>'+esc(sl.label)+'</b>'+(on?'<span class="tm2-live">● الآن</span>':'')+'<div class="tm2-time"><span>'+fmtHM(sl.start)+'</span><i>←</i><span>'+fmtHM(sl.end)+'</span></div>'
+        +(on?'<div class="tm2-prog"><span style="width:'+pct+'%"></span></div>':'')+'</div>'
+        +'<span class="tm2-dur">'+dur+'<small>د</small></span></div>';
+    }
+    return '<div class="tm2-row '+(sl.kind==='long'?'long':'brk')+(on?' now':'')+'"><span class="tm2-ic">'+(sl.kind==='long'?'☕':'⏸')+'</span>'
+      +'<div class="tm2-main"><b>'+esc(sl.label)+'</b>'+(on?'<span class="tm2-live">● الآن</span>':'')+'<div class="tm2-time"><span>'+fmtHM(sl.start)+'</span><i>←</i><span>'+fmtHM(sl.end)+'</span></div></div>'
+      +'<span class="tm2-dur">'+dur+'<small>د</small></span></div>';
+  }).join('');
+  return '<div class="tm2-card '+kind+'">'
+    +'<div class="tm2-head"><span class="tm2-hic">'+(kind==='evening'?'🌙':'☀️')+'</span><div class="tm2-ht"><h3>'+esc(title)+'</h3>'
+    +(days&&days.length?'<div class="tm2-days">'+days.map(function(d){ return '<span>'+esc(d)+'</span>'; }).join('')+'</div>':'')+'</div></div>'
+    +'<div class="tm2-stats"><div><b>'+lessons.length+'</b><small>حصص</small></div><div><b>'+(slots.length?fmtHM(first):'—')+'</b><small>البداية</small></div><div><b>'+(slots.length?fmtHM(last):'—')+'</b><small>النهاية</small></div><div><b>'+longs+'</b><small>استراحة طويلة</small></div></div>'
+    +'<div class="tm2-list">'+(rows||'<div class="tm2-empty">لا توجد حصص</div>')+'</div></div>';
+}
 function renderTimingTableHtml(title, slots, nowM){
   const rows = slots.map(s=>{
     const on = (nowM!=null && nowM>=s.start && nowM<s.end);
@@ -20372,14 +20460,14 @@ function renderTimingsTab(){
   const eSlots = buildShiftSlots(eCfg);
   const mDays = (T.shiftMode==='both') ? daysForShift('morning') : (showM ? (DB.settings.days||[]) : []);
   const eDays = (T.shiftMode==='both') ? daysForShift('evening') : (showE ? (DB.settings.days||[]) : []);
-  let html = '<div class="timing-grid">';
-  if(showM) html += renderTimingTableHtml('تواقيت الدوام الصباحي'+(mDays.length?' — '+mDays.join('، '):''), mSlots, nowM);
-  if(showE) html += renderTimingTableHtml('تواقيت الدوام المسائي'+(eDays.length?' — '+eDays.join('، '): (T.shiftMode==='both'?' — عيّن الأيام من «دوام كل يوم»':'')), eSlots, nowM);
+  let html = '<div class="tm2-grid">';
+  if(showM) html += renderTimingCardHtml('morning', 'الدوام الصباحي', mDays, mSlots, nowM);
+  if(showE) html += renderTimingCardHtml('evening', 'الدوام المسائي'+((T.shiftMode==='both'&&!eDays.length)?' — عيّن الأيام من «دوام كل يوم»':''), eDays, eSlots, nowM);
   html += '</div>';
   const box = document.getElementById('timingTables');
   if(box) box.innerHTML = html;
   const prBtn = document.getElementById('btnPrintTimings');
-  if(prBtn) prBtn.onclick = printTimings;
+  if(prBtn) prBtn.onclick = nbPrintTimingsPreview;
   const pdfBtn = document.getElementById('btnPdfTimings');
   if(pdfBtn) pdfBtn.onclick = exportTimingsPdf;
 
@@ -20443,7 +20531,7 @@ function buildTimingsPrintDoc(o){
           rows += '<tr><td class="day">'+esc(name)+'</td>';
           ids.forEach(function(id){
             const tch = id ? getTeacher(id) : null;
-            rows += '<td>'+(tch ? esc(tch.name) : '—')+'</td>';
+            rows += '<td>'+(tch ? esc(getTeacherDisplayName(tch)||tch.name) : '—')+'</td>';
           });
           rows += '</tr>';
         });
@@ -20457,7 +20545,7 @@ function buildTimingsPrintDoc(o){
         byDay = '<tr><td colspan="2">لا توجد أيام دوام</td></tr>';
       } else {
         days.forEach(function(name, di){
-          const names = teachers.filter(function(t){ return (t.excludedDays||[]).indexOf(di)>=0; }).map(function(t){ return t.name; });
+          const names = teachers.filter(function(t){ return (t.excludedDays||[]).indexOf(di)>=0; }).map(function(t){ return getTeacherDisplayName(t)||t.name; });
           byDay += '<tr><td class="day">'+esc(name)+'</td><td class="'+(names.length?'offcell':'')+'">'+(names.length?esc(names.join('، ')):'—')+'</td></tr>';
         });
       }
@@ -20468,7 +20556,7 @@ function buildTimingsPrintDoc(o){
       } else {
         offList.forEach(function(t){
           const ds = (t.excludedDays||[]).map(function(i){ return days[i]; }).filter(Boolean);
-          byTeach += '<tr><td class="day">'+esc(t.name)+'</td><td class="offcell">'+esc(ds.join('، ')||'—')+'</td></tr>';
+          byTeach += '<tr><td class="day">'+esc(getTeacherDisplayName(t)||t.name)+'</td><td class="offcell">'+esc(ds.join('، ')||'—')+'</td></tr>';
         });
       }
       return '<div class="offrow">'+
@@ -21575,7 +21663,7 @@ async function pexTeacherQrBuildRecords(){
     let qr=null;
     try{ qr=NbQR.encode(text, text.length>1100?'L':'M'); }
     catch(e){ tooBig.push(teacher.name||'معلم'); continue; }
-    const name=(typeof getTeacherDisplayName==='function' ? getTeacherDisplayName(teacher) : teacher.name)||teacher.name||'معلم';
+    const name=(typeof getTeacherTitleName==='function' ? getTeacherTitleName(teacher) : teacher.name)||teacher.name||'معلم';
     records.push({teacherId:teacher.id, name:name, teacher:teacher, payload:pl, text:text, qr:qr, svg:pexTeacherQrSvgHtml(qr,'باركود ربط جهاز '+name)});
   }
   if(tooBig.length){
@@ -22075,11 +22163,11 @@ function pexXlsClassSheet(wb, classKey){
 }
 function pexXlsTeacherSheet(wb, tid){
   const t=getTeacher(tid);
-  const sh=pexSheetAdd(wb, 'جدول '+((t&&(getTeacherDisplayName(t)||t.name))||'معلم'));
+  const sh=pexSheetAdd(wb, 'جدول '+((t&&(getTeacherTitleName(t)||t.name))||'معلم'));
   const days=(DB.settings&&DB.settings.days)||[], P=parseInt((DB.settings&&DB.settings.periodsPerDay)||0,10)||0;
   const cls=allClasses();
   pexTitleRow(wb, sh, 1+P, ((DB.settings&&DB.settings.schoolName)||'المدرسة')+' — جدول المعلم');
-  pexSubTitleRow(wb, sh, 1+P, 'المعلم: '+((t&&(getTeacherDisplayName(t)||t.name))||''));
+  pexSubTitleRow(wb, sh, 1+P, 'المعلم: '+((t&&(getTeacherTitleName(t)||t.name))||''));
   pexHeadRow(wb, sh, ['اليوم'].concat(Array.from({length:P},function(_,q){ return 'الحصة '+(q+1); })));
   sh.widths=[12].concat(Array.from({length:P},function(){ return 20; }));
   for(let d=0;d<days.length;d++){
@@ -22372,7 +22460,7 @@ function pexCsvRows(it){
     const rows=[];
     tids.forEach(function(tid, ix){
       const t=getTeacher(tid);
-      rows.push([ (ix+1)+') جدول المعلم: '+((t&&(getTeacherDisplayName(t)||t.name))||'') ]);
+      rows.push([ (ix+1)+') جدول المعلم: '+((t&&(getTeacherTitleName(t)||t.name))||'') ]);
       rows.push(['اليوم','الحصة','المادة','الشعبة']);
       for(let d=0;d<days.length;d++) for(let q=0;q<P;q++){
         for(const c of cls){
@@ -22528,7 +22616,7 @@ function pexDoPrint(it){
       }
       case 'tch': {
         const t=getTeacher(it.key);
-        pexOpenPrint('جدول المعلم: '+(t?(getTeacherDisplayName(t)||t.name):''), buildTeacherTableHtml(it.key), 'portrait'); break;
+        pexOpenPrint('جدول المعلم: '+(t?(getTeacherTitleName(t)||t.name):''), buildTeacherTableHtml(it.key), 'portrait'); break;
       }
       default: toast('غير متاح','err');
     }
@@ -22571,8 +22659,8 @@ function pexDoPdf(it){
       }
       case 'tch': {
         const t=getTeacher(it.key);
-        const nm='جدول_معلم_'+((t&&(getTeacherDisplayName(t)||t.name))||'');
-        attDocToPdf(pexDocHtml('جدول المعلم: '+(t?(getTeacherDisplayName(t)||t.name):''), buildTeacherTableHtml(it.key), 'portrait'), nm.replace(/[\\/:*?"<>|]/g,'').trim()+'.pdf');
+        const nm='جدول_معلم_'+((t&&(getTeacherTitleName(t)||t.name))||'');
+        attDocToPdf(pexDocHtml('جدول المعلم: '+(t?(getTeacherTitleName(t)||t.name):''), buildTeacherTableHtml(it.key), 'portrait'), nm.replace(/[\\/:*?"<>|]/g,'').trim()+'.pdf');
         break;
       }
       default: toast('غير متاح','err');
@@ -22609,7 +22697,7 @@ function pexItems(){
   items.push({icon:'👨‍🏫', name:'جداول كل المعلمين', sub:'كل معلمَين في ورقة A4', act:'all_teachers'});
   try{
     (DB.teachers||[]).forEach(function(t){
-      items.push({icon:'🧑‍🏫', name:'جدول المعلم: '+(getTeacherDisplayName(t)||t.name||''), sub:'طباعة وتصدير فردي', act:'tch', key:t.id});
+      items.push({icon:'🧑‍🏫', name:'جدول المعلم: '+(getTeacherTitleName(t)||t.name||''), sub:'طباعة وتصدير فردي', act:'tch', key:t.id});
     });
   }catch(e){}
   return items;
@@ -22642,7 +22730,7 @@ function renderPexTab(){
         if(what==='print'){ pexDoPrint(it); return; }
         if(what==='pdf'){ pexDoPdf(it); return; }
         let nm='';
-        if(it.act==='tch'){ const t=getTeacher(it.key); nm='جدول_معلم_'+((t&&(getTeacherDisplayName(t)||t.name))||''); }
+        if(it.act==='tch'){ const t=getTeacher(it.key); nm='جدول_معلم_'+((t&&(getTeacherTitleName(t)||t.name))||''); }
         else if(it.act==='cls'){ let c=null; try{ c=allClasses().find(function(x){ return x.key===it.key; }); }catch(e){} nm='جدول_'+(c?c.label:'شعبة'); }
         else{
           const names={ full:'الجدول_الكامل', full_beside:'الجدول_الكامل_المعلم_بجانب_المادة', cut:'الجدول_الكامل', timings:'جدول_التواقيت', sup_only:'جدول_المراقبين', att_today:'سجل_حضور_اليوم', att_stats:'إحصاء_الحضور', all_classes:'جداول_كل_الشعب', all_teachers:'جداول_كل_المعلمين' };
@@ -22656,6 +22744,11 @@ function renderPexTab(){
 }
 
 let _printTimingsBusy = false;
+/* v86 — زر طباعة التواقيت يفتح واجهة «معاينة قبل الطباعة» مثل بقية الطباعات (وإن تعذّرت تُستعمل الطباعة المباشرة القديمة) */
+function nbPrintTimingsPreview(){
+  try{ if(window.__nbPv && typeof window.__nbPv.open==='function'){ window.__nbPv.open({icon:'⏰', act:'timings', name:'جدول التواقيت', fname:'جدول_التواقيت', paper:'A4'}); return; } }catch(e){}
+  printTimings();
+}
 function printTimings(){
   if(_printTimingsBusy) return;
   _printTimingsBusy = true;
@@ -22978,7 +23071,7 @@ function armTimingAlerts(){
     r.readAsDataURL(f);
   });
   const pr = document.getElementById('btnPrintTimings');
-  if(pr) pr.onclick = printTimings;
+  if(pr) pr.onclick = nbPrintTimingsPreview;
   const test = document.getElementById('btnAlertTest');
   if(test) test.addEventListener('click', function(){
     unlockAlertAudio();
@@ -23980,7 +24073,7 @@ document.addEventListener('input', function(e){
       const tid = currentTeacherSchedId || (DB.teachers[0] && DB.teachers[0].id);
       if(!tid){ toast('لا يوجد معلمون','err'); return; }
       const teacher = getTeacher(tid);
-      const safeName = 'جدول_معلم_' + (teacher ? getTeacherDisplayName(teacher).replace(/\s+/g,'_') : 'المعلم');
+      const safeName = 'جدول_معلم_' + (teacher ? getTeacherTitleName(teacher).replace(/\s+/g,'_') : 'المعلم');
       await exportTableListAsPdf([buildTeacherTableHtml(tid)], safeName, printPaper||'A4', 'portrait', 2, 'col');
     }catch(err){ toast('تعذّر تنزيل ملف PDF لجدول المعلم','err'); }
   });
@@ -29159,7 +29252,7 @@ function nbPromoShow(){
     };
     var block=function(r){
       var n=r?linesOf(r):1, h='';
-      var nmLen=r?String(getTeacherDisplayName(r.t)||r.t.name||'').length:0;
+      var nmLen=r?String(getTeacherFullName(r.t)||r.t.name||'').length:0;
       var nmCls=(n===1?' one':'')+(nmLen>24?' xs':(nmLen>16?' sm':''));
       if(r) seq++;
       for(var i=0;i<n;i++){
@@ -29167,7 +29260,7 @@ function nbPromoShow(){
         h+='<tr class="ln'+(i===0?' tb':'')+'">';
         if(i===0){
           h+='<td rowspan="'+n+'" class="seq">'+(r?num(seq):'')+'</td>'+
-             '<td rowspan="'+n+'" class="nm'+nmCls+'"'+((EDIT&&r)?' data-tid="'+E(r.t.id)+'" data-pos="'+seq+'" title="اضغط لتحديد المدرّس ثم اسحبه أو استخدم أزرار الترتيب"':'')+'>'+(r?E(getTeacherDisplayName(r.t)||r.t.name||''):'')+'</td>'+
+             '<td rowspan="'+n+'" class="nm'+nmCls+'"'+((EDIT&&r)?' data-tid="'+E(r.t.id)+'" data-pos="'+seq+'" title="اضغط لتحديد المدرّس ثم اسحبه أو استخدم أزرار الترتيب"':'')+'>'+(r?E(getTeacherFullName(r.t)||r.t.name||''):'')+'</td>'+
              '<td rowspan="'+n+'" class="tt'+(n===1?' one':'')+'">'+(r?tfield(r.t.id,'title',''):'')+'</td>'+
              '<td rowspan="'+n+'" class="sp'+(n===1?' one':'')+'">'+(r?tfield(r.t.id,'spec',''):'')+'</td>';
         }
@@ -29504,7 +29597,7 @@ function nbPromoShow(){
     if(!bar) return;
     bar.hidden=false;
     bar.innerHTML='<div class="dob-in">'+
-      '<div class="dob-who"><span class="dob-n">'+num(p+1)+'</span><b>'+E(getTeacherDisplayName(t)||t.name||'')+'</b><small>اسحبه أو اضغط اسم مدرّس آخر لوضعه مكانه</small></div>'+
+      '<div class="dob-who"><span class="dob-n">'+num(p+1)+'</span><b>'+E(getTeacherFullName(t)||t.name||'')+'</b><small>اسحبه أو اضغط اسم مدرّس آخر لوضعه مكانه</small></div>'+
       '<div class="dob-btns">'+
         '<button type="button" data-ord="first"'+(p===0?' disabled':'')+'>⏫ الأول</button>'+
         '<button type="button" data-ord="up"'+(p===0?' disabled':'')+'>⬆️ أعلى</button>'+
@@ -29524,7 +29617,7 @@ function nbPromoShow(){
   function onMove(e){
     if(!DRAG.on) return;
     if(!DRAG.moved){ if(Math.abs(e.clientX-DRAG.x)+Math.abs(e.clientY-DRAG.y)<8) return; DRAG.moved=true;
-      var g=document.createElement('div'); g.className='dist-ghost'; var t=(DB.teachers||[]).filter(function(x){ return x.id===DRAG.tid; })[0]||{}; g.textContent='↕ '+(getTeacherDisplayName(t)||t.name||''); document.body.appendChild(g); DRAG.ghost=g; }
+      var g=document.createElement('div'); g.className='dist-ghost'; var t=(DB.teachers||[]).filter(function(x){ return x.id===DRAG.tid; })[0]||{}; g.textContent='↕ '+(getTeacherFullName(t)||t.name||''); document.body.appendChild(g); DRAG.ghost=g; }
     e.preventDefault();
     DRAG.ghost.style.left=(e.clientX+12)+'px'; DRAG.ghost.style.top=(e.clientY-18)+'px';
     var el=document.elementFromPoint(e.clientX, e.clientY), tg=el && el.closest && el.closest('#view-dist td.nm[data-tid]');
@@ -31458,6 +31551,56 @@ html.splash-out #splashGate .splash-moe{opacity:0;transition:opacity .3s}
   filter:drop-shadow(0 3px 8px rgba(0,0,0,.35)) drop-shadow(0 0 6px rgba(240,215,140,.25));pointer-events:none}
 html.nb-side-compact .nb-side-moe{display:none}
 </style>
+<style id="nb-tm2">
+/* v86 — تبويب تواقيت الدروس: بطاقات وخط زمني */
+.tm2-view{--tm-a:#1d4fd7;--tm-b:#0ea5e9;--tm-brk:#b7791f;--tm-brkS:#fff7e6;--tm-long:#c2410c;--tm-longS:#fff1e8;--tm-card:#fff;--tm-bd:#e3e8f2;--tm-tx:#14213d;--tm-mut:#66728f;--tm-row:#f7f9fd}
+.tm2-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.tm2-top-ic{width:52px;height:52px;flex:none;border-radius:16px;display:grid;place-items:center;font-size:26px;background:linear-gradient(135deg,#1d4fd7,#06b6d4);box-shadow:0 8px 20px rgba(29,79,215,.25)}
+.tm2-top-t h2{margin:0 0 2px;font-size:20px}
+.tm2-top-t .hint{margin:0}
+.tm2-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.tm2-card{background:var(--tm-card);border:1px solid var(--tm-bd);border-radius:20px;overflow:hidden;box-shadow:0 6px 22px rgba(20,33,61,.07)}
+.tm2-head{display:flex;align-items:center;gap:12px;padding:14px 16px;color:#fff;background:linear-gradient(135deg,#f59e0b,#f97316)}
+.tm2-card.evening .tm2-head{background:linear-gradient(135deg,#312e81,#4f46e5)}
+.tm2-hic{width:42px;height:42px;flex:none;border-radius:13px;display:grid;place-items:center;font-size:22px;background:rgba(255,255,255,.22)}
+.tm2-ht h3{margin:0;font-size:17px;font-weight:900;color:#fff}
+.tm2-days{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.tm2-days span{font-size:11.5px;font-weight:800;background:rgba(255,255,255,.22);padding:2px 9px;border-radius:999px}
+.tm2-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--tm-bd);border-bottom:1px solid var(--tm-bd)}
+.tm2-stats div{background:var(--tm-card);text-align:center;padding:9px 4px}
+.tm2-stats b{display:block;font-size:16px;font-weight:900;color:var(--tm-tx);direction:rtl;unicode-bidi:isolate}
+.tm2-stats small{font-size:11px;color:var(--tm-mut);font-weight:700}
+.tm2-list{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px}
+.tm2-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:14px;background:var(--tm-row);border:1px solid transparent;position:relative}
+.tm2-row.lesson .tm2-n{width:34px;height:34px;flex:none;border-radius:11px;display:grid;place-items:center;font-weight:900;font-size:15px;color:#fff;background:linear-gradient(135deg,var(--tm-a),var(--tm-b))}
+.tm2-card.evening .tm2-row.lesson .tm2-n{background:linear-gradient(135deg,#4f46e5,#7c3aed)}
+.tm2-row.brk,.tm2-row.long{padding:5px 10px;background:var(--tm-brkS)}
+.tm2-row.long{background:var(--tm-longS)}
+.tm2-ic{width:34px;flex:none;text-align:center;font-size:15px}
+.tm2-main{flex:1;min-width:0}
+.tm2-main b{font-size:14px;font-weight:900;color:var(--tm-tx)}
+.tm2-row.brk .tm2-main b{font-size:12.5px;color:var(--tm-brk)}
+.tm2-row.long .tm2-main b{font-size:13px;color:var(--tm-long)}
+.tm2-time{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:var(--tm-mut);direction:rtl}
+.tm2-time span{direction:rtl;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
+.tm2-time i{font-style:normal;opacity:.6}
+.tm2-row.brk .tm2-time,.tm2-row.long .tm2-time{display:inline-flex;margin-inline-start:8px;font-size:12px}
+.tm2-dur{flex:none;min-width:46px;text-align:center;font-weight:900;font-size:15px;color:var(--tm-tx);background:var(--tm-card);border:1px solid var(--tm-bd);border-radius:11px;padding:4px 6px}
+.tm2-dur small{font-size:10.5px;margin-inline-start:2px;color:var(--tm-mut)}
+.tm2-row.brk .tm2-dur,.tm2-row.long .tm2-dur{font-size:12.5px;padding:2px 6px;min-width:40px}
+.tm2-row.now{border-color:#22c55e;background:#ecfdf3;box-shadow:0 0 0 3px rgba(34,197,94,.15)}
+.tm2-live{display:inline-block;margin-inline-start:8px;font-size:11px;font-weight:900;color:#15803d;animation:tm2Pulse 1.6s ease-in-out infinite}
+@keyframes tm2Pulse{50%{opacity:.35}}
+.tm2-prog{height:5px;border-radius:9px;background:rgba(34,197,94,.18);margin-top:6px;overflow:hidden}
+.tm2-prog span{display:block;height:100%;background:#22c55e;border-radius:9px}
+.tm2-empty{text-align:center;color:var(--tm-mut);padding:16px;font-weight:700}
+.tm2-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.tm2-actions .btn{flex:1;min-width:150px;padding:12px;font-size:15px;border-radius:14px}
+@media (max-width:420px){.tm2-stats b{font-size:14px}.tm2-row{gap:8px}.tm2-dur{min-width:40px;font-size:14px}}
+html[data-theme="night"] .tm2-view{--tm-card:#111c33;--tm-bd:rgba(126,196,255,.14);--tm-tx:#e8eefb;--tm-mut:#9fb0d3;--tm-row:#16233f;--tm-brkS:rgba(245,158,11,.1);--tm-longS:rgba(249,115,22,.12);--tm-brk:#fbbf24;--tm-long:#fb923c}
+html[data-theme="night"] .tm2-row.now{background:rgba(34,197,94,.12)}
+html[data-theme="night"] .tm2-live{color:#4ade80}
+</style>
 <style id="nb-compact-print">
 /* v83 — ترويسة وتذييل مدمجان افتراضيًا في الطباعة: سطر واحد لكل منهما، فتبقى مساحة أكبر للجدول */
 html .print-head{padding:3px 8px 4px;margin-bottom:2px}
@@ -31737,5 +31880,125 @@ html:not(.nb-act-on) .nb-act-only{display:none !important}
 }
 </style>
 
+<style id="nb-winter">
+/* v86 — «سكون الشتاء»: خلفية متحركة للقائمة الرئيسية فقط (ثلج هادئ، شفق قطبي، جبال مثلجة، صقيع على الحواف).
+   كل الطبقات خلف البطاقات وبلا لمس (pointer-events:none) فلا تتأثر الأيقونات ولا العناوين ولا الضغط. */
+.nbl:not(.nbl-subm) .nbl-bg{background:
+  radial-gradient(1100px 520px at 85% -12%,rgba(148,197,255,.30),transparent 62%),
+  radial-gradient(900px 620px at -12% 112%,rgba(110,170,255,.22),transparent 60%),
+  linear-gradient(170deg,#0c2259 0%,#0a1a49 45%,#071233 78%,#050c24 100%)!important}
+.nbw{position:absolute;inset:0;top:0;right:0;bottom:0;left:0;pointer-events:none;overflow:hidden}
+.nbl.nbl-subm .nbw{display:none}
+.nbw-aur{position:absolute;left:-20%;right:-20%;top:-8%;height:62%;opacity:.55;filter:blur(38px);
+  background:linear-gradient(100deg,transparent 8%,rgba(64,224,208,.40) 24%,rgba(96,165,250,.34) 40%,rgba(167,139,250,.30) 56%,rgba(45,212,191,.28) 70%,transparent 88%);
+  transform-origin:50% 0;animation:nbwAur 26s ease-in-out infinite alternate}
+.nbw-aur.b{top:-2%;height:48%;opacity:.35;animation-duration:34s;animation-delay:-11s;
+  background:linear-gradient(80deg,transparent 12%,rgba(125,211,252,.35) 32%,rgba(52,211,153,.28) 50%,rgba(129,140,248,.30) 66%,transparent 86%)}
+@keyframes nbwAur{0%{transform:translateX(-6%) skewX(-8deg) scaleY(.9)}50%{transform:translateX(4%) skewX(6deg) scaleY(1.08)}100%{transform:translateX(8%) skewX(-4deg) scaleY(.95)}}
+.nbw-moon{position:absolute;top:6%;left:7%;width:86px;height:86px;border-radius:50%;
+  background:radial-gradient(circle at 38% 36%,#ffffff 0%,#eaf3ff 38%,#c9dcf7 70%,#a9c4ea 100%);
+  box-shadow:0 0 40px 12px rgba(200,225,255,.28),0 0 120px 40px rgba(150,195,255,.16);opacity:.85;animation:nbwGlow 7s ease-in-out infinite}
+@keyframes nbwGlow{50%{box-shadow:0 0 54px 18px rgba(200,225,255,.36),0 0 150px 56px rgba(150,195,255,.2)}}
+.nbw-mtn{position:absolute;left:0;right:0;bottom:0;width:100%;height:34%}
+.nbw-frost{position:absolute;inset:0;top:0;right:0;bottom:0;left:0;
+  background:radial-gradient(130% 95% at 50% 50%,transparent 62%,rgba(214,234,255,.16) 86%,rgba(235,245,255,.30) 100%)}
+.nbw-cv{position:absolute;inset:0;top:0;right:0;bottom:0;left:0;width:100%;height:100%}
+/* بطاقات الأقسام: زجاج مُصقَّع يُظهر الثلج خلفه (الخلفية فقط) */
+.nbl:not(.nbl-subm) .nbl-tile{-webkit-backdrop-filter:blur(5px) saturate(1.15);backdrop-filter:blur(5px) saturate(1.15);
+  background:linear-gradient(180deg,rgba(225,238,255,.15),rgba(190,215,255,.05))!important;border-color:rgba(205,228,255,.34)!important}
+.nbl:not(.nbl-subm) .nbl-tile:hover{border-color:rgba(230,242,255,.85)!important}
+@media (prefers-reduced-motion:reduce){.nbw-aur,.nbw-moon{animation:none}}
+@media (max-width:560px){.nbw-moon{width:58px;height:58px;top:4%;left:5%}.nbw-mtn{height:24%}}
+</style>
+<script>
+/* «سكون الشتاء» — ثلج متساقط على لوحة (canvas) يعمل فقط والقائمة الرئيسية ظاهرة، ويتوقف عند إغلاقها أو إخفاء التطبيق */
+(function(){
+  'use strict';
+  var SVG='<svg class="nbw-mtn" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden="true">'
+    +'<defs><linearGradient id="nbwM1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a4b8f"/><stop offset="1" stop-color="#0d1d47"/></linearGradient>'
+    +'<linearGradient id="nbwM2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b336d"/><stop offset="1" stop-color="#081638"/></linearGradient>'
+    +'<linearGradient id="nbwS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f9ff"/><stop offset="1" stop-color="#cfe0f7"/></linearGradient></defs>'
+    +'<path fill="url(#nbwM1)" opacity=".55" d="M0 190 L120 110 L210 160 L330 70 L450 150 L560 95 L690 170 L800 85 L930 150 L1040 100 L1200 170 L1200 300 L0 300Z"/>'
+    +'<path fill="#e8f1ff" opacity=".42" d="M330 70 L300 92 L318 90 L333 100 L348 88 L362 96 Z M800 85 L772 106 L790 104 L803 113 L818 102 L830 108 Z M560 95 L540 110 L556 109 L566 116 L578 108 Z"/>'
+    +'<path fill="url(#nbwM2)" opacity=".85" d="M0 235 L90 180 L170 215 L280 150 L390 220 L500 170 L620 230 L740 160 L850 222 L960 175 L1080 215 L1200 185 L1200 300 L0 300Z"/>'
+    +'<path fill="#dfeaff" opacity=".5" d="M280 150 L256 168 L272 166 L284 175 L297 165 L308 170 Z M740 160 L716 178 L732 176 L744 184 L757 175 L768 180 Z"/>'
+    +'<path fill="url(#nbwS)" opacity=".92" d="M0 268 C120 250 220 278 340 262 C470 246 560 276 690 262 C820 248 930 274 1050 258 C1110 251 1160 256 1200 262 L1200 300 L0 300Z"/>'
+    +'</svg>';
+  var cv=null, ctx=null, flakes=[], raf=0, W=0, H=0, DPR=1, last=0, wind=0, windT=0;
+  var reduce=false; try{ reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
+  function L(){ return document.getElementById('nbLauncher'); }
+  function visible(){ var l=L(); return !!(l && !l.hidden && !l.classList.contains('nbl-subm') && !document.hidden); }
+  function inject(){
+    var l=L(); if(!l) return false;
+    var bg=l.querySelector('.nbl-bg'); if(!bg) return false;
+    if(bg.querySelector('.nbw')) return true;
+    var w=document.createElement('div'); w.className='nbw'; w.setAttribute('aria-hidden','true');
+    w.innerHTML='<div class="nbw-aur"></div><div class="nbw-aur b"></div><div class="nbw-moon"></div>'+SVG+'<canvas class="nbw-cv"></canvas><div class="nbw-frost"></div>';
+    bg.appendChild(w);
+    cv=w.querySelector('canvas'); ctx=cv.getContext('2d');
+    return true;
+  }
+  function mk(init){
+    var z=Math.random();                       /* العمق: البعيد صغير وبطيء وباهت */
+    return { x:Math.random()*W, y:init?Math.random()*H:-10-Math.random()*40, z:z,
+      r:(0.7+z*2.6), vy:(0.25+z*0.9), ph:Math.random()*6.28, sw:(0.3+Math.random()*0.9), a:(0.35+z*0.6),
+      star: z>0.82 && Math.random()<0.35 };
+  }
+  function size(){
+    if(!cv) return;
+    var r=cv.getBoundingClientRect(); DPR=Math.min(1.5, window.devicePixelRatio||1);
+    W=Math.max(1,r.width); H=Math.max(1,r.height);
+    cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    var n=Math.round(Math.min(170, Math.max(60, W*H/9000))); if(reduce) n=Math.round(n/3);
+    while(flakes.length<n) flakes.push(mk(true)); if(flakes.length>n) flakes.length=n;
+  }
+  function drawStar(f){
+    var r=f.r*1.9; ctx.save(); ctx.translate(f.x,f.y); ctx.rotate(f.ph*0.3);
+    ctx.strokeStyle='rgba(235,245,255,'+(f.a*0.9)+')'; ctx.lineWidth=0.8;
+    for(var k=0;k<3;k++){ ctx.rotate(Math.PI/3); ctx.beginPath(); ctx.moveTo(-r,0); ctx.lineTo(r,0); ctx.stroke(); }
+    ctx.restore();
+  }
+  function frame(t){
+    raf=0;
+    if(!visible()){ return; }
+    var dt=Math.min(50, t-(last||t)); last=t; var k=dt/16.7;
+    windT+=dt*0.00012; wind=Math.sin(windT)*0.35+Math.sin(windT*2.7)*0.15;
+    ctx.clearRect(0,0,W,H);
+    for(var i=0;i<flakes.length;i++){
+      var f=flakes[i];
+      f.ph+=0.012*k*f.sw;
+      f.y+=f.vy*k*(reduce?0.5:1);
+      f.x+=(Math.sin(f.ph)*0.45*f.sw + wind*(0.4+f.z))*k;
+      if(f.y>H+8){ flakes[i]=mk(false); continue; }
+      if(f.x<-10) f.x=W+10; else if(f.x>W+10) f.x=-10;
+      if(f.star){ drawStar(f); continue; }
+      var g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.r*1.6);
+      g.addColorStop(0,'rgba(255,255,255,'+f.a+')'); g.addColorStop(0.55,'rgba(235,244,255,'+(f.a*0.55)+')'); g.addColorStop(1,'rgba(220,236,255,0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(f.x,f.y,f.r*1.6,0,6.2832); ctx.fill();
+    }
+    raf=requestAnimationFrame(frame);
+  }
+  function kick(){
+    if(!visible()){ if(raf){ cancelAnimationFrame(raf); raf=0; } return; }
+    if(!inject()) return;
+    size(); if(!raf){ last=0; raf=requestAnimationFrame(frame); }
+  }
+  function watch(){
+    var l=L();
+    if(!l){ return false; }
+    try{ new MutationObserver(kick).observe(l,{attributes:true,attributeFilter:['hidden','class']}); }catch(e){}
+    kick(); return true;
+  }
+  function boot(){
+    if(!watch()){
+      try{ var mo=new MutationObserver(function(){ if(L()){ mo.disconnect(); watch(); } }); mo.observe(document.body,{childList:true}); }catch(e){}
+    }
+    window.addEventListener('resize', function(){ if(visible()) size(); });
+    document.addEventListener('visibilitychange', kick);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
 </body>
 </html>
