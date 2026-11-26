@@ -26783,8 +26783,9 @@ function nbPromoShow(){
         '</div>'+
         '<div class="nbpv-pane" data-pane="font">'+
           grp('نوع الخط','<select class="nbpv-select" data-k="family"><option value="">الأصلي</option><option value="Tajawal">Tajawal تجوّل</option><option value="Tahoma">Tahoma</option><option value="Arial">Arial</option><option value="Times New Roman">Times New Roman</option><option value="Segoe UI">Segoe UI</option></select>')+
-          grp('خط الجدول', rng('fontT','',60,170,5,'%'))+
-          grp('خط الترويسة', rng('fontH','',60,170,5,'%'))+
+          grp('خط الجدول', rng('fontT','',60,250,5,'%'))+
+          grp('خط الترويسة', rng('fontH','',60,250,5,'%'))+
+          '<div class="nbpv-grp" id="nbpvFontNote" style="display:none"><div class="c"><span class="nbpv-note">ℹ️ وصل خط الجدول إلى أكبر حجم يتسع لعرض الخلايا في هذه الورقة (كل الخلايا بالحجم نفسه). لخط أكبر: اختر ورقة A3، أو «قص أفقي» إلى ورقتين، أو أخفِ اسم المدرّس.</span></div></div>'+
         '</div>'+
         '<div class="nbpv-pane" data-pane="colors">'+
           grp('أنماط جاهزة', THEMES.map(function(t,i){ return '<button type="button" class="nbpv-chip" data-pvtheme="'+i+'"><i style="background:'+t[1]+'"></i>'+t[0]+'</button>'; }).join('')+'<button type="button" class="nbpv-chip" data-pvtheme="-1">↺ الأصلي</button>')+
@@ -27302,8 +27303,11 @@ function nbPromoShow(){
       }); });
     };
     hf(I.pheads, S.headH||100); hf(I.pfeet, S.footH||100);
-    if(S.fontT!==100) I.textT.forEach(function(x){ setI(x.el,'font-size',(x.fs*S.fontT/100).toFixed(2)+'px'); });
-    if(S.fontH!==100) I.textH.forEach(function(x){ setI(x.el,'font-size',(x.fs*S.fontH/100).toFixed(2)+'px'); });
+    /* v89: الحجم الأصلي يُقاس والعنصر داخل الصفحة (عناصر «الجدول الكامل» تكون منفصلة أثناء الجمع فيُقرأ حجمها خطأً 12px)،
+       وخط «الجدول الكامل» تتولاه fitCellText (حجم موحّد يتسع للورقة) */
+    var fsOf=function(x){ if(!x.m0){ if(!x.el.isConnected) return 0; x.fs=parseFloat(PV.win.getComputedStyle(x.el).fontSize)||x.fs; x.m0=1; } return x.fs; };
+    if(S.fontT!==100) I.textT.forEach(function(x){ if(!x.el.isConnected) return; var f=fsOf(x); if(!f || x.el.closest('.print-page.master-one')) return; setI(x.el,'font-size',(f*S.fontT/100).toFixed(2)+'px'); });
+    if(S.fontH!==100) I.textH.forEach(function(x){ if(!x.el.isConnected) return; var f=fsOf(x); if(!f) return; setI(x.el,'font-size',(f*S.fontH/100).toFixed(2)+'px'); });
     if(S.thBg) I.th.forEach(function(x){ setI(x,'background',S.thBg); });
     if(S.thFg) I.th.forEach(function(x){ setI(x,'color',S.thFg); Array.prototype.forEach.call(x.querySelectorAll('*'), function(c){ setI(c,'color',S.thFg); }); });
     if(S.dayBg) I.day.forEach(function(x){ setI(x,'background',S.dayBg); });
@@ -27633,7 +27637,7 @@ function nbPromoShow(){
     var win=PV.win, doc=PV.doc;
     var cells=[];
     Array.prototype.forEach.call(root.querySelectorAll('table td, table th'), function(td){
-      if((td.rowSpan||1)>1) return;
+      if((td.rowSpan||1)>1 && (/day/i.test(td.className||'') || !td.querySelector('b,span,div'))) return;   /* خلايا الأيام العمودية تبقى كما هي، والحصص المدمجة تُعامل كبقية الخلايا */
       if(!td.offsetWidth || !td.offsetHeight) return;
       var wm=win.getComputedStyle(td).writingMode; if(wm && wm.indexOf('vertical')===0) return;
       if(td.querySelector('table,img,svg,canvas,input,textarea')) return;
@@ -27670,39 +27674,79 @@ function nbPromoShow(){
       var need=0; rows.forEach(function(x){ if(x.w>need) need=x.w; }); need=need/sx;
       return {avail:avail*K, need:need};
     };
-    for(var pass=0; pass<3; pass++){
+    /* v89 — حجم خط موحّد: كل خلايا الجدول بالحجم نفسه (لا تُصغَّر خلية دون أخرى)، والحالات النادرة جدًا
+       (اسم أطول بكثير من البقية) تُصغَّر وحدها. ثم في «الجدول الكامل» يُختار أكبر حجم يتسع للصفحة،
+       ونسبة «خط الجدول» يختارها المستخدم تُطبَّق فوقه (100% = أنسب حجم، 170% = أكبر بـ70%…). */
+    var U=Math.max(0.3, (S.fontT||100)/100);
+    var UM=root.querySelector('.print-page.master-one') ? U : 1;   /* في «الجدول الكامل» نسبة المستخدم تُطبَّق هنا */
+    cells.forEach(function(c){ c.leaves.forEach(function(l){ l.__f0=(parseFloat(win.getComputedStyle(l).fontSize)||0)*UM; }); });
+    var roomsOf=function(){
       K=kOf();
-      var plan=cells.map(function(c){ var m=measure(c); var f=m.need>0? (m.avail*0.97)/m.need : 1; var wrapped=c.leaves.some(function(l){ return l.__nbLines>1; }); return {c:c, f:f, wrapped:wrapped}; });
-      var changed=false;
-      plan.forEach(function(x){
-        if(x.f>=1 && !x.wrapped) return;
-        if(x.f<0.5) return;          /* نص طويل جدًا (قوائم): يبقى كما صُمم */
-        var f=Math.min(1, x.f);
-        x.c.leaves.forEach(function(l){
-          var fs=parseFloat(win.getComputedStyle(l).fontSize)||0; if(!fs) return;
-          if(f<0.999) setI(l,'font-size',(fs*f).toFixed(2)+'px');
-          setI(l,'white-space','nowrap');
-        });
-        changed=true;
-      });
+      return cells.map(function(c){ var m=measure(c); return m.need>0 ? (m.avail*0.97)/m.need : 9; });
+    };
+    var pct=function(arr){ var a=arr.slice().sort(function(x,y){ return x-y; }); if(!a.length) return 1; var i=a.length>=30?Math.floor(a.length*0.03):0; return a[i]; };
+    var paint=function(){
+      cells.forEach(function(c){ c.leaves.forEach(function(l){ if(!l.__f0) return; setI(l,'font-size',(l.__f0*c.G).toFixed(2)+'px'); if(c.nw) setI(l,'white-space','nowrap'); else l.style.removeProperty('white-space'); }); });
       if(mpage){ try{ fitMasterPage(mpage); }catch(e){} }
-      if(!changed && kOf()>0.995) break;
+    };
+    /* ملاءمة أفقية متكررة بحجم موحّد T (≤ Tmax): كل الخلايا بالحجم نفسه، والخلايا النادرة الأطول تُصغَّر وحدها */
+    var hfit=function(Tmax){
+      var at=function(T){ cells.forEach(function(c){ c.G=T; c.nw=true; }); paint(); var R=roomsOf(); return {ok:pct(R)>=0.99, R:R}; };
+      var T=Tmax, r=at(T);
+      if(!r.ok){
+        var lo=Tmax*0.04, hi=Tmax, best=lo;
+        for(var it=0; it<9; it++){ var mid=(lo+hi)/2, rr=at(mid); if(rr.ok){ best=mid; lo=mid; } else hi=mid; }
+        T=best; r=at(T);
+      }
+      /* الخلايا النادرة الأطول من البقية: تُصغَّر وحدها (وإن احتاجت أكثر من 40% تلتف على سطرين) */
+      var any=false;
+      cells.forEach(function(c, i){ if(r.R[i]<0.995){ var g=T*r.R[i]; if(g<T*0.6){ g=T*0.6; c.nw=false; } c.G=g; any=true; } });
+      if(any) paint();
+      return T;
+    };
+    PV.fontCapped=false;
+    if(mpage) cells.forEach(function(c){ c.leaves.forEach(function(l){ setI(l,'line-height','1.1'); }); });
+    var T1=hfit(1);
+    if(!mpage) return;
+    /* ارتفاع: أكبر حجم موحّد يتسع للصفحة دون ضغط الحروف رأسيًا */
+    var ratio=function(){ var sc=mpage.querySelector('.master-abs-scale'), mm=sc && /scale\(([\d.]+)\s*,\s*([\d.]+)\)/.exec(sc.style.transform||''); if(!mm) return 1; var sx=+mm[1], sy=+mm[2]; return (sx>0&&sy>0)? sy/sx : 1; };
+    var tb=mpage.querySelector('table.master-print')||mpage.querySelector('table');
+    var others=[];   /* نصوص الجدول خارج الخلايا (رؤوس الأيام، أرقام الحصص…) */
+    Array.prototype.forEach.call(tb.querySelectorAll('*'), function(e){
+      if(/^(BR|SCRIPT|STYLE|COL|COLGROUP)$/i.test(e.tagName) || e.__f0) return;
+      if(!Array.prototype.some.call(e.childNodes, function(n){ return n.nodeType===3 && n.textContent.trim(); })) return;
+      var fs=(parseFloat(win.getComputedStyle(e).fontSize)||0)*UM; if(fs) others.push({e:e, fs:fs});
+    });
+    if(UM!==1) others.forEach(function(x){ setI(x.e,'font-size',x.fs.toFixed(2)+'px'); });
+    if(UM!==1) paint();
+    var G0=cells.map(function(c){ return c.G; });
+    var setG=function(g){
+      cells.forEach(function(c, i){ c.G=G0[i]*g; });
+      others.forEach(function(x){ setI(x.e,'font-size',(x.fs*Math.min(1,g)).toFixed(2)+'px'); });
+      paint();
+    };
+    var fitG=1;
+    if(ratio()<0.97){
+      var lo=0.1, hi=1, ok=0.1;
+      for(var it=0; it<9; it++){ var mid=(lo+hi)/2; setG(mid); if(ratio()>=0.97){ ok=mid; lo=mid; } else hi=mid; }
+      setG(ok); fitG=ok;
     }
-    /* ارتفاع: إن كان الخط أكبر مما تتسع له الصفحة عموديًا تُضغط الحروف رأسيًا — يُصغَّر الخط (أكبر حجم يتسع) بدل ذلك */
-    if(mpage){
-      var ratio=function(){ var sc=mpage.querySelector('.master-abs-scale'), mm=sc && /scale\(([\d.]+)\s*,\s*([\d.]+)\)/.exec(sc.style.transform||''); if(!mm) return 1; var sx=+mm[1], sy=+mm[2]; return (sx>0&&sy>0)? sy/sx : 1; };
-      if(ratio()<0.97){
-        var tb=mpage.querySelector('table.master-print')||mpage.querySelector('table');
-        var L=[];
-        Array.prototype.forEach.call(tb.querySelectorAll('*'), function(e){
-          if(/^(BR|SCRIPT|STYLE|COL|COLGROUP)$/i.test(e.tagName)) return;
-          if(!Array.prototype.some.call(e.childNodes, function(n){ return n.nodeType===3 && n.textContent.trim(); })) return;
-          var fs=parseFloat(win.getComputedStyle(e).fontSize)||0; if(fs) L.push({e:e, fs:fs});
-        });
-        var setG=function(g){ L.forEach(function(x){ setI(x.e,'font-size',(x.fs*g).toFixed(2)+'px'); }); try{ fitMasterPage(mpage); }catch(e){} };
-        var lo=0.4, hi=1, ok=0.4;
-        for(var it=0; it<7; it++){ var mid=(lo+hi)/2; setG(mid); if(ratio()>=0.97){ ok=mid; lo=mid; } else hi=mid; }
-        setG(ok);
+    var fitT=T1*fitG;
+    /* «خط الجدول» فوق الحجم المناسب (100% = أنسب حجم يتسع للصفحة) */
+    var U=Math.max(0.3, (S.fontT||100)/100);
+    if(fitG<0.999 && Math.abs(U-1)>0.001){
+      var want=Math.min(1, fitT*U);
+      var fin=hfit(want);
+      PV.fontCapped=(U>1 && fin<want*0.98);
+      var rel=fin/Math.max(0.0001,fitT);
+      others.forEach(function(x){ setI(x.e,'font-size',(x.fs*Math.min(1, fitG*rel)).toFixed(2)+'px'); });
+      paint();
+      /* حدّ للضغط الرأسي حتى لا تتشوه الحروف عند التكبير الكبير */
+      if(ratio()<0.62){
+        var G1=cells.map(function(c){ return c.G; }), lo2=Math.min(1,fitT/Math.max(0.0001,fin)), hi2=1, ok2=lo2;
+        var setS=function(k){ cells.forEach(function(c,i){ c.G=G1[i]*k; }); paint(); };
+        for(var it2=0; it2<7; it2++){ var m2=(lo2+hi2)/2; setS(m2); if(ratio()>=0.62){ ok2=m2; lo2=m2; } else hi2=m2; }
+        setS(ok2); PV.fontCapped=true;
       }
     }
   }
@@ -27759,6 +27803,7 @@ function nbPromoShow(){
     applySplitClones();
     setEditable();
     applyZoom();
+    try{ var fn=document.getElementById('nbpvFontNote'); if(fn){ fn.style.display=PV.fontCapped?'':'none'; } }catch(e){}
   }
   function setEditable(){ (PV.sheets||[]).forEach(function(sh){ var b=sh.el.querySelector('.nbpv-virt'); if(b) b.contentEditable=S.edit?'true':'false'; }); }
   function applyZoom(){
